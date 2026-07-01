@@ -133,4 +133,5 @@
   /* Elevation */
   --shadow-card: 0 4px 12px rgb(0 0 0 / 0.04);
   --shadow-button: 0 6px 16px rgb(158 0 39 / 0.15);
+  --shadow-elevated: 0 8px 24px rgb(0 0 0 / 0.08);
 }

@@ -1,20 +1,8 @@
 import { useId } from 'react';
 
-import { GoalChipGroup } from '@/features/settings/components/GoalChipGroup';
+import { toDailyGoalOptions, toHskLevelOptions } from '@/app/config/studyGoals';
+import { GoalChipGroup } from '@/components/forms/GoalChipGroup';
 import { cn } from '@/utils';
-
-const HSK_LEVELS = [1, 2, 3, 4, 5, 6] as const;
-const DAILY_GOAL_MINUTES = [15, 30, 45, 60] as const;
-
-const hskLevelOptions = HSK_LEVELS.map((level) => ({
-  value: level,
-  label: `HSK ${level}`,
-}));
-
-const dailyGoalOptions = DAILY_GOAL_MINUTES.map((minutes) => ({
-  value: minutes,
-  label: `${minutes} min`,
-}));
 
 type LevelGoalStepProps = {
   targetHskLevel: number;
@@ -23,6 +11,9 @@ type LevelGoalStepProps = {
   onDailyGoalChange: (minutes: number) => void;
   className?: string;
 };
+
+const hskLevelOptions = toHskLevelOptions();
+const dailyGoalOptions = toDailyGoalOptions();
 
 export function LevelGoalStep({
   targetHskLevel,

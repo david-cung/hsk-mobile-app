@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import type { OnboardingGoalId } from '../components/GoalCard';
@@ -26,24 +26,29 @@ function clampStepIndex(stepIndex: number): OnboardingStepIndex {
 export function OnboardingPage() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<OnboardingStepIndex>(0);
+  const currentStepRef = useRef(currentStep);
+  currentStepRef.current = currentStep;
+
   const [selectedGoal, setSelectedGoal] = useState<OnboardingGoalId>('hsk_exam');
   const [targetHskLevel, setTargetHskLevel] = useState(2);
   const [dailyGoalMinutes, setDailyGoalMinutes] = useState(30);
 
   const handleNext = useCallback(() => {
-    if (currentStep === TOTAL_STEPS - 1) {
+    if (currentStepRef.current === TOTAL_STEPS - 1) {
       navigate('/', { replace: true });
       return;
     }
 
     setCurrentStep((previous) => clampStepIndex(previous + 1));
-  }, [currentStep, navigate]);
+  }, [navigate]);
 
   const handleBack = useCallback(() => {
     setCurrentStep((previous) => clampStepIndex(previous - 1));
   }, []);
 
-  const handleSkip = useCallback(() => {}, []);
+  const handleSkip = useCallback(() => {
+    navigate('/', { replace: true });
+  }, [navigate]);
 
   const stepContent =
     currentStep === 0 ? (

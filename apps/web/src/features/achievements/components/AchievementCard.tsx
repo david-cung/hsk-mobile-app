@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
+import { memo } from 'react';
 
 import { Text } from '@/components/typography';
 import { Card } from '@/components/ui/Card';
 import { cn } from '@/utils';
+import { formatDate } from '@/utils/format';
 
 import type { Achievement, AchievementCardVariant, AchievementIconKey } from '../types';
 
@@ -108,13 +110,10 @@ function AchievementIcon({
 }
 
 function formatEarnedDate(isoDate: string): string {
-  return new Date(isoDate).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-  });
+  return formatDate(isoDate, { month: 'short', day: 'numeric' });
 }
 
-export function AchievementCard({
+export const AchievementCard = memo(function AchievementCard({
   achievement,
   variant = 'default',
   className,
@@ -129,15 +128,15 @@ export function AchievementCard({
 
   return (
     <Card
-      aria-label={`${achievement.title}. ${statusLabel}.${achievement.description ? ` ${achievement.description}` : ''}`}
       className={cn(
-        'relative flex h-full flex-col items-center overflow-hidden text-center',
+        'relative flex h-full flex-col items-center overflow-hidden text-center transition-[transform,box-shadow] duration-200',
         isEarned
-          ? 'border-transparent bg-surface-container-lowest'
+          ? 'border-transparent bg-surface-container-lowest motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-elevated'
           : 'border-transparent bg-surface-container-low opacity-60 grayscale',
         isFeatured && 'border-2 border-secondary-fixed shadow-card',
         className,
       )}
+      variant={isEarned ? 'interactive' : 'default'}
     >
       {isFeatured ? (
         <span aria-hidden="true" className="absolute right-2 top-2 text-secondary-fixed">
@@ -187,6 +186,6 @@ export function AchievementCard({
       </Text>
     </Card>
   );
-}
+});
 
 export type { AchievementCardProps };

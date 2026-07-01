@@ -15,6 +15,7 @@ export type Achievement = {
   icon: AchievementIconKey | null;
   earned: boolean;
   earned_at: string | null;
+  featured?: boolean;
 };
 
 export type AchievementCardVariant = 'default' | 'featured';

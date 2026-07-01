@@ -10,15 +10,15 @@ type AddWordFormProps = {
   onSubmit: (values: SavedWordCreateInput) => void;
 };
 
-const HANZI_FIELD_ID = 'add-word-hanzi';
-const HANZI_ERROR_ID = 'add-word-hanzi-error';
-const PINYIN_FIELD_ID = 'add-word-pinyin';
-const PINYIN_ERROR_ID = 'add-word-pinyin-error';
-const MEANING_FIELD_ID = 'add-word-meaning';
-const MEANING_ERROR_ID = 'add-word-meaning-error';
-
 export function AddWordForm({ onSubmit }: AddWordFormProps) {
   const formId = useId();
+  const hanziFieldId = `${formId}-hanzi`;
+  const hanziErrorId = `${formId}-hanzi-error`;
+  const pinyinFieldId = `${formId}-pinyin`;
+  const pinyinErrorId = `${formId}-pinyin-error`;
+  const meaningFieldId = `${formId}-meaning`;
+  const meaningErrorId = `${formId}-meaning-error`;
+
   const {
     register,
     handleSubmit,
@@ -56,46 +56,46 @@ export function AddWordForm({ onSubmit }: AddWordFormProps) {
       </p>
 
       <div>
-        <Label htmlFor={HANZI_FIELD_ID} required>
+        <Label htmlFor={hanziFieldId} required>
           Hanzi
         </Label>
         <Input
           {...register('hanzi')}
-          aria-describedby={hanziError ? HANZI_ERROR_ID : undefined}
+          aria-describedby={hanziError ? hanziErrorId : undefined}
           autoComplete="off"
           error={Boolean(hanziError)}
-          id={HANZI_FIELD_ID}
+          id={hanziFieldId}
           inputMode="text"
           lang="zh-Hans"
           placeholder="你好"
         />
-        <FieldError id={HANZI_ERROR_ID}>{hanziError}</FieldError>
+        <FieldError id={hanziErrorId}>{hanziError}</FieldError>
       </div>
 
       <div>
-        <Label htmlFor={PINYIN_FIELD_ID}>Pinyin</Label>
+        <Label htmlFor={pinyinFieldId}>Pinyin</Label>
         <Input
           {...register('pinyin')}
-          aria-describedby={pinyinError ? PINYIN_ERROR_ID : undefined}
+          aria-describedby={pinyinError ? pinyinErrorId : undefined}
           autoComplete="off"
           error={Boolean(pinyinError)}
-          id={PINYIN_FIELD_ID}
+          id={pinyinFieldId}
           placeholder="nǐ hǎo"
         />
-        <FieldError id={PINYIN_ERROR_ID}>{pinyinError}</FieldError>
+        <FieldError id={pinyinErrorId}>{pinyinError}</FieldError>
       </div>
 
       <div>
-        <Label htmlFor={MEANING_FIELD_ID}>Meaning</Label>
+        <Label htmlFor={meaningFieldId}>Meaning</Label>
         <Input
           {...register('meaning')}
-          aria-describedby={meaningError ? MEANING_ERROR_ID : undefined}
+          aria-describedby={meaningError ? meaningErrorId : undefined}
           autoComplete="off"
           error={Boolean(meaningError)}
-          id={MEANING_FIELD_ID}
+          id={meaningFieldId}
           placeholder="Hello / Hi"
         />
-        <FieldError id={MEANING_ERROR_ID}>{meaningError}</FieldError>
+        <FieldError id={meaningErrorId}>{meaningError}</FieldError>
       </div>
 
       <Button className="self-start" type="submit">

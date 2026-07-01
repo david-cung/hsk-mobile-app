@@ -32,9 +32,9 @@ export function OnboardingLayout({
 
   return (
     <div className={cn('flex min-h-dvh flex-col bg-background', className)}>
-      <header className="sticky top-0 z-40 flex justify-end bg-background px-margin-mobile py-stack-md">
+      <header className="sticky top-0 z-40 flex justify-end bg-background/95 px-margin-mobile py-stack-md backdrop-blur-sm sm:px-6">
         <button
-          className="min-h-11 rounded-md px-stack-sm text-label-md font-medium text-primary ring-focus focus-visible:outline-none focus-visible:ring-[3px]"
+          className="min-h-11 rounded-md px-stack-sm text-label-md font-medium text-primary ring-focus transition-colors duration-200 motion-safe:hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-[3px]"
           onClick={handleSkip}
           type="button"
         >
@@ -43,11 +43,13 @@ export function OnboardingLayout({
       </header>
 
       <main
-        className="mx-auto flex w-full max-w-md flex-1 flex-col px-margin-mobile pb-stack-lg pt-stack-sm"
+        className="mx-auto flex w-full max-w-md flex-1 flex-col px-margin-mobile pb-stack-lg pt-stack-sm sm:px-6"
         id="main-content"
         tabIndex={-1}
       >
-        <div className="flex flex-1 flex-col">{children}</div>
+        <div className="flex flex-1 flex-col page-enter" key={currentStep}>
+          {children}
+        </div>
 
         <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
 

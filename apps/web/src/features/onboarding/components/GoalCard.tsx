@@ -29,14 +29,15 @@ export function GoalCard({ goal, selected, onSelect }: GoalCardProps) {
         onSelect(goal.id);
       }}
       role="radio"
+      tabIndex={selected ? 0 : -1}
       type="button"
     >
       <Card
         className={cn(
-          'flex flex-col items-center gap-stack-sm border-2 text-center transition-colors',
+          'flex flex-col items-center gap-stack-sm border-2 text-center transition-[border-color,background-color,box-shadow,transform] duration-200',
           selected
             ? 'border-primary bg-primary/5 shadow-card'
-            : 'border-transparent hover:border-primary/40',
+            : 'border-transparent motion-safe:hover:-translate-y-0.5 motion-safe:hover:border-primary/40 motion-safe:hover:shadow-card',
         )}
       >
         <div

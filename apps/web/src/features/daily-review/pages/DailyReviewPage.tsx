@@ -1,9 +1,14 @@
 import { useId } from 'react';
 
-import { TopAppBar } from '@/components/navigation/TopAppBar';
+import { FeaturePageShell } from '@/components/layout/FeaturePageShell';
+import { QueryContent } from '@/components/layout/QueryContent';
+import { StaggerItem, StaggerList } from '@/components/layout/StaggerList';
+import { ReviewCardSkeleton } from '@/components/skeletons/FeatureSkeletons';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { useMockQuery } from '@/hooks/useMockQuery';
 
-import { ReviewCard, type ReviewItem } from '../components/ReviewCard';
+import { ReviewCard } from '../components/ReviewCard';
+import type { ReviewItem } from '../types';
 
 const MOCK_REVIEW_QUEUE: ReviewItem[] = [
   {
@@ -29,43 +34,58 @@ const MOCK_REVIEW_QUEUE: ReviewItem[] = [
   },
 ];
 
+function DailyReviewSkeleton() {
+  return (
+    <div className="flex flex-col gap-stack-md">
+      <ReviewCardSkeleton />
+      <ReviewCardSkeleton />
+      <ReviewCardSkeleton />
+    </div>
+  );
+}
+
 export function DailyReviewPage() {
   const queueHeadingId = useId();
-  const reviewQueue = MOCK_REVIEW_QUEUE;
+  const query = useMockQuery(MOCK_REVIEW_QUEUE);
 
   return (
-    <>
-      <TopAppBar backTo="/profile" title="Daily Review" />
-      <main
-        className="mx-auto w-full max-w-lg px-margin-mobile py-stack-lg"
-        id="main-content"
-        tabIndex={-1}
-      >
-        <p className="m-0 mb-stack-lg text-body-md text-on-surface-variant">
-          Revisit words and lessons you have studied
-        </p>
+    <FeaturePageShell backTo="/profile" title="Daily Review">
+      <p className="m-0 mb-stack-lg text-body-md text-on-surface-variant sm:text-body-lg">
+        Revisit words and lessons you have studied
+      </p>
 
-        {reviewQueue.length === 0 ? (
+      <QueryContent
+        data={query.data}
+        empty={
           <EmptyState
             description="Complete a lesson quiz first, then come back for spaced repetition practice."
+            icon="review"
             title="No lessons to review yet"
           />
-        ) : (
+        }
+        errorMessage="We could not load your review queue. Please try again."
+        isEmpty={(items) => items.length === 0}
+        isError={query.isError}
+        isLoading={query.isLoading}
+        loading={<DailyReviewSkeleton />}
+        onRetry={query.refetch}
+      >
+        {(reviewQueue) => (
           <section aria-labelledby={queueHeadingId}>
             <h2 className="m-0 mb-stack-md text-headline-md text-on-surface" id={queueHeadingId}>
               Today&apos;s queue
               <span className="sr-only"> ({reviewQueue.length} lessons)</span>
             </h2>
-            <ul className="m-0 flex list-none flex-col gap-stack-md p-0">
-              {reviewQueue.map((item) => (
-                <li key={item.id}>
+            <StaggerList className="flex flex-col gap-stack-md">
+              {reviewQueue.map((item, index) => (
+                <StaggerItem index={index} key={item.id}>
                   <ReviewCard item={item} />
-                </li>
+                </StaggerItem>
               ))}
-            </ul>
+            </StaggerList>
           </section>
         )}
-      </main>
-    </>
+      </QueryContent>
+    </FeaturePageShell>
   );
 }
