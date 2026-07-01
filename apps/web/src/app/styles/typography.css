@@ -1,0 +1,66 @@
+@layer utilities {
+  .text-display-zh {
+    font-family: var(--font-chinese);
+    font-size: var(--text-display-zh-size);
+    font-weight: var(--text-display-zh-weight);
+    line-height: var(--text-display-zh-line-height);
+  }
+
+  .text-headline-lg {
+    font-family: var(--font-latin);
+    font-size: var(--text-headline-lg-size);
+    font-weight: var(--text-headline-lg-weight);
+    line-height: var(--text-headline-lg-line-height);
+  }
+
+  .text-headline-lg-mobile {
+    font-family: var(--font-latin);
+    font-size: var(--text-headline-lg-mobile-size);
+    font-weight: var(--text-headline-lg-mobile-weight);
+    line-height: var(--text-headline-lg-mobile-line-height);
+  }
+
+  .text-headline-md {
+    font-family: var(--font-latin);
+    font-size: var(--text-headline-md-size);
+    font-weight: var(--text-headline-md-weight);
+    line-height: var(--text-headline-md-line-height);
+  }
+
+  .text-body-lg {
+    font-family: var(--font-latin);
+    font-size: var(--text-body-lg-size);
+    font-weight: var(--text-body-lg-weight);
+    line-height: var(--text-body-lg-line-height);
+  }
+
+  .text-body-md {
+    font-family: var(--font-latin);
+    font-size: var(--text-body-md-size);
+    font-weight: var(--text-body-md-weight);
+    line-height: var(--text-body-md-line-height);
+  }
+
+  .text-body-zh {
+    font-family: var(--font-chinese);
+    font-size: var(--text-body-zh-size);
+    font-weight: var(--text-body-zh-weight);
+    line-height: var(--text-body-zh-line-height);
+  }
+
+  .text-label-md {
+    font-family: var(--font-latin);
+    font-size: var(--text-label-md-size);
+    font-weight: var(--text-label-md-weight);
+    line-height: var(--text-label-md-line-height);
+    letter-spacing: var(--text-label-md-letter-spacing);
+  }
+
+  .text-label-sm {
+    font-family: var(--font-latin);
+    font-size: var(--text-label-sm-size);
+    font-weight: var(--text-label-sm-weight);
+    line-height: var(--text-label-sm-line-height);
+    letter-spacing: var(--text-label-sm-letter-spacing);
+  }
+}

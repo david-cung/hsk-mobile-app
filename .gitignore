@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Build / cache
+.expo/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Mobile (React Native CLI)
+apps/mobile/node_modules/
+apps/mobile/ios/Pods/
+apps/mobile/ios/build/
+apps/mobile/android/app/build/
+apps/mobile/android/.gradle/
+apps/mobile/vendor/bundle/
+apps/mobile-expo-legacy/
+
+# Database
+postgres_data/

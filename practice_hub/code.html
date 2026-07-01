@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Practice Hub - HSK Chinese Master</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "primary": "#9e0027",
+                  "inverse-on-surface": "#f3f0f0",
+                  "tertiary-container": "#3b6d6d",
+                  "on-tertiary-fixed": "#002020",
+                  "on-primary-fixed-variant": "#920023",
+                  "on-secondary-fixed-variant": "#544600",
+                  "secondary-container": "#fcd400",
+                  "surface-container-low": "#f6f3f2",
+                  "on-tertiary-fixed-variant": "#194e4e",
+                  "inverse-primary": "#ffb3b4",
+                  "on-tertiary": "#ffffff",
+                  "on-surface": "#1b1c1c",
+                  "secondary-fixed-dim": "#e9c400",
+                  "surface-container-lowest": "#ffffff",
+                  "on-error-container": "#93000a",
+                  "on-secondary-container": "#6e5c00",
+                  "surface-container-highest": "#e4e2e1",
+                  "on-secondary-fixed": "#221b00",
+                  "on-primary-container": "#ffdada",
+                  "surface-variant": "#e4e2e1",
+                  "on-tertiary-container": "#b8edec",
+                  "primary-container": "#c41e3a",
+                  "error-container": "#ffdad6",
+                  "error": "#ba1a1a",
+                  "surface-container": "#f0eded",
+                  "background": "#fcf9f8",
+                  "inverse-surface": "#303030",
+                  "on-error": "#ffffff",
+                  "surface-bright": "#fcf9f8",
+                  "primary-fixed": "#ffdad9",
+                  "surface": "#fcf9f8",
+                  "tertiary-fixed": "#b8ecec",
+                  "on-secondary": "#ffffff",
+                  "surface-tint": "#ba1434",
+                  "on-surface-variant": "#5b4040",
+                  "tertiary": "#205555",
+                  "on-background": "#1b1c1c",
+                  "outline": "#8f6f6f",
+                  "surface-dim": "#dcd9d9",
+                  "on-primary": "#ffffff",
+                  "secondary-fixed": "#ffe16d",
+                  "secondary": "#705d00",
+                  "primary-fixed-dim": "#ffb3b4",
+                  "on-primary-fixed": "#40000a",
+                  "tertiary-fixed-dim": "#9cd0d0",
+                  "surface-container-high": "#eae7e7",
+                  "outline-variant": "#e3bebd"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "gutter-mobile": "16px",
+                  "stack-sm": "8px",
+                  "margin-mobile": "20px",
+                  "unit": "4px",
+                  "stack-md": "16px",
+                  "stack-lg": "32px",
+                  "card-padding": "20px"
+          },
+          "fontFamily": {
+                  "display-zh": ["Noto Sans SC", "sans-serif"],
+                  "label-md": ["Inter", "sans-serif"],
+                  "body-lg": ["Inter", "sans-serif"],
+                  "label-sm": ["Inter", "sans-serif"],
+                  "headline-md": ["Inter", "sans-serif"],
+                  "body-zh": ["Noto Sans SC", "sans-serif"],
+                  "body-md": ["Inter", "sans-serif"],
+                  "headline-lg": ["Inter", "sans-serif"],
+                  "headline-lg-mobile": ["Inter", "sans-serif"]
+          },
+          "fontSize": {
+                  "display-zh": ["48px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                  "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                  "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                  "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600"}],
+                  "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                  "body-zh": ["20px", {"lineHeight": "32px", "fontWeight": "400"}],
+                  "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                  "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                  "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .custom-shadow {
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.04);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-low text-on-surface font-body-md min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-margin-mobile py-4 sticky top-0 z-40 bg-background">
+<div class="flex items-center gap-4">
+<button class="hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-primary" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="text-headline-md-mobile font-headline-md-mobile font-bold text-primary">Practice Hub</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-on-surface" data-icon="settings">settings</span>
+</button>
+</div>
+</header>
+<main class="px-margin-mobile pt-stack-md space-y-stack-lg">
+<!-- Welcome Message -->
+<section>
+<p class="text-label-md font-label-md text-on-surface-variant mb-1">STRENGTHEN YOUR SKILLS</p>
+<h2 class="text-headline-lg-mobile font-headline-lg-mobile text-on-surface">Choose your practice mode</h2>
+</section>
+<!-- Bento-style Practice Grid -->
+<div class="grid grid-cols-2 gap-4">
+<!-- Vocabulary Quiz -->
+<div class="bg-surface custom-shadow rounded-xl p-card-padding flex flex-col justify-between aspect-square border border-transparent hover:border-primary transition-all">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="translate">translate</span>
+<span class="text-label-sm font-label-sm bg-primary-fixed text-on-primary-fixed px-2 py-1 rounded-full">85%</span>
+</div>
+<div>
+<h3 class="font-bold text-on-surface">Vocabulary quiz</h3>
+<p class="text-label-sm text-on-surface-variant">Daily session</p>
+</div>
+</div>
+<!-- Grammar Quiz -->
+<div class="bg-surface custom-shadow rounded-xl p-card-padding flex flex-col justify-between aspect-square border border-transparent hover:border-primary transition-all">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-tertiary text-3xl" data-icon="account_tree">account_tree</span>
+<span class="text-label-sm font-label-sm bg-tertiary-fixed text-on-tertiary-fixed px-2 py-1 rounded-full">HSK 3</span>
+</div>
+<div>
+<h3 class="font-bold text-on-surface">Grammar quiz</h3>
+<p class="text-label-sm text-on-surface-variant">Rule mastery</p>
+</div>
+</div>
+<!-- Listening Practice -->
+<div class="bg-surface custom-shadow rounded-xl p-card-padding flex flex-col justify-between aspect-square border border-transparent hover:border-primary transition-all">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="headphones">headphones</span>
+<div class="flex gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-variant"></div>
+</div>
+</div>
+<div>
+<h3 class="font-bold text-on-surface">Listening practice</h3>
+<p class="text-label-sm text-on-surface-variant">Audio drills</p>
+</div>
+</div>
+<!-- Reading Practice -->
+<div class="bg-surface custom-shadow rounded-xl p-card-padding flex flex-col justify-between aspect-square border border-transparent hover:border-primary transition-all">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="menu_book">menu_book</span>
+<span class="text-label-sm font-label-sm bg-primary-fixed text-on-primary-fixed px-2 py-1 rounded-full">Level 2</span>
+</div>
+<div>
+<h3 class="font-bold text-on-surface">Reading practice</h3>
+<p class="text-label-sm text-on-surface-variant">Text comprehension</p>
+</div>
+</div>
+<!-- Writing Practice -->
+<div class="bg-surface custom-shadow rounded-xl p-card-padding flex flex-col justify-between aspect-square border border-transparent hover:border-primary transition-all">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-tertiary text-3xl" data-icon="edit_note">edit_note</span>
+<span class="text-label-sm font-label-sm bg-tertiary-fixed text-on-tertiary-fixed px-2 py-1 rounded-full">New</span>
+</div>
+<div>
+<h3 class="font-bold text-on-surface">Writing practice</h3>
+<p class="text-label-sm text-on-surface-variant">Character stroke</p>
+</div>
+</div>
+<!-- Mixed Review -->
+<div class="bg-primary custom-shadow rounded-xl p-card-padding flex flex-col justify-between aspect-square">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-on-primary text-3xl" data-icon="auto_awesome">auto_awesome</span>
+<span class="text-label-sm font-label-sm text-on-primary-container bg-primary-container px-2 py-1 rounded-full">PRO</span>
+</div>
+<div>
+<h3 class="font-bold text-on-primary">Mixed review</h3>
+<p class="text-label-sm text-on-primary opacity-80">AI Adaptive</p>
+</div>
+</div>
+</div>
+<!-- Weak Areas Recommendation Section -->
+<section class="space-y-4">
+<div class="flex justify-between items-end">
+<h3 class="text-headline-md font-headline-md text-on-surface">Weak areas recommendation</h3>
+<button class="text-label-md font-label-md text-primary">View all</button>
+</div>
+<div class="bg-white rounded-xl overflow-hidden custom-shadow">
+<div class="p-card-padding space-y-4">
+<!-- Recommendation Item 1 -->
+<div class="flex items-center gap-4 group">
+<div class="w-12 h-12 rounded-lg bg-error-container flex items-center justify-center">
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+</div>
+<div class="flex-1">
+<p class="font-bold text-on-surface">Review HSK 1 Greetings</p>
+<p class="text-label-sm text-on-surface-variant">Focus on "Nín hǎo" pronunciation</p>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<div class="h-px bg-outline-variant w-full opacity-30"></div>
+<!-- Recommendation Item 2 -->
+<div class="flex items-center gap-4 group">
+<div class="w-12 h-12 rounded-lg bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container" data-icon="history">history</span>
+</div>
+<div class="flex-1">
+<p class="font-bold text-on-surface">Measure Words Drill</p>
+<p class="text-label-sm text-on-surface-variant">Usage of "Gè" vs "Běn"</p>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="bg-primary-fixed p-3 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-on-primary-fixed text-sm" data-icon="info">info</span>
+<p class="text-label-sm text-on-primary-fixed">Completing these will boost your score by 12%</p>
+</div>
+</div>
+</section>
+<!-- Visual Anchor - Featured Content Card -->
+<section>
+<div class="relative h-48 rounded-xl overflow-hidden bg-surface-container-highest flex items-end">
+<img alt="Learning environment" class="absolute inset-0 w-full h-full object-cover" data-alt="A serene, minimalist study space with a sleek modern desk, an open notebook with elegant Chinese calligraphy, and a small steaming cup of tea. Soft morning light filters through thin white curtains, creating a calm and focused atmosphere with high-key lighting. The color palette consists of soft grays, whites, and deep crimson accents, embodying a sophisticated corporate minimalist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB38jVNOW_Rm8qUKp4hNwd-4k1O9_rc-AiA1pZRjLlnWT9smpe0ZCmgyx1r2E140Lj2s-Aj9CfIM1NHSGVPkZUMXuNZKAgymz_6zSgnH070sJ_W4jS2LmFLwWpWsGDHhkOD1oUHOqjjmaEJNAQcTjiULbaGlGkhXp9qLaxtcjg9wCrP-E5S3TkOCjWjEDwYO0hi0pQ-9ayozKasz76zZCBCcqbTRR2Fo1EYXWq4FD6V6AcIip1OWk5GlJqR5dCMNFgQZk8DoMazljw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="relative p-card-padding">
+<span class="text-label-sm font-label-sm text-secondary-container bg-on-secondary-container px-2 py-0.5 rounded mb-2 inline-block">WEEKEND CHALLENGE</span>
+<h4 class="text-white font-bold text-headline-md">Tone Identification Marathon</h4>
+<p class="text-white/80 text-label-sm">Earn double XP until Sunday</p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center px-gutter-mobile py-2 bg-surface dark:bg-surface-dim z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-label-sm font-label-sm">Home</span>
+</a>
+<!-- Learn -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="text-label-sm font-label-sm">Learn</span>
+</a>
+<!-- Practice (Active) -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-inverse-primary font-bold after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:mt-1 scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+<span class="text-label-sm font-label-sm">Practice</span>
+</a>
+<!-- Progress -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="text-label-sm font-label-sm">Progress</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-label-sm font-label-sm">Profile</span>
+</a>
+</nav>
+</body></html>
