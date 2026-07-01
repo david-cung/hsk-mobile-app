@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Match the Words Quiz</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans:wght@400;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#9e0027",
+                        "inverse-on-surface": "#f3f0f0",
+                        "tertiary-container": "#3b6d6d",
+                        "on-tertiary-fixed": "#002020",
+                        "on-primary-fixed-variant": "#920023",
+                        "on-secondary-fixed-variant": "#544600",
+                        "secondary-container": "#fcd400",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-fixed-variant": "#194e4e",
+                        "inverse-primary": "#ffb3b4",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "secondary-fixed-dim": "#e9c400",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#6e5c00",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-secondary-fixed": "#221b00",
+                        "on-primary-container": "#ffdada",
+                        "surface-variant": "#e4e2e1",
+                        "on-tertiary-container": "#b8edec",
+                        "primary-container": "#c41e3a",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-container": "#f0eded",
+                        "background": "#fcf9f8",
+                        "inverse-surface": "#303030",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#fcf9f8",
+                        "primary-fixed": "#ffdad9",
+                        "surface": "#fcf9f8",
+                        "tertiary-fixed": "#b8ecec",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#ba1434",
+                        "on-surface-variant": "#5b4040",
+                        "tertiary": "#205555",
+                        "on-background": "#1b1c1c",
+                        "outline": "#8f6f6f",
+                        "surface-dim": "#dcd9d9",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#ffe16d",
+                        "secondary": "#705d00",
+                        "primary-fixed-dim": "#ffb3b4",
+                        "on-primary-fixed": "#40000a",
+                        "tertiary-fixed-dim": "#9cd0d0",
+                        "surface-container-high": "#eae7e7",
+                        "outline-variant": "#e3bebd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter-mobile": "16px",
+                        "stack-sm": "8px",
+                        "margin-mobile": "20px",
+                        "unit": "4px",
+                        "stack-md": "16px",
+                        "stack-lg": "32px",
+                        "card-padding": "20px"
+                    },
+                    "fontFamily": {
+                        "display-zh": ["Noto Sans"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-zh": ["Noto Sans"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-zh": ["48px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-zh": ["20px", {"lineHeight": "32px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-margin-mobile py-4 sticky top-0 z-40 bg-background">
+<div class="flex items-center gap-4">
+<button class="hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-md-mobile text-headline-md-mobile font-bold text-primary">Match the words</h1>
+</div>
+<button class="hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-on-surface">settings</span>
+</button>
+</header>
+<main class="flex-grow flex flex-col px-margin-mobile py-stack-lg max-w-lg mx-auto w-full">
+<!-- Progress Indicator -->
+<div class="mb-stack-lg">
+<div class="flex justify-between items-center mb-2">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Question 21 of 50</span>
+<span class="text-label-sm font-label-sm text-primary font-bold">HSK 1</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[42%]"></div>
+</div>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mb-stack-lg">Connect the Chinese characters with their corresponding English meanings.</p>
+<!-- Matching Interaction Area -->
+<div class="grid grid-cols-2 gap-x-12 gap-y-6 relative">
+<!-- Left Column: Chinese -->
+<div class="flex flex-col gap-6">
+<!-- Item 1: Active/Selected State -->
+<button class="flex items-center justify-center h-16 bg-surface border-2 border-primary rounded-xl shadow-sm transition-transform active:scale-95 group">
+<span class="font-display-zh text-[24px] text-primary">老师</span>
+</button>
+<button class="flex items-center justify-center h-16 bg-surface border-2 border-transparent rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] transition-transform active:scale-95">
+<span class="font-display-zh text-[24px] text-on-surface">学生</span>
+</button>
+<button class="flex items-center justify-center h-16 bg-surface border-2 border-transparent rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] transition-transform active:scale-95">
+<span class="font-display-zh text-[24px] text-on-surface">朋友</span>
+</button>
+<button class="flex items-center justify-center h-16 bg-surface border-2 border-transparent rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] transition-transform active:scale-95">
+<span class="font-display-zh text-[24px] text-on-surface">医生</span>
+</button>
+</div>
+<!-- Right Column: English Scrambled -->
+<div class="flex flex-col gap-6">
+<button class="flex items-center justify-center h-16 bg-surface border-2 border-transparent rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] transition-transform active:scale-95">
+<span class="font-label-md text-label-md text-on-surface">Student</span>
+</button>
+<!-- Target selection state -->
+<button class="flex items-center justify-center h-16 bg-surface border-2 border-outline-variant rounded-xl shadow-sm transition-transform active:scale-95">
+<span class="font-label-md text-label-md text-on-surface">Teacher</span>
+</button>
+<button class="flex items-center justify-center h-16 bg-surface border-2 border-transparent rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] transition-transform active:scale-95">
+<span class="font-label-md text-label-md text-on-surface">Doctor</span>
+</button>
+<button class="flex items-center justify-center h-16 bg-surface border-2 border-transparent rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] transition-transform active:scale-95">
+<span class="font-label-md text-label-md text-on-surface">Friend</span>
+</button>
+</div>
+<!-- Visual connecting lines (represented by decorative SVG) -->
+<div class="absolute inset-0 pointer-events-none flex items-center justify-center opacity-20">
+<!-- Line from 老师 to Teacher -->
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 400 320">
+<path d="M 180 32 L 220 112" fill="none" stroke="#9e0027" stroke-dasharray="4 4" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<div class="mt-auto pt-stack-lg">
+<button class="w-full h-14 bg-primary text-on-primary font-label-md text-label-md rounded-full shadow-[0_6px_16px_rgba(196,30,58,0.15)] hover:opacity-90 transition-all active:scale-95">
+                Submit
+            </button>
+</div>
+</main>
+<!-- Contextual Information Card -->
+<section class="px-margin-mobile mb-24">
+<div class="bg-surface-container-low p-card-padding rounded-xl border border-outline-variant flex gap-4 items-start">
+<span class="material-symbols-outlined text-tertiary">lightbulb</span>
+<div>
+<p class="text-label-md font-label-md text-on-surface mb-1">Quick Tip</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Matching helps reinforce the visual recognition of characters with their semantic meaning in your native language.</p>
+</div>
+</div>
+</section>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center px-gutter-mobile py-2 bg-surface border-t border-outline-variant z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-label-sm font-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:mt-1 scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="text-label-sm font-label-sm">Learn</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">fitness_center</span>
+<span class="text-label-sm font-label-sm">Practice</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="text-label-sm font-label-sm">Progress</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-label-sm font-label-sm">Profile</span>
+</a>
+</nav>
+</body></html>

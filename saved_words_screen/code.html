@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Saved Vocabulary - HSK Chinese Master</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#9e0027",
+                    "inverse-on-surface": "#f3f0f0",
+                    "tertiary-container": "#3b6d6d",
+                    "on-tertiary-fixed": "#002020",
+                    "on-primary-fixed-variant": "#920023",
+                    "on-secondary-fixed-variant": "#544600",
+                    "secondary-container": "#fcd400",
+                    "surface-container-low": "#f6f3f2",
+                    "on-tertiary-fixed-variant": "#194e4e",
+                    "inverse-primary": "#ffb3b4",
+                    "on-tertiary": "#ffffff",
+                    "on-surface": "#1b1c1c",
+                    "secondary-fixed-dim": "#e9c400",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-secondary-container": "#6e5c00",
+                    "surface-container-highest": "#e4e2e1",
+                    "on-secondary-fixed": "#221b00",
+                    "on-primary-container": "#ffdada",
+                    "surface-variant": "#e4e2e1",
+                    "on-tertiary-container": "#b8edec",
+                    "primary-container": "#c41e3a",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "surface-container": "#f0eded",
+                    "background": "#fcf9f8",
+                    "inverse-surface": "#303030",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#fcf9f8",
+                    "primary-fixed": "#ffdad9",
+                    "surface": "#fcf9f8",
+                    "tertiary-fixed": "#b8ecec",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#ba1434",
+                    "on-surface-variant": "#5b4040",
+                    "tertiary": "#205555",
+                    "on-background": "#1b1c1c",
+                    "outline": "#8f6f6f",
+                    "surface-dim": "#dcd9d9",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed": "#ffe16d",
+                    "secondary": "#705d00",
+                    "primary-fixed-dim": "#ffb3b4",
+                    "on-primary-fixed": "#40000a",
+                    "tertiary-fixed-dim": "#9cd0d0",
+                    "surface-container-high": "#eae7e7",
+                    "outline-variant": "#e3bebd"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter-mobile": "16px",
+                    "stack-sm": "8px",
+                    "margin-mobile": "20px",
+                    "unit": "4px",
+                    "stack-md": "16px",
+                    "stack-lg": "32px",
+                    "card-padding": "20px"
+            },
+            "fontFamily": {
+                    "display-zh": ["Noto Sans SC"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-zh": ["Noto Sans SC"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "display-zh": ["48px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-zh": ["20px", {"lineHeight": "32px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .card-shadow {
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.04);
+      }
+      .active-red-shadow {
+        box-shadow: 0px 6px 16px rgba(196, 30, 58, 0.15);
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body-md text-on-surface">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-margin-mobile py-4 sticky top-0 z-40 bg-background">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer transition-opacity hover:opacity-70">arrow_back</span>
+<h1 class="text-headline-md-mobile font-headline-md-mobile font-bold text-primary">Saved Vocabulary</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface hover:opacity-80 cursor-pointer">settings</span>
+</div>
+</header>
+<main class="px-margin-mobile pb-32">
+<!-- Search Bar -->
+<div class="mt-4 mb-6">
+<div class="relative flex items-center bg-surface-container rounded-lg px-4 py-3 focus-within:ring-2 focus-within:ring-primary transition-all">
+<span class="material-symbols-outlined text-outline mr-3">search</span>
+<input class="bg-transparent border-none outline-none w-full text-body-md placeholder:text-outline p-0 focus:ring-0" placeholder="Search words or pinyin..." type="text"/>
+</div>
+</div>
+<!-- HSK Level Filter Chips -->
+<div class="mb-8">
+<h2 class="text-label-sm font-label-sm text-outline uppercase tracking-wider mb-3">Filter by Level</h2>
+<div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+<button class="px-4 py-2 rounded-full bg-primary text-on-primary text-label-md font-label-md whitespace-nowrap">All Words</button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant text-label-md font-label-md whitespace-nowrap hover:bg-surface-container-high">HSK 1</button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant text-label-md font-label-md whitespace-nowrap hover:bg-surface-container-high">HSK 2</button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant text-label-md font-label-md whitespace-nowrap hover:bg-surface-container-high">HSK 3</button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant text-label-md font-label-md whitespace-nowrap hover:bg-surface-container-high">HSK 4</button>
+</div>
+</div>
+<!-- Selection & Action Header -->
+<div class="flex justify-between items-center mb-6">
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="w-5 h-5 rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-label-md font-label-md text-on-surface-variant">Select all</span>
+</label>
+<button class="flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full active-red-shadow text-label-md font-label-md transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[20px]">play_circle</span>
+                Start practice
+            </button>
+</div>
+<!-- Vocabulary Cards List (Bento-inspired Grid) -->
+<div class="grid grid-cols-1 gap-stack-md">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl card-shadow flex flex-col gap-4 border border-transparent hover:border-primary-fixed transition-colors">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-tertiary-container text-on-tertiary px-2 py-0.5 rounded text-[10px] font-bold">HSK 1</span>
+<span class="text-label-sm font-label-sm text-outline">Added 2 days ago</span>
+</div>
+<h3 class="text-[32px] font-display-zh font-bold text-on-surface">你好</h3>
+<p class="text-body-md text-primary font-medium">nǐ hǎo</p>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined">volume_up</span>
+</button>
+</div>
+<div class="flex justify-between items-center pt-2 border-t border-surface-container">
+<span class="text-body-md text-on-surface-variant">Hello / Hi</span>
+<button class="text-primary font-label-md text-label-md flex items-center gap-1 hover:underline">
+                        Review <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl card-shadow flex flex-col gap-4 border border-transparent hover:border-primary-fixed transition-colors">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-tertiary-container text-on-tertiary px-2 py-0.5 rounded text-[10px] font-bold">HSK 2</span>
+<span class="text-label-sm font-label-sm text-outline">Added 5 days ago</span>
+</div>
+<h3 class="text-[32px] font-display-zh font-bold text-on-surface">谢谢</h3>
+<p class="text-body-md text-primary font-medium">xiè xie</p>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined">volume_up</span>
+</button>
+</div>
+<div class="flex justify-between items-center pt-2 border-t border-surface-container">
+<span class="text-body-md text-on-surface-variant">Thank you</span>
+<button class="text-primary font-label-md text-label-md flex items-center gap-1 hover:underline">
+                        Review <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl card-shadow flex flex-col gap-4 border border-transparent hover:border-primary-fixed transition-colors">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-tertiary-container text-on-tertiary px-2 py-0.5 rounded text-[10px] font-bold">HSK 3</span>
+<span class="text-label-sm font-label-sm text-outline">Added 1 week ago</span>
+</div>
+<h3 class="text-[32px] font-display-zh font-bold text-on-surface">漂亮</h3>
+<p class="text-body-md text-primary font-medium">piào liang</p>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined">volume_up</span>
+</button>
+</div>
+<div class="flex justify-between items-center pt-2 border-t border-surface-container">
+<span class="text-body-md text-on-surface-variant">Beautiful / Pretty</span>
+<button class="text-primary font-label-md text-label-md flex items-center gap-1 hover:underline">
+                        Review <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl card-shadow flex flex-col gap-4 border border-transparent hover:border-primary-fixed transition-colors">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-tertiary-container text-on-tertiary px-2 py-0.5 rounded text-[10px] font-bold">HSK 1</span>
+<span class="text-label-sm font-label-sm text-outline">Added 1 week ago</span>
+</div>
+<h3 class="text-[32px] font-display-zh font-bold text-on-surface">再见</h3>
+<p class="text-body-md text-primary font-medium">zài jiàn</p>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined">volume_up</span>
+</button>
+</div>
+<div class="flex justify-between items-center pt-2 border-t border-surface-container">
+<span class="text-body-md text-on-surface-variant">Goodbye / See you again</span>
+<button class="text-primary font-label-md text-label-md flex items-center gap-1 hover:underline">
+                        Review <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center px-gutter-mobile py-2 bg-surface border-t border-outline-variant z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-label-sm font-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:mt-1 scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="text-label-sm font-label-sm">Learn</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">fitness_center</span>
+<span class="text-label-sm font-label-sm">Practice</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="text-label-sm font-label-sm">Progress</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-label-sm font-label-sm">Profile</span>
+</a>
+</nav>
+</body></html>

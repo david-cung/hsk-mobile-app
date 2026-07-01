@@ -1,0 +1,136 @@
+/**
+ * Scholar Redux design tokens.
+ * Source of truth for color, spacing, typography, radius, and elevation.
+ */
+:root {
+  color-scheme: light;
+
+  /* Surface & background */
+  --color-surface: #fcf9f8;
+  --color-surface-dim: #dcd9d9;
+  --color-surface-bright: #fcf9f8;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f6f3f2;
+  --color-surface-container: #f0eded;
+  --color-surface-container-high: #eae7e7;
+  --color-surface-container-highest: #e4e2e1;
+  --color-surface-variant: #e4e2e1;
+  --color-background: #fcf9f8;
+  --color-on-background: #1b1c1c;
+  --color-on-surface: #1b1c1c;
+  --color-on-surface-variant: #5b4040;
+  --color-inverse-surface: #303030;
+  --color-inverse-on-surface: #f3f0f0;
+  --color-surface-tint: #ba1434;
+
+  /* Outline */
+  --color-outline: #8f6f6f;
+  --color-outline-variant: #e3bebd;
+
+  /* Primary */
+  --color-primary: #9e0027;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #c41e3a;
+  --color-on-primary-container: #ffdada;
+  --color-inverse-primary: #ffb3b4;
+  --color-primary-fixed: #ffdad9;
+  --color-primary-fixed-dim: #ffb3b4;
+  --color-on-primary-fixed: #40000a;
+  --color-on-primary-fixed-variant: #920023;
+
+  /* Secondary */
+  --color-secondary: #705d00;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #fcd400;
+  --color-on-secondary-container: #6e5c00;
+  --color-secondary-fixed: #ffe16d;
+  --color-secondary-fixed-dim: #e9c400;
+  --color-on-secondary-fixed: #221b00;
+  --color-on-secondary-fixed-variant: #544600;
+
+  /* Tertiary */
+  --color-tertiary: #205555;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #3b6d6d;
+  --color-on-tertiary-container: #b8edec;
+  --color-tertiary-fixed: #b8ecec;
+  --color-tertiary-fixed-dim: #9cd0d0;
+  --color-on-tertiary-fixed: #002020;
+  --color-on-tertiary-fixed-variant: #194e4e;
+
+  /* Error */
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  /* Spacing (4px baseline grid) */
+  --spacing-unit: 4px;
+  --spacing-margin-mobile: 20px;
+  --spacing-gutter-mobile: 16px;
+  --spacing-stack-sm: 8px;
+  --spacing-stack-md: 16px;
+  --spacing-stack-lg: 32px;
+  --spacing-card-padding: 20px;
+
+  /* Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Typography — font families */
+  --font-latin: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-chinese: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+
+  /* Typography — display & headlines */
+  --text-display-zh-size: 3rem;
+  --text-display-zh-line-height: 1.2;
+  --text-display-zh-weight: 700;
+
+  --text-headline-lg-size: 2rem;
+  --text-headline-lg-line-height: 2.5rem;
+  --text-headline-lg-weight: 700;
+
+  --text-headline-lg-mobile-size: 1.5rem;
+  --text-headline-lg-mobile-line-height: 2rem;
+  --text-headline-lg-mobile-weight: 700;
+
+  --text-headline-md-size: 1.25rem;
+  --text-headline-md-line-height: 1.75rem;
+  --text-headline-md-weight: 600;
+
+  /* Typography — body */
+  --text-body-lg-size: 1.125rem;
+  --text-body-lg-line-height: 1.75rem;
+  --text-body-lg-weight: 400;
+
+  --text-body-md-size: 1rem;
+  --text-body-md-line-height: 1.5rem;
+  --text-body-md-weight: 400;
+
+  --text-body-zh-size: 1.25rem;
+  --text-body-zh-line-height: 2rem;
+  --text-body-zh-weight: 400;
+
+  /* Typography — labels */
+  --text-label-md-size: 0.875rem;
+  --text-label-md-line-height: 1.25rem;
+  --text-label-md-weight: 500;
+  --text-label-md-letter-spacing: 0.02em;
+
+  --text-label-sm-size: 0.75rem;
+  --text-label-sm-line-height: 1rem;
+  --text-label-sm-weight: 600;
+  --text-label-sm-letter-spacing: 0.04em;
+
+  /* Focus */
+  --focus-ring-width: 3px;
+  --focus-ring-color: rgb(158 0 39 / 0.35);
+
+  /* Elevation */
+  --shadow-card: 0 4px 12px rgb(0 0 0 / 0.04);
+  --shadow-button: 0 6px 16px rgb(158 0 39 / 0.15);
+}

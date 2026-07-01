@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HSK 1 Lessons - HSK Chinese Master</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans:wght@400;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #f5f5f5; /* As per Brand Anchor: Level 0 Background */
+        }
+        .lesson-card-shadow {
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#9e0027",
+                        "inverse-on-surface": "#f3f0f0",
+                        "tertiary-container": "#3b6d6d",
+                        "on-tertiary-fixed": "#002020",
+                        "on-primary-fixed-variant": "#920023",
+                        "on-secondary-fixed-variant": "#544600",
+                        "secondary-container": "#fcd400",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-fixed-variant": "#194e4e",
+                        "inverse-primary": "#ffb3b4",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "secondary-fixed-dim": "#e9c400",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#6e5c00",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-secondary-fixed": "#221b00",
+                        "on-primary-container": "#ffdada",
+                        "surface-variant": "#e4e2e1",
+                        "on-tertiary-container": "#b8edec",
+                        "primary-container": "#c41e3a",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-container": "#f0eded",
+                        "background": "#fcf9f8",
+                        "inverse-surface": "#303030",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#fcf9f8",
+                        "primary-fixed": "#ffdad9",
+                        "surface": "#fcf9f8",
+                        "tertiary-fixed": "#b8ecec",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#ba1434",
+                        "on-surface-variant": "#5b4040",
+                        "tertiary": "#205555",
+                        "on-background": "#1b1c1c",
+                        "outline": "#8f6f6f",
+                        "surface-dim": "#dcd9d9",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#ffe16d",
+                        "secondary": "#705d00",
+                        "primary-fixed-dim": "#ffb3b4",
+                        "on-primary-fixed": "#40000a",
+                        "tertiary-fixed-dim": "#9cd0d0",
+                        "surface-container-high": "#eae7e7",
+                        "outline-variant": "#e3bebd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter-mobile": "16px",
+                        "stack-sm": "8px",
+                        "margin-mobile": "20px",
+                        "unit": "4px",
+                        "stack-md": "16px",
+                        "stack-lg": "32px",
+                        "card-padding": "20px"
+                    },
+                    "fontFamily": {
+                        "display-zh": ["notoSans"],
+                        "label-md": ["inter"],
+                        "body-lg": ["inter"],
+                        "label-sm": ["inter"],
+                        "headline-md": ["inter"],
+                        "body-zh": ["notoSans"],
+                        "body-md": ["inter"],
+                        "headline-lg": ["inter"],
+                        "headline-lg-mobile": ["inter"]
+                    },
+                    "fontSize": {
+                        "display-zh": ["48px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-zh": ["20px", {"lineHeight": "32px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-dim font-body-md text-on-surface">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-margin-mobile py-4 sticky top-0 z-40 bg-background dark:bg-background">
+<div class="flex items-center gap-4">
+<button class="hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-primary dark:text-inverse-primary">arrow_back</span>
+</button>
+<h1 class="text-headline-md-mobile font-headline-md-mobile font-bold text-primary dark:text-inverse-primary">Lessons</h1>
+</div>
+<button class="hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-primary dark:text-inverse-primary">settings</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="px-margin-mobile pb-32 pt-4">
+<!-- HSK Level Indicator -->
+<div class="mb-stack-lg flex items-center justify-between">
+<div class="flex gap-2">
+<span class="bg-primary text-on-primary px-3 py-1 rounded-full text-label-sm font-label-sm">HSK 1</span>
+<span class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-label-sm font-label-sm">Elementary</span>
+</div>
+<div class="text-right">
+<p class="text-label-sm font-label-sm text-on-surface-variant">Overall Progress</p>
+<p class="text-headline-md font-headline-md text-primary">35%</p>
+</div>
+</div>
+<!-- Section: Greetings -->
+<section class="mb-stack-lg">
+<div class="flex items-center gap-2 mb-stack-md">
+<span class="material-symbols-outlined text-tertiary">waving_hand</span>
+<h2 class="text-headline-md font-headline-md">Greetings</h2>
+</div>
+<div class="space-y-stack-md">
+<!-- Lesson Card: Completed -->
+<div class="bg-surface p-card-padding rounded-xl lesson-card-shadow flex items-center justify-between border-l-4 border-primary">
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md mb-1">Lesson 1: Hello!</h3>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="flex items-center gap-1 text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 10 mins
+                            </span>
+<span class="flex items-center gap-1 text-label-sm font-label-sm text-primary font-bold">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span> 100% Completed
+                            </span>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary text-[32px]">task_alt</span>
+</div>
+<!-- Lesson Card: Completed -->
+<div class="bg-surface p-card-padding rounded-xl lesson-card-shadow flex items-center justify-between border-l-4 border-primary">
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md mb-1">Lesson 2: Nice to meet you</h3>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="flex items-center gap-1 text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 15 mins
+                            </span>
+<span class="flex items-center gap-1 text-label-sm font-label-sm text-primary font-bold">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span> 100% Completed
+                            </span>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary text-[32px]">task_alt</span>
+</div>
+</div>
+</section>
+<!-- Section: Numbers -->
+<section class="mb-stack-lg">
+<div class="flex items-center gap-2 mb-stack-md">
+<span class="material-symbols-outlined text-tertiary">pin</span>
+<h2 class="text-headline-md font-headline-md">Numbers</h2>
+</div>
+<div class="space-y-stack-md">
+<!-- Lesson Card: New/Active -->
+<div class="bg-surface p-card-padding rounded-xl lesson-card-shadow flex items-center justify-between border-l-4 border-outline-variant">
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md mb-1">Lesson 3: One to Ten</h3>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="flex items-center gap-1 text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 10 mins
+                            </span>
+<span class="flex items-center gap-1 text-label-sm font-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">new_releases</span> New
+                            </span>
+</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<!-- Lesson Card: Locked -->
+<div class="bg-surface-container-low p-card-padding rounded-xl flex items-center justify-between opacity-60">
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md mb-1 text-on-surface-variant">Lesson 4: Large Numbers</h3>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">lock</span> Finish previous lesson
+                        </div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Family -->
+<section class="mb-stack-lg">
+<div class="flex items-center gap-2 mb-stack-md">
+<span class="material-symbols-outlined text-tertiary">family_restroom</span>
+<h2 class="text-headline-md font-headline-md">Family</h2>
+</div>
+<div class="bg-surface-container p-card-padding rounded-xl border border-dashed border-outline-variant flex items-center justify-center">
+<p class="text-label-md font-label-md text-on-surface-variant">Unlock by completing "Numbers"</p>
+</div>
+</section>
+<!-- Section: Time and date -->
+<section class="mb-stack-lg">
+<div class="flex items-center gap-2 mb-stack-md">
+<span class="material-symbols-outlined text-tertiary">event</span>
+<h2 class="text-headline-md font-headline-md">Time and date</h2>
+</div>
+<div class="bg-surface-container p-card-padding rounded-xl border border-dashed border-outline-variant flex items-center justify-center">
+<p class="text-label-md font-label-md text-on-surface-variant">Unlock by completing "Family"</p>
+</div>
+</section>
+<!-- Promo Banner -->
+<div class="relative overflow-hidden rounded-xl bg-primary-container p-card-padding text-on-primary-container mb-stack-lg">
+<div class="relative z-10">
+<h4 class="text-headline-md font-bold mb-2">Master Characters</h4>
+<p class="text-label-md opacity-90 mb-4">Practice writing HSK 1 Hanzi with our AI stroke recognition tool.</p>
+<button class="bg-white text-primary px-4 py-2 rounded-lg text-label-sm font-bold">Try Now</button>
+</div>
+<div class="absolute right-[-20px] top-[-20px] opacity-10">
+<span class="material-symbols-outlined text-[120px]">translate</span>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center px-gutter-mobile py-2 bg-surface dark:bg-surface-dim border-t border-outline-variant z-50">
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-200 cursor-pointer">
+<span class="material-symbols-outlined">home</span>
+<span class="text-label-sm font-label-sm">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-primary dark:text-inverse-primary font-bold after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:mt-1 scale-95 transition-transform cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<span class="text-label-sm font-label-sm">Learn</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-200 cursor-pointer">
+<span class="material-symbols-outlined">fitness_center</span>
+<span class="text-label-sm font-label-sm">Practice</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-200 cursor-pointer">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="text-label-sm font-label-sm">Progress</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors duration-200 cursor-pointer">
+<span class="material-symbols-outlined">person</span>
+<span class="text-label-sm font-label-sm">Profile</span>
+</div>
+</nav>
+</body></html>
