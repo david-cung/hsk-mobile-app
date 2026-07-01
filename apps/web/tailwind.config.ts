@@ -82,6 +82,7 @@ const config: Config = {
       boxShadow: {
         card: 'var(--shadow-card)',
         button: 'var(--shadow-button)',
+        elevated: 'var(--shadow-elevated)',
       },
       ringWidth: {
         focus: 'var(--focus-ring-width)',

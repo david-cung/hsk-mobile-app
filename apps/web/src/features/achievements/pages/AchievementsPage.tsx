@@ -1,7 +1,15 @@
-import { useId, useMemo } from 'react';
+import { useId } from 'react';
 
-import { TopAppBar } from '@/components/navigation/TopAppBar';
+import { FeaturePageShell } from '@/components/layout/FeaturePageShell';
+import { QueryContent } from '@/components/layout/QueryContent';
+import { StaggerItem, StaggerList } from '@/components/layout/StaggerList';
+import {
+  AchievementCardSkeleton,
+  AchievementsHeroSkeleton,
+} from '@/components/skeletons/FeatureSkeletons';
 import { Text } from '@/components/typography';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { useMockQuery } from '@/hooks/useMockQuery';
 
 import { AchievementCard } from '../components/AchievementCard';
 import type { Achievement } from '../types';
@@ -15,6 +23,7 @@ const MOCK_ACHIEVEMENTS: Achievement[] = [
     icon: 'local_fire_department',
     earned: true,
     earned_at: '2025-10-24T12:00:00.000Z',
+    featured: true,
   },
   {
     id: 2,
@@ -92,58 +101,89 @@ function TrophyIcon() {
   );
 }
 
+function AchievementsSkeleton() {
+  return (
+    <>
+      <AchievementsHeroSkeleton />
+      <div className="grid grid-cols-1 gap-stack-md sm:grid-cols-2">
+        {Array.from({ length: 6 }, (_, index) => (
+          <AchievementCardSkeleton key={index} />
+        ))}
+      </div>
+    </>
+  );
+}
+
 export function AchievementsPage() {
   const summaryHeadingId = useId();
   const listHeadingId = useId();
-  const earnedCount = useMemo(
-    () => MOCK_ACHIEVEMENTS.filter((achievement) => achievement.earned).length,
-    [],
-  );
-  const rankTitle = getRankTitle(earnedCount, MOCK_ACHIEVEMENTS.length);
+  const query = useMockQuery(MOCK_ACHIEVEMENTS);
 
   return (
-    <>
-      <TopAppBar backTo="/profile" title="Achievements" />
-      <main
-        className="mx-auto w-full max-w-lg px-margin-mobile py-stack-lg"
-        id="main-content"
-        tabIndex={-1}
+    <FeaturePageShell backTo="/profile" title="Achievements">
+      <QueryContent
+        data={query.data}
+        empty={
+          <EmptyState
+            description="Complete lessons and reach milestones to earn badges."
+            icon="achievements"
+            title="No achievements yet"
+          />
+        }
+        errorMessage="We could not load your achievements. Please try again."
+        isEmpty={(items) => items.length === 0}
+        isError={query.isError}
+        isLoading={query.isLoading}
+        loading={<AchievementsSkeleton />}
+        onRetry={query.refetch}
       >
-        <section
-          aria-labelledby={summaryHeadingId}
-          className="mb-stack-lg flex flex-col items-center text-center"
-        >
-          <div
-            aria-hidden="true"
-            className="mb-stack-md flex h-24 w-24 items-center justify-center rounded-full bg-secondary-fixed shadow-card"
-          >
-            <TrophyIcon />
-          </div>
-          <h2 className="m-0 text-headline-lg-mobile text-on-surface" id={summaryHeadingId}>
-            {rankTitle}
-          </h2>
-          <Text as="p" className="m-0 mt-stack-sm text-on-surface-variant" variant="label">
-            You&apos;ve unlocked {earnedCount} of {MOCK_ACHIEVEMENTS.length} achievements.
-          </Text>
-        </section>
+        {(achievements) => {
+          const earnedCount = achievements.filter((achievement) => achievement.earned).length;
+          const rankTitle = getRankTitle(earnedCount, achievements.length);
 
-        <section aria-labelledby={listHeadingId}>
-          <h2 className="sr-only" id={listHeadingId}>
-            Achievement list
-          </h2>
-          <ul className="m-0 grid list-none grid-cols-1 gap-stack-md p-0 sm:grid-cols-2">
-            {MOCK_ACHIEVEMENTS.map((achievement) => (
-              <li className="min-h-[11rem]" key={achievement.id}>
-                <AchievementCard
-                  achievement={achievement}
-                  className="h-full"
-                  variant={achievement.code === 'streak_7' ? 'featured' : 'default'}
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
-      </main>
-    </>
+          return (
+            <>
+              <section
+                aria-labelledby={summaryHeadingId}
+                className="mb-stack-lg flex flex-col items-center text-center"
+              >
+                <div
+                  aria-hidden="true"
+                  className="mb-stack-md flex h-24 w-24 items-center justify-center rounded-full bg-secondary-fixed shadow-card motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:scale-105"
+                >
+                  <TrophyIcon />
+                </div>
+                <h2
+                  className="m-0 text-headline-lg-mobile text-on-surface sm:text-headline-lg"
+                  id={summaryHeadingId}
+                >
+                  {rankTitle}
+                </h2>
+                <Text as="p" className="m-0 mt-stack-sm text-on-surface-variant" variant="label">
+                  You&apos;ve unlocked {earnedCount} of {achievements.length} achievements.
+                </Text>
+              </section>
+
+              <section aria-labelledby={listHeadingId}>
+                <h2 className="sr-only" id={listHeadingId}>
+                  Achievement list
+                </h2>
+                <StaggerList className="grid grid-cols-1 gap-stack-md sm:grid-cols-2">
+                  {achievements.map((achievement, index) => (
+                    <StaggerItem className="min-h-[11rem]" index={index} key={achievement.id}>
+                      <AchievementCard
+                        achievement={achievement}
+                        className="h-full"
+                        variant={achievement.featured ? 'featured' : 'default'}
+                      />
+                    </StaggerItem>
+                  ))}
+                </StaggerList>
+              </section>
+            </>
+          );
+        }}
+      </QueryContent>
+    </FeaturePageShell>
   );
 }

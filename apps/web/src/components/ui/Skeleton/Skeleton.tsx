@@ -4,16 +4,18 @@ import { cn } from '@/utils';
 
 type SkeletonProps = HTMLAttributes<HTMLDivElement> & {
   circle?: boolean;
+  shimmer?: boolean;
 };
 
-export function Skeleton({ circle = false, className, ...props }: SkeletonProps) {
+export function Skeleton({ circle = false, shimmer = true, className, ...props }: SkeletonProps) {
   return (
     <div
       {...props}
       aria-hidden="true"
       className={cn(
-        'animate-pulse bg-surface-container-high motion-reduce:animate-none',
-        circle ? 'rounded-full' : 'rounded-md',
+        'bg-surface-container-high motion-reduce:animate-none',
+        shimmer ? 'animate-shimmer' : 'animate-pulse',
+        circle ? 'rounded-full' : 'rounded-lg',
         className,
       )}
     />

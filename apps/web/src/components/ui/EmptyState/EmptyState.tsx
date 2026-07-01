@@ -1,25 +1,35 @@
 import { type ReactNode, useId } from 'react';
 
+import { Card } from '@/components/ui/Card';
+import { StateIcon, type StateIconName } from '@/components/ui/StateIcon';
 import { cn } from '@/utils';
 
 type EmptyStateProps = {
   title: string;
   description?: string;
   action?: ReactNode;
+  icon?: StateIconName;
   className?: string;
 };
 
-export function EmptyState({ title, description, action, className }: EmptyStateProps) {
+export function EmptyState({
+  title,
+  description,
+  action,
+  icon = 'generic',
+  className,
+}: EmptyStateProps) {
   const titleId = useId();
 
   return (
-    <section
+    <Card
       aria-labelledby={titleId}
       className={cn(
-        'flex flex-col items-center px-margin-mobile py-stack-lg text-center',
+        'animate-scale-in flex flex-col items-center border-dashed border-outline-variant/50 bg-surface-container-low/80 px-margin-mobile py-stack-lg text-center',
         className,
       )}
     >
+      <StateIcon className="mb-stack-md" name={icon} />
       <h2 className="m-0 text-headline-md text-on-surface" id={titleId}>
         {title}
       </h2>
@@ -29,7 +39,7 @@ export function EmptyState({ title, description, action, className }: EmptyState
         </p>
       ) : null}
       {action ? <div className="mt-stack-md">{action}</div> : null}
-    </section>
+    </Card>
   );
 }
 

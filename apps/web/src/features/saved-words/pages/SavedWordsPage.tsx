@@ -1,8 +1,12 @@
-import { useCallback, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 
-import { TopAppBar } from '@/components/navigation/TopAppBar';
+import { FeaturePageShell } from '@/components/layout/FeaturePageShell';
+import { QueryContent } from '@/components/layout/QueryContent';
+import { StaggerItem, StaggerList } from '@/components/layout/StaggerList';
+import { FormCardSkeleton, WordCardSkeleton } from '@/components/skeletons/FeatureSkeletons';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { useMockQuery } from '@/hooks/useMockQuery';
 
 import type { SavedWord, SavedWordCreateInput } from '../api/savedWords.schemas';
 import { AddWordForm } from '../components/AddWordForm';
@@ -54,52 +58,85 @@ function createLocalWord(input: SavedWordCreateInput, nextId: number): SavedWord
   };
 }
 
-export function SavedWordsPage() {
-  const listHeadingId = useId();
-  const [words, setWords] = useState<SavedWord[]>(MOCK_SAVED_WORDS);
-  const [nextId, setNextId] = useState(MOCK_SAVED_WORDS.length + 1);
-
-  const handleAddWord = useCallback(
-    (input: SavedWordCreateInput) => {
-      setWords((current) => [createLocalWord(input, nextId), ...current]);
-      setNextId((id) => id + 1);
-    },
-    [nextId],
-  );
-
+function SavedWordsSkeleton() {
   return (
     <>
-      <TopAppBar backTo="/profile" title="Saved Vocabulary" />
-      <main
-        className="mx-auto w-full max-w-lg px-margin-mobile py-stack-lg"
-        id="main-content"
-        tabIndex={-1}
-      >
-        <Card className="mb-stack-lg bg-surface-container-low">
-          <AddWordForm onSubmit={handleAddWord} />
-        </Card>
-
-        {words.length === 0 ? (
-          <EmptyState
-            description="Words you save from lessons or add manually will appear here."
-            title="No saved words yet"
-          />
-        ) : (
-          <section aria-labelledby={listHeadingId}>
-            <h2 className="m-0 mb-stack-md text-headline-md text-on-surface" id={listHeadingId}>
-              Your words
-              <span className="sr-only"> ({words.length} total)</span>
-            </h2>
-            <ul className="m-0 flex list-none flex-col gap-stack-md p-0">
-              {words.map((word) => (
-                <li key={word.id}>
-                  <SavedWordCard word={word} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-      </main>
+      <FormCardSkeleton />
+      <div className="flex flex-col gap-stack-md">
+        <WordCardSkeleton />
+        <WordCardSkeleton />
+        <WordCardSkeleton />
+      </div>
     </>
+  );
+}
+
+export function SavedWordsPage() {
+  const listHeadingId = useId();
+  const [words, setWords] = useState<SavedWord[] | null>(null);
+  const query = useMockQuery(MOCK_SAVED_WORDS);
+
+  useEffect(() => {
+    if (query.isSuccess && query.data) {
+      setWords((current) => current ?? query.data ?? []);
+    }
+  }, [query.isSuccess, query.data]);
+
+  const handleAddWord = useCallback((input: SavedWordCreateInput) => {
+    setWords((current) => {
+      const list = current ?? [];
+      const nextId = list.reduce((maxId, word) => Math.max(maxId, word.id), 0) + 1;
+      return [createLocalWord(input, nextId), ...list];
+    });
+  }, []);
+
+  const displayWords = words ?? [];
+
+  return (
+    <FeaturePageShell backTo="/profile" title="Saved Words">
+      <QueryContent
+        data={query.isSuccess ? displayWords : undefined}
+        empty={
+          <>
+            <Card className="mb-stack-lg bg-surface-container-low">
+              <AddWordForm onSubmit={handleAddWord} />
+            </Card>
+            <EmptyState
+              description="Words you save from lessons or add manually will appear here."
+              icon="vocabulary"
+              title="No saved words yet"
+            />
+          </>
+        }
+        errorMessage="We could not load your saved vocabulary. Please try again."
+        isEmpty={(items) => items.length === 0}
+        isError={query.isError}
+        isLoading={query.isLoading}
+        loading={<SavedWordsSkeleton />}
+        onRetry={query.refetch}
+      >
+        {(items) => (
+          <>
+            <Card className="mb-stack-lg bg-surface-container-low transition-shadow duration-200 motion-safe:hover:shadow-elevated">
+              <AddWordForm onSubmit={handleAddWord} />
+            </Card>
+
+            <section aria-labelledby={listHeadingId}>
+              <h2 className="m-0 mb-stack-md text-headline-md text-on-surface" id={listHeadingId}>
+                Your words
+                <span className="sr-only"> ({items.length} total)</span>
+              </h2>
+              <StaggerList className="flex flex-col gap-stack-md">
+                {items.map((word, index) => (
+                  <StaggerItem index={index} key={word.id}>
+                    <SavedWordCard word={word} />
+                  </StaggerItem>
+                ))}
+              </StaggerList>
+            </section>
+          </>
+        )}
+      </QueryContent>
+    </FeaturePageShell>
   );
 }

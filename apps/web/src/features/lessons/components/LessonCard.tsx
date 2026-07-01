@@ -2,21 +2,13 @@ import { Link } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
+import { getLessonTypeLabel } from '@/features/lessons/constants/lessonTypeLabels';
 import { cn } from '@/utils';
 
 import type { LessonListItem, LessonStatus } from '../api/lessons.schemas';
 
 type LessonCardProps = {
   lesson: LessonListItem;
-};
-
-const lessonTypeLabels: Record<LessonListItem['lesson_type'], string> = {
-  vocabulary: 'Vocabulary',
-  grammar: 'Grammar',
-  listening: 'Listening',
-  reading: 'Reading',
-  writing: 'Writing',
-  mixed: 'Mixed',
 };
 
 const statusBorderStyles: Record<LessonStatus, string> = {
@@ -75,7 +67,7 @@ export function LessonCard({ lesson }: LessonCardProps) {
       >
         <div className="min-w-0 flex-1">
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            <Badge variant="outline">{lessonTypeLabels[lesson.lesson_type]}</Badge>
+            <Badge variant="outline">{getLessonTypeLabel(lesson.lesson_type)}</Badge>
           </div>
           <h3 className="m-0 text-headline-md text-on-surface">{lesson.title}</h3>
           {lesson.description ? (

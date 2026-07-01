@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useId } from 'react';
 
 import { cn } from '@/utils';
+import { handleRadioGroupKeyDown } from '@/utils/a11y/radioGroup';
 
 import { GoalCard, type OnboardingGoal, type OnboardingGoalId } from './GoalCard';
 
@@ -39,6 +40,11 @@ const ONBOARDING_GOALS: OnboardingGoal[] = [
   { id: 'culture', label: 'Culture', icon: GOAL_ICONS.culture },
 ];
 
+const ONBOARDING_GOAL_OPTIONS = ONBOARDING_GOALS.map((goal) => ({
+  value: goal.id,
+  label: goal.label,
+}));
+
 type GoalStepProps = {
   selectedGoal: OnboardingGoalId;
   onSelectGoal: (goalId: OnboardingGoalId) => void;
@@ -59,7 +65,15 @@ export function GoalStep({ selectedGoal, onSelectGoal, className }: GoalStepProp
         </p>
       </div>
 
-      <div aria-labelledby={headingId} className="grid grid-cols-2 gap-stack-md" role="radiogroup">
+      <div
+        aria-labelledby={headingId}
+        className="grid grid-cols-1 gap-stack-md sm:grid-cols-2"
+        onKeyDown={(event) => {
+          handleRadioGroupKeyDown(event, ONBOARDING_GOAL_OPTIONS, selectedGoal, onSelectGoal);
+        }}
+        role="radiogroup"
+        tabIndex={0}
+      >
         {ONBOARDING_GOALS.map((goal) => (
           <GoalCard
             goal={goal}
