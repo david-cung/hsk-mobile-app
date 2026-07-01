@@ -1,79 +1,52 @@
-# HSK Chinese Master
+# HSK Chinese Master — React Native CLI
 
-Mobile app for learning Chinese (HSK-aligned) with React Native (Expo) and FastAPI + PostgreSQL backend.
+Native mobile app (iOS & Android) using **React Native CLI** (not Expo).
 
-## Project structure
+## Requirements
 
-```
-apps/mobile/            React Native CLI app (iOS & Android)
-apps/mobile-expo-legacy/  Old Expo project (archived)
-apps/api/               FastAPI backend
-scholar_redux/          Design system reference
-*/code.html             UI prototypes (reference only)
-```
+- Node.js 20+
+- Xcode + CocoaPods (iOS)
+- Android Studio + SDK (Android)
+- API running at `http://localhost:8000` (see repo root README)
 
-## Quick start
+## API URL
 
-### 1. Database & API
+Edit [`src/config.ts`](src/config.ts):
 
-```bash
-# Start PostgreSQL (requires Docker Desktop running)
-make db-up
+| Target | URL |
+|--------|-----|
+| iOS Simulator | `http://localhost:8000` |
+| Android Emulator | `http://10.0.2.2:8000` (default) |
+| Physical device | Your Mac LAN IP, e.g. `http://192.168.1.10:8000` |
 
-# API setup (first time)
-cd apps/api
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-
-# From repo root:
-make api-seed    # load HSK levels, lessons, questions
-make api-dev     # http://localhost:8000
-```
-
-Migrations (optional, production): `cd apps/api && alembic upgrade head`
-
-API docs: http://localhost:8000/docs
-
-### 2. Mobile app (React Native CLI)
+## Run
 
 ```bash
-cd apps/mobile
-npm install
-cd ios && bundle exec pod install && cd ..   # first time iOS only
-
-# Terminal 1
+# Terminal 1 — Metro
 npm start
 
-# Terminal 2
-npm run ios      # or: npm run android
+# Terminal 2 — iOS
+npm run ios
+
+# Terminal 2 — Android
+npm run android
 ```
 
-API URL: edit `apps/mobile/src/config.ts` (Android emulator uses `10.0.2.2` by default).
-
-### Demo account
-
-Register in the app, or use the API:
+First iOS run (if needed):
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"demo@hsk.app","password":"demo123","display_name":"Alex"}'
+cd ios && bundle exec pod install && cd ..
 ```
 
-## Features (MVP)
+## Stack
 
-- Auth (register/login, JWT)
-- Onboarding (goal, HSK level, daily minutes)
-- Home dashboard with progress stats
-- HSK levels & lessons
-- Multiple-choice quiz with scoring
-- Progress dashboard
-- Saved words, achievements, mock test intro
-- Scholar Redux design tokens
+- React Native 0.85
+- React Navigation
+- TanStack Query
+- `react-native-keychain` (auth token)
+- `react-native-tts` (Chinese pronunciation)
+- `react-native-vector-icons` (Ionicons)
 
-## Tests
+## Legacy Expo app
 
-```bash
-cd apps/api && .venv/bin/pytest
-```
+Previous Expo project is preserved at [`../mobile-expo-legacy`](../mobile-expo-legacy) for reference.
