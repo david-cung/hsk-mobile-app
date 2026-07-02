@@ -32,9 +32,11 @@ export function ProgressScreen() {
         <Text style={styles.cardTitle}>HSK Level {data?.current_hsk_level ?? 1}</Text>
         <Text style={styles.cardSub}>Target: HSK {data?.target_hsk_level ?? 1}</Text>
         <View style={{ marginTop: spacing.stackMd }}>
-          <ProgressBar progress={65} />
+          <ProgressBar progress={data?.exam_readiness_percent ?? 0} />
         </View>
-        <Text style={styles.meta}>Keep practicing to reach your target</Text>
+        <Text style={styles.meta}>
+          {data?.current_level_completed_lessons ?? 0} / {data?.current_level_total_lessons ?? 0} lessons at this level
+        </Text>
       </Card>
 
       <View style={styles.grid}>
@@ -61,12 +63,32 @@ export function ProgressScreen() {
         <Text style={styles.statValue}>{data?.study_streak_days ?? 0} days</Text>
       </Card>
 
+      {data?.skill_breakdown?.length ? (
+        <>
+          <Text style={styles.sectionTitle}>Skill Readiness</Text>
+          {data.skill_breakdown.map((skill) => {
+            const percent = skill.total ? Math.round((skill.completed / skill.total) * 100) : 0;
+            return (
+              <Card key={skill.lesson_type} style={styles.attemptCard}>
+                <View style={styles.skillHeader}>
+                  <Text style={styles.attemptTitle}>{skill.lesson_type}</Text>
+                  <Text style={styles.attemptScore}>
+                    {skill.average_score != null ? `${skill.average_score}% avg` : `${percent}%`}
+                  </Text>
+                </View>
+                <ProgressBar progress={percent} />
+              </Card>
+            );
+          })}
+        </>
+      ) : null}
+
       {data?.recent_attempts && data.recent_attempts.length > 0 && (
         <>
           <Text style={styles.sectionTitle}>Recent Quizzes</Text>
           {data.recent_attempts.map((a) => (
             <Card key={a.attempt_id} style={styles.attemptCard}>
-              <Text style={styles.attemptTitle}>Lesson #{a.lesson_id}</Text>
+              <Text style={styles.attemptTitle}>{a.lesson_title ?? `Lesson #${a.lesson_id}`}</Text>
               <Text style={styles.attemptScore}>Score: {a.score}%</Text>
             </Card>
           ))}
@@ -92,4 +114,5 @@ const styles = StyleSheet.create({
   attemptCard: { marginBottom: spacing.stackSm },
   attemptTitle: { ...typography.labelMd, color: colors.onSurface },
   attemptScore: { ...typography.bodyMd, color: colors.primary, marginTop: 4 },
+  skillHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.stackSm },
 });

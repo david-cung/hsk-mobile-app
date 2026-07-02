@@ -9,6 +9,7 @@ import { LessonDetailScreen } from '../screens/LessonDetailScreen';
 import { LessonListScreen } from '../screens/LessonListScreen';
 import { DailyReviewScreen } from '../screens/DailyReviewScreen';
 import { MockTestsScreen } from '../screens/MockTestsScreen';
+import { MockTestSessionScreen } from '../screens/MockTestSessionScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { QuizResultScreen } from '../screens/QuizResultScreen';
 import { QuizScreen } from '../screens/QuizScreen';
@@ -62,6 +63,7 @@ export function RootNavigator() {
             <Stack.Screen name="SavedWords" component={SavedWordsScreen} options={{ title: 'Saved Words' }} />
             <Stack.Screen name="Achievements" component={AchievementsScreen} options={{ title: 'Achievements' }} />
             <Stack.Screen name="MockTests" component={MockTestsScreen} options={{ title: 'Mock Tests' }} />
+            <Stack.Screen name="MockTestSession" component={MockTestSessionScreen} options={{ title: 'Mock Test' }} />
             <Stack.Screen name="DailyReview" component={DailyReviewScreen} options={{ title: 'Daily Review' }} />
             <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
           </>

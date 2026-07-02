@@ -3,7 +3,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { contentApi, learningApi } from '../api/endpoints';
+import { learningApi } from '../api/endpoints';
 import { Card } from '../components/Card';
 import { useAuth } from '../context/AuthContext';
 import type { RootStackParamList } from '../navigation/types';
@@ -20,18 +20,6 @@ export function MockTestsScreen() {
     queryFn: learningApi.mockTests,
   });
 
-  const { data: levels } = useQuery({
-    queryKey: ['levels'],
-    queryFn: contentApi.levels,
-  });
-
-  const handleStart = (hskLevel: number) => {
-    const level = levels?.find((l) => l.level_number === hskLevel);
-    if (level) {
-      navigation.navigate('LessonList', { levelId: level.id, levelTitle: level.title });
-    }
-  };
-
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.intro}>
@@ -43,14 +31,24 @@ export function MockTestsScreen() {
         <ActivityIndicator color={colors.primary} />
       ) : (
         tests?.map((test) => (
-          <Pressable key={test.id} onPress={() => handleStart(test.hsk_level)}>
+          <Pressable
+            key={test.id}
+            onPress={() =>
+              navigation.navigate('MockTestSession', {
+                mockTestId: test.id,
+                title: test.title,
+                hskLevel: test.hsk_level,
+                durationMinutes: test.duration_minutes,
+              })
+            }
+          >
             <Card style={styles.testCard}>
               <Text style={styles.testTitle}>{test.title}</Text>
               <View style={styles.meta}>
                 <Text style={styles.metaText}>{test.duration_minutes} min</Text>
                 <Text style={styles.metaText}>{test.question_count} questions</Text>
               </View>
-              <Text style={styles.start}>Tap to start →</Text>
+              <Text style={styles.start}>Tap to start</Text>
             </Card>
           </Pressable>
         ))

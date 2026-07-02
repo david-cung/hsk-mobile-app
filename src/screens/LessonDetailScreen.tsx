@@ -1,9 +1,9 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useQuery } from '@tanstack/react-query';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { contentApi } from '../api/endpoints';
+import { contentApi, learningApi } from '../api/endpoints';
 import type { LessonContent } from '../api/types';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -24,13 +24,20 @@ const TYPE_LABELS: Record<string, string> = {
   mixed: 'Mixed Lesson',
 };
 
-function VocabularySection({ items }: { items: NonNullable<LessonContent['vocabulary']> }) {
+function VocabularySection({
+  items,
+  onSave,
+}: {
+  items: NonNullable<LessonContent['vocabulary']>;
+  onSave: (word: NonNullable<LessonContent['vocabulary']>[number]) => void;
+}) {
   return (
     <>
       <Text style={styles.section}>Vocabulary</Text>
       {items.map((word) => (
         <Card key={word.hanzi} style={styles.block}>
           <ChineseLine line={word} large />
+          <Button title="Save Word" variant="ghost" onPress={() => onSave(word)} style={styles.saveButton} />
         </Card>
       ))}
     </>
@@ -126,7 +133,15 @@ function WritingSection({ content }: { content: LessonContent }) {
   );
 }
 
-function LessonBody({ lessonType, content }: { lessonType: string; content: LessonContent | null }) {
+function LessonBody({
+  lessonType,
+  content,
+  onSaveWord,
+}: {
+  lessonType: string;
+  content: LessonContent | null;
+  onSaveWord: (word: NonNullable<LessonContent['vocabulary']>[number]) => void;
+}) {
   if (!content) return null;
 
   switch (lessonType) {
@@ -139,26 +154,41 @@ function LessonBody({ lessonType, content }: { lessonType: string; content: Less
     case 'writing':
       return <WritingSection content={content} />;
     case 'vocabulary':
-      return content.vocabulary ? <VocabularySection items={content.vocabulary} /> : null;
+      return content.vocabulary ? <VocabularySection items={content.vocabulary} onSave={onSaveWord} /> : null;
     case 'mixed':
       return (
         <>
-          {content.vocabulary ? <VocabularySection items={content.vocabulary} /> : null}
+          {content.vocabulary ? <VocabularySection items={content.vocabulary} onSave={onSaveWord} /> : null}
           {content.grammar_points ? <GrammarSection points={content.grammar_points} /> : null}
         </>
       );
     default:
-      return content.vocabulary ? <VocabularySection items={content.vocabulary} /> : null;
+      return content.vocabulary ? <VocabularySection items={content.vocabulary} onSave={onSaveWord} /> : null;
   }
 }
 
 export function LessonDetailScreen() {
   const { params } = useRoute<Route>();
   const navigation = useNavigation<Nav>();
+  const queryClient = useQueryClient();
 
   const { data: lesson, isLoading } = useQuery({
     queryKey: ['lesson', params.lessonId],
     queryFn: () => contentApi.lesson(params.lessonId),
+  });
+  const saveWordMutation = useMutation({
+    mutationFn: (word: NonNullable<LessonContent['vocabulary']>[number]) =>
+      learningApi.addSavedWord({
+        hanzi: word.hanzi,
+        pinyin: word.pinyin,
+        meaning: word.meaning,
+        hsk_level: lesson?.hsk_level_id,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['savedWords'] });
+      Alert.alert('Saved', 'Word added to your saved list.');
+    },
+    onError: (e) => Alert.alert('Error', e instanceof Error ? e.message : 'Failed to save word'),
   });
 
   if (isLoading || !lesson) {
@@ -177,7 +207,11 @@ export function LessonDetailScreen() {
       <Text style={styles.title}>{lesson.title}</Text>
       {lesson.description ? <Text style={styles.description}>{lesson.description}</Text> : null}
 
-      <LessonBody lessonType={lesson.lesson_type} content={lesson.content} />
+      <LessonBody
+        lessonType={lesson.lesson_type}
+        content={lesson.content}
+        onSaveWord={(word) => saveWordMutation.mutate(word)}
+      />
 
       <Button
         title="Start Quiz"
@@ -243,4 +277,5 @@ const styles = StyleSheet.create({
   meaning: { ...typography.bodyLg, color: colors.onSurface, marginTop: 4 },
   strokes: { ...typography.labelSm, color: colors.tertiary, marginTop: spacing.stackSm },
   quizButton: { marginTop: spacing.stackLg },
+  saveButton: { alignSelf: 'flex-start', marginTop: spacing.stackSm },
 });

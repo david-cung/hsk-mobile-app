@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { profileApi } from '../api/endpoints';
 import { Button } from '../components/Button';
@@ -7,17 +7,19 @@ import { useAuth } from '../context/AuthContext';
 import { colors, radius, spacing, typography } from '../theme';
 
 const GOALS = [
-  { label: 'Travel', icon: '✈️' },
-  { label: 'Business', icon: '💼' },
-  { label: 'HSK Exam', icon: '📝' },
-  { label: 'Culture', icon: '🏮' },
+  { label: 'Travel', marker: 'T', value: 'travel' },
+  { label: 'Business', marker: 'B', value: 'business' },
+  { label: 'HSK Exam', marker: 'H', value: 'hsk_exam' },
+  { label: 'Culture', marker: 'C', value: 'culture' },
 ];
 
-const LEVELS = [1, 2, 3, 4, 5, 6];
+const LEVELS = [1, 2, 3, 4, 5];
 
 export function OnboardingScreen() {
   const { refreshProfile } = useAuth();
   const [step, setStep] = useState(0);
+  const [learningGoal, setLearningGoal] = useState('hsk_exam');
+  const [currentLevel, setCurrentLevel] = useState(1);
   const [targetLevel, setTargetLevel] = useState(1);
   const [dailyGoal, setDailyGoal] = useState(30);
   const [loading, setLoading] = useState(false);
@@ -26,8 +28,9 @@ export function OnboardingScreen() {
     setLoading(true);
     try {
       await profileApi.update({
+        learning_goal: learningGoal,
         target_hsk_level: targetLevel,
-        current_hsk_level: 1,
+        current_hsk_level: currentLevel,
         daily_goal_minutes: dailyGoal,
         onboarding_completed: true,
       });
@@ -56,11 +59,15 @@ export function OnboardingScreen() {
         <>
           <Text style={styles.title}>What is your goal?</Text>
           <View style={styles.grid}>
-            {GOALS.map((g) => (
-              <View key={g.label} style={styles.goalCard}>
-                <Text style={styles.goalIcon}>{g.icon}</Text>
-                <Text style={styles.goalLabel}>{g.label}</Text>
-              </View>
+            {GOALS.map((goal) => (
+              <Pressable
+                key={goal.value}
+                style={[styles.goalCard, learningGoal === goal.value && styles.goalSelected]}
+                onPress={() => setLearningGoal(goal.value)}
+              >
+                <Text style={styles.goalIcon}>{goal.marker}</Text>
+                <Text style={styles.goalLabel}>{goal.label}</Text>
+              </Pressable>
             ))}
           </View>
           <Button title="Continue" onPress={() => setStep(2)} />
@@ -69,26 +76,44 @@ export function OnboardingScreen() {
 
       {step === 2 && (
         <>
-          <Text style={styles.title}>Choose your target HSK level</Text>
+          <Text style={styles.title}>Set your HSK path</Text>
+          <Text style={styles.subtitle}>Current HSK level</Text>
           <View style={styles.levelRow}>
-            {LEVELS.map((l) => (
+            {LEVELS.map((level) => (
               <Button
-                key={l}
-                title={`HSK ${l}`}
-                variant={targetLevel === l ? 'primary' : 'ghost'}
-                onPress={() => setTargetLevel(l)}
+                key={level}
+                title={`HSK ${level}`}
+                variant={currentLevel === level ? 'primary' : 'ghost'}
+                onPress={() => {
+                  setCurrentLevel(level);
+                  setTargetLevel((target) => Math.max(target, level));
+                }}
                 style={styles.levelChip}
               />
             ))}
           </View>
+
+          <Text style={styles.subtitle}>Target HSK level</Text>
+          <View style={styles.levelRow}>
+            {LEVELS.map((level) => (
+              <Button
+                key={level}
+                title={`HSK ${level}`}
+                variant={targetLevel === level ? 'primary' : 'ghost'}
+                onPress={() => setTargetLevel(Math.max(level, currentLevel))}
+                style={styles.levelChip}
+              />
+            ))}
+          </View>
+
           <Text style={styles.subtitle}>Daily study goal (minutes)</Text>
           <View style={styles.levelRow}>
-            {[15, 30, 45, 60].map((m) => (
+            {[15, 30, 45, 60].map((minutes) => (
               <Button
-                key={m}
-                title={`${m}m`}
-                variant={dailyGoal === m ? 'secondary' : 'ghost'}
-                onPress={() => setDailyGoal(m)}
+                key={minutes}
+                title={`${minutes}m`}
+                variant={dailyGoal === minutes ? 'secondary' : 'ghost'}
+                onPress={() => setDailyGoal(minutes)}
                 style={styles.levelChip}
               />
             ))}
@@ -122,7 +147,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.surfaceContainer,
   },
-  goalIcon: { fontSize: 32, marginBottom: spacing.stackSm },
+  goalSelected: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryFixed,
+  },
+  goalIcon: { fontSize: 24, color: colors.primary, fontWeight: '700', marginBottom: spacing.stackSm },
   goalLabel: { ...typography.labelMd, color: colors.onSurface },
   levelRow: {
     flexDirection: 'row',

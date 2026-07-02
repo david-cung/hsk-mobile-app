@@ -13,6 +13,16 @@ import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
+function tabBarIcon(routeName: string, color: string, size: number, focused: boolean) {
+  const icons: Record<string, IoniconName> = {
+    Home: focused ? 'home' : 'home-outline',
+    Practice: focused ? 'book' : 'book-outline',
+    Progress: focused ? 'stats-chart' : 'stats-chart-outline',
+    Profile: focused ? 'person' : 'person-outline',
+  };
+  return <Ionicons name={icons[routeName]} size={size} color={color} />;
+}
+
 export function MainTabs() {
   return (
     <Tab.Navigator
@@ -27,15 +37,7 @@ export function MainTabs() {
           height: 60,
         },
         tabBarLabelStyle: typography.labelSm,
-        tabBarIcon: ({ color, size, focused }) => {
-          const icons: Record<string, IoniconName> = {
-            Home: focused ? 'home' : 'home-outline',
-            Practice: focused ? 'book' : 'book-outline',
-            Progress: focused ? 'stats-chart' : 'stats-chart-outline',
-            Profile: focused ? 'person' : 'person-outline',
-          };
-          return <Ionicons name={icons[route.name]} size={size} color={color} />;
-        },
+        tabBarIcon: ({ color, size, focused }) => tabBarIcon(route.name, color, size, focused),
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />

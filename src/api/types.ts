@@ -10,6 +10,7 @@ export interface TokenResponse {
 }
 
 export interface Profile {
+  learning_goal: string | null;
   target_hsk_level: number;
   current_hsk_level: number;
   daily_goal_minutes: number;
@@ -77,18 +78,21 @@ export interface Question {
   sort_order: number;
 }
 
+export interface QuestionResult {
+  question_id: number;
+  prompt?: string;
+  correct: boolean;
+  user_answer: string;
+  correct_answer: string;
+  explanation?: string | null;
+}
+
 export interface QuizSubmitResult {
   attempt_id: number;
   score: number;
   total_questions: number;
   correct_count: number;
-  results: Array<{
-    question_id: number;
-    correct: boolean;
-    user_answer: string;
-    correct_answer: string;
-    explanation?: string;
-  }>;
+  results: QuestionResult[];
 }
 
 export interface ProgressDashboard {
@@ -99,9 +103,21 @@ export interface ProgressDashboard {
   study_streak_days: number;
   lessons_completed: number;
   lessons_in_progress: number;
+  total_lessons: number;
+  current_level_total_lessons: number;
+  current_level_completed_lessons: number;
+  current_level_progress_percent: number;
+  exam_readiness_percent: number;
+  skill_breakdown: Array<{
+    lesson_type: string;
+    completed: number;
+    total: number;
+    average_score: number | null;
+  }>;
   recent_attempts: Array<{
     attempt_id: number;
     lesson_id: number;
+    lesson_title?: string | null;
     score: number;
     finished_at: string;
   }>;
@@ -114,6 +130,18 @@ export interface SavedWord {
   meaning: string | null;
   hsk_level: number | null;
   saved_at: string;
+}
+
+export interface Mistake {
+  attempt_id: number;
+  lesson_id: number;
+  lesson_title: string | null;
+  question_id: number;
+  prompt: string | null;
+  user_answer: string;
+  correct_answer: string;
+  explanation?: string | null;
+  finished_at: string;
 }
 
 export interface Achievement {
@@ -132,4 +160,9 @@ export interface MockTest {
   hsk_level: number;
   duration_minutes: number;
   question_count: number;
+}
+
+export interface MockTestQuestion extends Question {
+  lesson_id: number;
+  lesson_title: string;
 }

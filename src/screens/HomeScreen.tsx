@@ -40,11 +40,12 @@ export function HomeScreen() {
   });
 
   const currentLevel = levels?.find((l) => l.level_number === (profile?.current_hsk_level ?? 1));
+  const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening';
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>Good morning, {user?.display_name ?? 'Learner'}</Text>
+        <Text style={styles.greeting}>{greeting}, {user?.display_name ?? 'Learner'}</Text>
         <Text style={styles.subGreeting}>Ready for your daily practice?</Text>
       </View>
 
@@ -63,7 +64,7 @@ export function HomeScreen() {
           <ProgressBar
             progress={
               dashboard
-                ? (dashboard.lessons_completed / Math.max(dashboard.lessons_completed + 1, 1)) * 100
+                ? dashboard.current_level_progress_percent
                 : 0
             }
           />
@@ -97,7 +98,7 @@ export function HomeScreen() {
         >
           <View style={styles.hero}>
             <Text style={styles.heroLabel}>NEXT LESSON</Text>
-            <Text style={styles.heroTitle}>Continue Learning</Text>
+            <Text style={styles.heroTitle}>Continue HSK {currentLevel.level_number}</Text>
             <View style={styles.heroButton}>
               <Text style={styles.heroButtonText}>Continue Lesson</Text>
               <Ionicons name="play" size={18} color={colors.primary} />

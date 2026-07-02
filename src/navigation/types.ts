@@ -1,3 +1,5 @@
+import type { QuestionResult } from '../api/types';
+
 export type RootStackParamList = {
   Splash: undefined;
   Onboarding: undefined;
@@ -17,10 +19,13 @@ export type RootStackParamList = {
     score: number;
     correctCount: number;
     totalQuestions: number;
+    results?: QuestionResult[];
+    source?: 'lesson' | 'mock';
   };
   SavedWords: undefined;
   Achievements: undefined;
   MockTests: undefined;
+  MockTestSession: { mockTestId: number; title: string; hskLevel: number; durationMinutes: number };
   DailyReview: undefined;
   Settings: undefined;
 };

@@ -11,8 +11,9 @@ import { colors, spacing, typography } from '../theme';
 
 const ICON_MAP: Record<string, IoniconName> = {
   school: 'school',
-  local_fire_department: 'flame',
-  emoji_events: 'trophy',
+  flame: 'flame',
+  bookmark: 'bookmark',
+  trophy: 'trophy',
 };
 
 export function AchievementsScreen() {

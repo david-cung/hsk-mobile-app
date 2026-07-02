@@ -44,6 +44,8 @@ export function QuizScreen() {
         score: result.score,
         correctCount: result.correct_count,
         totalQuestions: result.total_questions,
+        results: result.results,
+        source: 'lesson',
       });
     },
     onError: (e) => Alert.alert('Error', e instanceof Error ? e.message : 'Submit failed'),

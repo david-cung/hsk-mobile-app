@@ -4,7 +4,9 @@ import type {
   HskLevel,
   LessonDetail,
   LessonListItem,
+  Mistake,
   MockTest,
+  MockTestQuestion,
   Profile,
   ProgressDashboard,
   Question,
@@ -61,6 +63,7 @@ export const progressApi = {
 
 export const learningApi = {
   savedWords: () => apiFetch<SavedWord[]>('/api/v1/learning/saved-words'),
+  mistakes: () => apiFetch<Mistake[]>('/api/v1/learning/mistakes'),
   addSavedWord: (data: { hanzi: string; pinyin?: string; meaning?: string; hsk_level?: number }) =>
     apiFetch<SavedWord>('/api/v1/learning/saved-words', {
       method: 'POST',
@@ -70,4 +73,11 @@ export const learningApi = {
     apiFetch<void>(`/api/v1/learning/saved-words/${id}`, { method: 'DELETE' }),
   achievements: () => apiFetch<Achievement[]>('/api/v1/learning/achievements'),
   mockTests: () => apiFetch<MockTest[]>('/api/v1/learning/mock-tests', { auth: false }),
+  mockTestQuestions: (id: number) =>
+    apiFetch<MockTestQuestion[]>(`/api/v1/learning/mock-tests/${id}/questions`),
+  submitMockTest: (id: number, answers: Record<string, string>) =>
+    apiFetch<QuizSubmitResult>(`/api/v1/learning/mock-tests/${id}/submit`, {
+      method: 'POST',
+      body: JSON.stringify({ answers }),
+    }),
 };
