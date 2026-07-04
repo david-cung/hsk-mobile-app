@@ -1,10 +1,11 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { learningApi } from '../api/endpoints';
 import { Card } from '../components/Card';
+import { ScreenState } from '../components/ScreenState';
 import { useAuth } from '../context/AuthContext';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
@@ -15,7 +16,7 @@ export function MockTestsScreen() {
   const navigation = useNavigation<Nav>();
   const { profile } = useAuth();
 
-  const { data: tests, isLoading } = useQuery({
+  const { data: tests, isLoading, isError, refetch } = useQuery({
     queryKey: ['mockTests'],
     queryFn: learningApi.mockTests,
   });
@@ -28,11 +29,29 @@ export function MockTestsScreen() {
       </Text>
 
       {isLoading ? (
-        <ActivityIndicator color={colors.primary} />
+        <ScreenState type="loading" title="Loading mock tests" />
+      ) : isError ? (
+        <ScreenState
+          type="error"
+          title="Could not load mock tests"
+          message="Please check your connection and try again."
+          actionLabel="Try Again"
+          onAction={() => {
+            refetch();
+          }}
+        />
+      ) : !tests?.length ? (
+        <ScreenState
+          type="empty"
+          title="No mock tests yet"
+          message="Mock tests appear after they are added for your HSK levels."
+        />
       ) : (
         tests?.map((test) => (
           <Pressable
             key={test.id}
+            accessibilityRole="button"
+            accessibilityLabel={`${test.title}, ${test.duration_minutes} minutes, ${test.question_count} questions`}
             onPress={() =>
               navigation.navigate('MockTestSession', {
                 mockTestId: test.id,

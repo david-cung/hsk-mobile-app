@@ -1,7 +1,6 @@
 import { useRootNavigation } from '../navigation/useRootNavigation';
 import { useQuery } from '@tanstack/react-query';
 import {
-  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +12,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { contentApi, progressApi } from '../api/endpoints';
 import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
+import { ScreenState } from '../components/ScreenState';
 import { useAuth } from '../context/AuthContext';
 import { colors, spacing, typography } from '../theme';
 
@@ -29,12 +29,17 @@ export function HomeScreen() {
   const navigation = useRootNavigation();
   const { user, profile } = useAuth();
 
-  const { data: dashboard, isLoading } = useQuery({
+  const {
+    data: dashboard,
+    isLoading: isDashboardLoading,
+    isError: isDashboardError,
+    refetch: refetchDashboard,
+  } = useQuery({
     queryKey: ['dashboard'],
     queryFn: progressApi.dashboard,
   });
 
-  const { data: levels } = useQuery({
+  const { data: levels, isLoading: isLevelsLoading } = useQuery({
     queryKey: ['levels'],
     queryFn: contentApi.levels,
   });
@@ -49,8 +54,20 @@ export function HomeScreen() {
         <Text style={styles.subGreeting}>Ready for your daily practice?</Text>
       </View>
 
-      {isLoading ? (
-        <ActivityIndicator color={colors.primary} style={styles.loader} />
+      {isDashboardLoading ? (
+        <ScreenState type="loading" title="Loading your progress" compact style={styles.state} />
+      ) : isDashboardError ? (
+        <ScreenState
+          type="error"
+          title="Progress unavailable"
+          message="Check your connection and try again."
+          actionLabel="Try Again"
+          onAction={() => {
+            refetchDashboard();
+          }}
+          compact
+          style={styles.state}
+        />
       ) : (
         <Card style={styles.progressCard}>
           <View style={styles.row}>
@@ -87,7 +104,9 @@ export function HomeScreen() {
         </Card>
       </View>
 
-      {currentLevel && (
+      {isLevelsLoading ? (
+        <ScreenState type="loading" title="Loading lessons" compact style={styles.state} />
+      ) : currentLevel ? (
         <Pressable
           onPress={() =>
             navigation.navigate('LessonList', {
@@ -95,6 +114,8 @@ export function HomeScreen() {
               levelTitle: currentLevel.title,
             })
           }
+          accessibilityRole="button"
+          accessibilityLabel={`Continue HSK ${currentLevel.level_number}`}
         >
           <View style={styles.hero}>
             <Text style={styles.heroLabel}>NEXT LESSON</Text>
@@ -105,33 +126,48 @@ export function HomeScreen() {
             </View>
           </View>
         </Pressable>
+      ) : (
+        <ScreenState
+          type="empty"
+          title="No current level found"
+          message="Update your HSK level in Settings to continue lessons."
+          compact
+          style={styles.state}
+        />
       )}
 
       <Text style={styles.sectionTitle}>Focus Areas</Text>
       <View style={styles.focusGrid}>
-        {FOCUS_AREAS.map((area) => (
-          <Pressable
-            key={area.label}
-            style={styles.focusItem}
-            onPress={() => {
-              if ('route' in area && area.route) {
-                navigation.navigate(area.route);
-              } else if (currentLevel && 'type' in area) {
-                navigation.push('LessonList', {
-                  levelId: currentLevel.id,
-                  levelTitle: currentLevel.title,
-                  lessonType: area.type,
-                  focusLabel: area.label,
-                });
-              }
-            }}
-          >
-            <View style={styles.focusIcon}>
-              <Ionicons name={area.icon} size={24} color={colors.primary} />
-            </View>
-            <Text style={styles.focusLabel}>{area.label}</Text>
-          </Pressable>
-        ))}
+        {FOCUS_AREAS.map((area) => {
+          const disabled = !('route' in area) && !currentLevel;
+          return (
+            <Pressable
+              key={area.label}
+              style={[styles.focusItem, disabled && styles.focusDisabled]}
+              disabled={disabled}
+              accessibilityRole="button"
+              accessibilityState={{ disabled }}
+              accessibilityLabel={area.label}
+              onPress={() => {
+                if ('route' in area && area.route) {
+                  navigation.navigate(area.route);
+                } else if (currentLevel && 'type' in area) {
+                  navigation.push('LessonList', {
+                    levelId: currentLevel.id,
+                    levelTitle: currentLevel.title,
+                    lessonType: area.type,
+                    focusLabel: area.label,
+                  });
+                }
+              }}
+            >
+              <View style={styles.focusIcon}>
+                <Ionicons name={area.icon} size={24} color={colors.primary} />
+              </View>
+              <Text style={styles.focusLabel}>{area.label}</Text>
+            </Pressable>
+          );
+        })}
       </View>
     </ScrollView>
   );
@@ -143,9 +179,9 @@ const styles = StyleSheet.create({
   header: { marginBottom: spacing.stackLg },
   greeting: { ...typography.headlineLgMobile, color: colors.onSurface },
   subGreeting: { ...typography.labelMd, color: colors.onSurfaceVariant, marginTop: 4 },
-  loader: { marginVertical: spacing.stackLg },
+  state: { marginBottom: spacing.stackMd },
   progressCard: { marginBottom: spacing.stackMd },
-  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.stackMd },
+  row: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.stackSm, marginBottom: spacing.stackMd },
   badge: {
     backgroundColor: colors.primary,
     paddingHorizontal: 12,
@@ -153,7 +189,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   badgeText: { ...typography.labelSm, color: colors.onPrimary },
-  progressLabel: { ...typography.labelMd, color: colors.onSurface },
+  progressLabel: { ...typography.labelMd, color: colors.onSurface, flex: 1, textAlign: 'right' },
   statsRow: { flexDirection: 'row', gap: spacing.stackMd, marginBottom: spacing.stackLg },
   statCard: { flex: 1 },
   statLabel: { ...typography.labelMd, color: colors.onSurfaceVariant, marginTop: spacing.stackSm },
@@ -181,6 +217,7 @@ const styles = StyleSheet.create({
   sectionTitle: { ...typography.headlineMd, color: colors.onSurface, marginBottom: spacing.stackMd },
   focusGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   focusItem: { width: '30%', alignItems: 'center', marginBottom: spacing.stackMd },
+  focusDisabled: { opacity: 0.45 },
   focusIcon: {
     width: 56,
     height: 56,

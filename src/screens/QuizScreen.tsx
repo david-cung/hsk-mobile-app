@@ -3,8 +3,6 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,6 +13,8 @@ import {
 import { contentApi, quizApi } from '../api/endpoints';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { ProgressBar } from '../components/ProgressBar';
+import { ScreenState } from '../components/ScreenState';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing, typography } from '../theme';
 
@@ -27,8 +27,15 @@ export function QuizScreen() {
   const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [selectionError, setSelectionError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const { data: questions, isLoading } = useQuery({
+  const {
+    data: questions,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['questions', params.lessonId],
     queryFn: () => contentApi.questions(params.lessonId),
   });
@@ -48,13 +55,41 @@ export function QuizScreen() {
         source: 'lesson',
       });
     },
-    onError: (e) => Alert.alert('Error', e instanceof Error ? e.message : 'Submit failed'),
+    onError: (e) => setSubmitError(e instanceof Error ? e.message : 'Submit failed'),
   });
 
-  if (isLoading || !questions?.length) {
+  if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} />
+        <ScreenState type="loading" title="Loading quiz" />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.center}>
+        <ScreenState
+          type="error"
+          title="Could not load quiz"
+          message="Please check your connection and try again."
+          actionLabel="Try Again"
+          onAction={() => {
+            refetch();
+          }}
+        />
+      </View>
+    );
+  }
+
+  if (!questions?.length) {
+    return (
+      <View style={styles.center}>
+        <ScreenState
+          type="empty"
+          title="No quiz questions yet"
+          message="Review the lesson content for now and try again later."
+        />
       </View>
     );
   }
@@ -64,12 +99,14 @@ export function QuizScreen() {
   const isLast = currentIndex === questions.length - 1;
 
   const handleSelect = (option: string) => {
+    setSelectionError(null);
+    setSubmitError(null);
     setAnswers((prev) => ({ ...prev, [String(question.id)]: option }));
   };
 
   const handleNext = () => {
     if (!selected) {
-      Alert.alert('Select an answer', 'Please choose an option before continuing.');
+      setSelectionError('Choose an option before continuing.');
       return;
     }
     if (isLast) {
@@ -84,6 +121,7 @@ export function QuizScreen() {
       <Text style={styles.progress}>
         Question {currentIndex + 1} of {questions.length}
       </Text>
+      <ProgressBar progress={((currentIndex + 1) / questions.length) * 100} />
       <Card>
         <Text style={styles.prompt}>{question.prompt}</Text>
         {question.options?.map((option) => (
@@ -91,6 +129,9 @@ export function QuizScreen() {
             key={option}
             style={[styles.option, selected === option && styles.optionSelected]}
             onPress={() => handleSelect(option)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: selected === option }}
+            accessibilityLabel={option}
           >
             <Text style={[styles.optionText, selected === option && styles.optionTextSelected]}>
               {option}
@@ -98,21 +139,40 @@ export function QuizScreen() {
           </Pressable>
         ))}
       </Card>
-      <Button
-        title={isLast ? 'Submit Quiz' : 'Next Question'}
-        onPress={handleNext}
-        loading={submitMutation.isPending}
-      />
+      {selectionError ? <Text style={styles.errorText}>{selectionError}</Text> : null}
+      {submitError ? (
+        <ScreenState type="error" title="Could not submit quiz" message={submitError} compact style={styles.errorState} />
+      ) : null}
+      <View style={styles.actions}>
+        <Button
+          title="Previous"
+          variant="ghost"
+          disabled={currentIndex === 0 || submitMutation.isPending}
+          onPress={() => {
+            setSelectionError(null);
+            setCurrentIndex((index) => Math.max(0, index - 1));
+          }}
+          style={styles.actionButton}
+        />
+        <Button
+          title={isLast ? 'Submit Quiz' : 'Next Question'}
+          rightIcon={isLast ? 'checkmark-circle-outline' : 'arrow-forward'}
+          onPress={handleNext}
+          loading={submitMutation.isPending}
+          disabled={submitMutation.isPending}
+          style={styles.actionButton}
+        />
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.marginMobile },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  content: { padding: spacing.marginMobile, paddingBottom: 40 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.marginMobile },
   progress: { ...typography.labelMd, color: colors.onSurfaceVariant, marginBottom: spacing.stackMd },
-  prompt: { ...typography.headlineMd, color: colors.onSurface, marginBottom: spacing.stackLg },
+  prompt: { ...typography.headlineMd, color: colors.onSurface, marginBottom: spacing.stackLg, marginTop: spacing.stackMd },
   option: {
     padding: spacing.stackMd,
     borderRadius: radius.lg,
@@ -127,4 +187,8 @@ const styles = StyleSheet.create({
   },
   optionText: { ...typography.bodyMd, color: colors.onSurface },
   optionTextSelected: { color: colors.primary, fontWeight: '600' },
+  errorText: { ...typography.labelMd, color: colors.error, marginTop: spacing.stackMd },
+  errorState: { marginTop: spacing.stackMd },
+  actions: { flexDirection: 'row', gap: spacing.stackMd, marginTop: spacing.stackLg },
+  actionButton: { flex: 1 },
 });

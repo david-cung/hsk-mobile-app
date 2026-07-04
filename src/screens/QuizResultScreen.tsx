@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { ProgressBar } from '../components/ProgressBar';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
 
@@ -14,7 +15,7 @@ export function QuizResultScreen() {
   const { params } = useRoute<Route>();
   const navigation = useNavigation<Nav>();
 
-  const passed = params.score >= 70;
+  const passed = params.score >= 60;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -27,6 +28,9 @@ export function QuizResultScreen() {
         <Text style={styles.detail}>
           {params.correctCount} / {params.totalQuestions} correct
         </Text>
+        <View style={styles.scoreProgress}>
+          <ProgressBar progress={params.score} color={passed ? colors.tertiaryContainer : colors.error} />
+        </View>
       </Card>
 
       {params.results?.length ? (
@@ -46,11 +50,12 @@ export function QuizResultScreen() {
         </View>
       ) : null}
 
-      <Button title="Back to Lessons" onPress={() => navigation.popToTop()} />
+      <Button title="Back to Lessons" leftIcon="list-outline" onPress={() => navigation.popToTop()} />
       {params.source !== 'mock' && (
         <Button
           title="Try Again"
           variant="ghost"
+          leftIcon="refresh-outline"
           onPress={() =>
             navigation.navigate('Quiz', {
               lessonId: params.lessonId,
@@ -80,6 +85,7 @@ const styles = StyleSheet.create({
   scoreCard: { width: '100%', alignItems: 'center', marginBottom: spacing.stackLg },
   score: { fontSize: 56, fontWeight: '700', color: colors.primary },
   detail: { ...typography.bodyMd, color: colors.onSurfaceVariant, marginTop: spacing.stackSm },
+  scoreProgress: { width: '100%', marginTop: spacing.stackMd },
   retry: { marginTop: spacing.stackMd },
   review: { width: '100%', marginBottom: spacing.stackLg },
   reviewTitle: { ...typography.headlineMd, color: colors.onSurface, marginBottom: spacing.stackMd },

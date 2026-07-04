@@ -1,13 +1,15 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { contentApi, learningApi } from '../api/endpoints';
 import type { LessonContent } from '../api/types';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { ChineseLine } from '../components/ChineseLine';
+import { ScreenState } from '../components/ScreenState';
 import { SpeakButton } from '../components/SpeakButton';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
@@ -37,7 +39,13 @@ function VocabularySection({
       {items.map((word) => (
         <Card key={word.hanzi} style={styles.block}>
           <ChineseLine line={word} large />
-          <Button title="Save Word" variant="ghost" onPress={() => onSave(word)} style={styles.saveButton} />
+          <Button
+            title="Save Word"
+            leftIcon="bookmark-outline"
+            variant="ghost"
+            onPress={() => onSave(word)}
+            style={styles.saveButton}
+          />
         </Card>
       ))}
     </>
@@ -142,11 +150,23 @@ function LessonBody({
   content: LessonContent | null;
   onSaveWord: (word: NonNullable<LessonContent['vocabulary']>[number]) => void;
 }) {
-  if (!content) return null;
+  if (!content) {
+    return (
+      <ScreenState
+        type="empty"
+        title="Lesson content unavailable"
+        message="You can still start the quiz if questions are ready."
+        compact
+        style={styles.block}
+      />
+    );
+  }
 
   switch (lessonType) {
     case 'grammar':
-      return content.grammar_points ? <GrammarSection points={content.grammar_points} /> : null;
+      return content.grammar_points ? <GrammarSection points={content.grammar_points} /> : (
+        <ScreenState type="empty" title="No grammar points yet" compact style={styles.block} />
+      );
     case 'reading':
       return <ReadingSection content={content} />;
     case 'listening':
@@ -154,7 +174,9 @@ function LessonBody({
     case 'writing':
       return <WritingSection content={content} />;
     case 'vocabulary':
-      return content.vocabulary ? <VocabularySection items={content.vocabulary} onSave={onSaveWord} /> : null;
+      return content.vocabulary ? <VocabularySection items={content.vocabulary} onSave={onSaveWord} /> : (
+        <ScreenState type="empty" title="No vocabulary yet" compact style={styles.block} />
+      );
     case 'mixed':
       return (
         <>
@@ -163,7 +185,9 @@ function LessonBody({
         </>
       );
     default:
-      return content.vocabulary ? <VocabularySection items={content.vocabulary} onSave={onSaveWord} /> : null;
+      return content.vocabulary ? <VocabularySection items={content.vocabulary} onSave={onSaveWord} /> : (
+        <ScreenState type="empty" title="Lesson content unavailable" compact style={styles.block} />
+      );
   }
 }
 
@@ -171,8 +195,15 @@ export function LessonDetailScreen() {
   const { params } = useRoute<Route>();
   const navigation = useNavigation<Nav>();
   const queryClient = useQueryClient();
+  const [saveNotice, setSaveNotice] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  const { data: lesson, isLoading } = useQuery({
+  const {
+    data: lesson,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['lesson', params.lessonId],
     queryFn: () => contentApi.lesson(params.lessonId),
   });
@@ -186,15 +217,39 @@ export function LessonDetailScreen() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['savedWords'] });
-      Alert.alert('Saved', 'Word added to your saved list.');
+      setSaveError(null);
+      setSaveNotice('Word saved to your list.');
     },
-    onError: (e) => Alert.alert('Error', e instanceof Error ? e.message : 'Failed to save word'),
+    onError: (e) => {
+      setSaveNotice(null);
+      setSaveError(e instanceof Error ? e.message : 'Failed to save word');
+    },
   });
 
-  if (isLoading || !lesson) {
+  if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} />
+        <ScreenState type="loading" title="Loading lesson" />
+      </View>
+    );
+  }
+
+  if (isError || !lesson) {
+    return (
+      <View style={styles.center}>
+        <ScreenState
+          type={isError ? 'error' : 'empty'}
+          title={isError ? 'Could not load lesson' : 'Lesson not found'}
+          message={isError ? 'Please check your connection and try again.' : undefined}
+          actionLabel={isError ? 'Try Again' : undefined}
+          onAction={
+            isError
+              ? () => {
+                  refetch();
+                }
+              : undefined
+          }
+        />
       </View>
     );
   }
@@ -206,6 +261,12 @@ export function LessonDetailScreen() {
       <Text style={styles.type}>{typeLabel}</Text>
       <Text style={styles.title}>{lesson.title}</Text>
       {lesson.description ? <Text style={styles.description}>{lesson.description}</Text> : null}
+      {saveNotice ? (
+        <ScreenState type="success" title={saveNotice} compact style={styles.inlineState} />
+      ) : null}
+      {saveError ? (
+        <ScreenState type="error" title="Could not save word" message={saveError} compact style={styles.inlineState} />
+      ) : null}
 
       <LessonBody
         lessonType={lesson.lesson_type}
@@ -221,6 +282,7 @@ export function LessonDetailScreen() {
             lessonTitle: params.lessonTitle,
           })
         }
+        rightIcon="arrow-forward"
         style={styles.quizButton}
       />
     </ScrollView>
@@ -230,7 +292,7 @@ export function LessonDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.marginMobile, paddingBottom: 40 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.marginMobile },
   type: { ...typography.labelSm, color: colors.tertiary, textTransform: 'uppercase' },
   title: { ...typography.headlineLgMobile, color: colors.onSurface, marginTop: spacing.stackSm },
   description: {
@@ -247,6 +309,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.stackSm,
   },
   block: { marginBottom: spacing.stackMd },
+  inlineState: { marginBottom: spacing.stackMd },
   pointTitle: { ...typography.headlineMd, color: colors.onSurface, marginBottom: spacing.stackSm },
   pointBody: { ...typography.bodyMd, color: colors.onSurfaceVariant, marginBottom: spacing.stackMd },
   examplesLabel: { ...typography.labelSm, color: colors.primary, marginBottom: spacing.stackSm },

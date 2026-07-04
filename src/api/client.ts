@@ -29,6 +29,22 @@ export class ApiError extends Error {
   }
 }
 
+function formatApiDetail(detail: unknown, fallback: string) {
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => {
+        if (item && typeof item === 'object' && 'msg' in item) {
+          return String((item as { msg: unknown }).msg);
+        }
+        return JSON.stringify(item);
+      })
+      .join('\n');
+  }
+  if (detail && typeof detail === 'object') return JSON.stringify(detail);
+  return fallback;
+}
+
 export async function apiFetch<T>(
   path: string,
   options: RequestInit & { auth?: boolean } = {},
@@ -52,7 +68,7 @@ export async function apiFetch<T>(
     let detail = response.statusText;
     try {
       const body = await response.json();
-      detail = body.detail ?? (typeof body === 'string' ? body : JSON.stringify(body));
+      detail = formatApiDetail(body.detail ?? body, response.statusText);
     } catch {
       /* ignore */
     }

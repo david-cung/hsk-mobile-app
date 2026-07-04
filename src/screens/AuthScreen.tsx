@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  View,
 } from 'react-native';
 
 import { Button } from '../components/Button';
@@ -20,21 +20,43 @@ export function AuthScreen() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string; displayName?: string }>({});
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const validate = () => {
+    const nextErrors: typeof errors = {};
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      nextErrors.email = 'Email is required.';
+    } else if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
+      nextErrors.email = 'Enter a valid email address.';
+    }
+    if (password.length < 6) {
+      nextErrors.password = 'Password must be at least 6 characters.';
+    }
+    if (displayName.trim().length > 120) {
+      nextErrors.displayName = 'Display name must be 120 characters or fewer.';
+    }
+    return nextErrors;
+  };
 
   const handleSubmit = async () => {
-    if (!email || password.length < 6) {
-      Alert.alert('Error', 'Email and password (min 6 chars) are required.');
+    const nextErrors = validate();
+    setErrors(nextErrors);
+    setFormError(null);
+    if (Object.keys(nextErrors).length > 0) {
       return;
     }
+
     setLoading(true);
     try {
       if (isRegister) {
-        await register(email, password, displayName || undefined);
+        await register(email.trim(), password, displayName.trim() || undefined);
       } else {
-        await login(email, password);
+        await login(email.trim(), password);
       }
     } catch (e) {
-      Alert.alert('Error', e instanceof Error ? e.message : 'Authentication failed');
+      setFormError(e instanceof Error ? e.message : 'Authentication failed');
     } finally {
       setLoading(false);
     }
@@ -51,41 +73,86 @@ export function AuthScreen() {
         <Text style={styles.subtitle}>{isRegister ? 'Create your account' : 'Welcome back'}</Text>
 
         {isRegister && (
-          <TextInput
-            style={styles.input}
-            placeholder="Display name"
-            placeholderTextColor={colors.onSurfaceVariant}
-            value={displayName}
-            onChangeText={setDisplayName}
-          />
+          <View style={styles.field}>
+            <TextInput
+              style={[styles.input, errors.displayName && styles.inputError]}
+              placeholder="Display name"
+              placeholderTextColor={colors.onSurfaceVariant}
+              value={displayName}
+              onChangeText={(value) => {
+                setDisplayName(value);
+                setErrors((prev) => ({ ...prev, displayName: undefined }));
+              }}
+              autoCapitalize="words"
+              autoComplete="name"
+              textContentType="name"
+              returnKeyType="next"
+              accessibilityLabel="Display name"
+            />
+            {errors.displayName ? <Text style={styles.errorText}>{errors.displayName}</Text> : null}
+          </View>
         )}
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor={colors.onSurfaceVariant}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor={colors.onSurfaceVariant}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+        <View style={styles.field}>
+          <TextInput
+            style={[styles.input, errors.email && styles.inputError]}
+            placeholder="Email"
+            placeholderTextColor={colors.onSurfaceVariant}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            autoComplete="email"
+            value={email}
+            onChangeText={(value) => {
+              setEmail(value);
+              setErrors((prev) => ({ ...prev, email: undefined }));
+            }}
+            returnKeyType="next"
+            accessibilityLabel="Email"
+          />
+          {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
+        </View>
+        <View style={styles.field}>
+          <TextInput
+            style={[styles.input, errors.password && styles.inputError]}
+            placeholder="Password"
+            placeholderTextColor={colors.onSurfaceVariant}
+            secureTextEntry
+            textContentType={isRegister ? 'newPassword' : 'password'}
+            autoComplete={isRegister ? 'new-password' : 'password'}
+            value={password}
+            onChangeText={(value) => {
+              setPassword(value);
+              setErrors((prev) => ({ ...prev, password: undefined }));
+            }}
+            returnKeyType="done"
+            onSubmitEditing={handleSubmit}
+            accessibilityLabel="Password"
+          />
+          {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
+        </View>
+
+        {formError ? (
+          <View style={styles.formError} accessibilityLiveRegion="polite">
+            <Text style={styles.formErrorText}>{formError}</Text>
+          </View>
+        ) : null}
 
         <Button
           title={isRegister ? 'Sign Up' : 'Sign In'}
           onPress={handleSubmit}
           loading={loading}
+          disabled={loading}
+          leftIcon={isRegister ? 'person-add-outline' : 'log-in-outline'}
           style={styles.button}
         />
         <Button
           title={isRegister ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
-          onPress={() => setIsRegister(!isRegister)}
+          onPress={() => {
+            setIsRegister(!isRegister);
+            setErrors({});
+            setFormError(null);
+          }}
           variant="ghost"
         />
       </ScrollView>
@@ -108,15 +175,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: spacing.stackLg,
   },
+  field: { marginBottom: spacing.stackMd },
   input: {
     backgroundColor: colors.surfaceContainerLow,
-    borderRadius: radius.lg,
+    borderRadius: radius.md,
     padding: spacing.stackMd,
-    marginBottom: spacing.stackMd,
     ...typography.bodyMd,
     color: colors.onSurface,
     borderWidth: 1,
     borderColor: colors.surfaceContainer,
   },
+  inputError: { borderColor: colors.error, backgroundColor: colors.errorContainer },
+  errorText: { ...typography.labelSm, color: colors.error, marginTop: 4 },
+  formError: {
+    backgroundColor: colors.errorContainer,
+    borderRadius: radius.md,
+    padding: spacing.stackMd,
+    marginBottom: spacing.stackMd,
+  },
+  formErrorText: { ...typography.bodyMd, color: colors.onErrorContainer },
   button: { marginTop: spacing.stackSm, marginBottom: spacing.stackMd },
 });

@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import { useAuth } from '../context/AuthContext';
@@ -16,6 +16,18 @@ const MENU = [
 export function ProfileScreen() {
   const { user, profile, logout } = useAuth();
   const navigation = useRootNavigation();
+  const confirmLogout = () => {
+    Alert.alert('Sign out?', 'You can sign back in anytime.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Sign Out',
+        style: 'destructive',
+        onPress: () => {
+          logout();
+        },
+      },
+    ]);
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -44,6 +56,8 @@ export function ProfileScreen() {
         <Pressable
           key={item.route}
           style={styles.menuItem}
+          accessibilityRole="button"
+          accessibilityLabel={item.label}
           onPress={() => navigation.navigate(item.route)}
         >
           <Ionicons name={item.icon} size={22} color={colors.onSurface} />
@@ -52,7 +66,7 @@ export function ProfileScreen() {
         </Pressable>
       ))}
 
-      <Pressable style={styles.logout} onPress={logout}>
+      <Pressable style={styles.logout} accessibilityRole="button" onPress={confirmLogout}>
         <Text style={styles.logoutText}>Sign Out</Text>
       </Pressable>
     </ScrollView>
@@ -78,6 +92,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginVertical: spacing.stackLg,
     gap: spacing.stackLg,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
   },
   stat: { alignItems: 'center' },
   statValue: { ...typography.headlineMd, color: colors.primary },
