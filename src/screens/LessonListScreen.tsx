@@ -1,20 +1,18 @@
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useLayoutEffect } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
-import { useQueryClient } from '@tanstack/react-query';
 import type { ComponentProps } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-
-type IoniconName = ComponentProps<typeof Ionicons>['name'];
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { contentApi } from '../api/endpoints';
 import { Card } from '../components/Card';
+import { Ionicons } from '../components/Icon';
+import { ScreenState } from '../components/ScreenState';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
 
+type IoniconName = ComponentProps<typeof Ionicons>['name'];
 type Route = RouteProp<RootStackParamList, 'LessonList'>;
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -46,7 +44,12 @@ export function LessonListScreen() {
     });
   }, [navigation, params.focusLabel, params.levelTitle]);
 
-  const { data: lessons, isLoading } = useQuery({
+  const {
+    data: lessons,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['lessons', params.levelId, params.lessonType],
     queryFn: () => contentApi.lessons(params.levelId, params.lessonType),
   });
@@ -69,15 +72,25 @@ export function LessonListScreen() {
       </Text>
 
       {isLoading ? (
-        <ActivityIndicator color={colors.primary} />
+        <ScreenState type="loading" title="Loading lessons" />
+      ) : isError ? (
+        <ScreenState
+          type="error"
+          title="Could not load lessons"
+          message="Please check your connection and try again."
+          actionLabel="Try Again"
+          onAction={() => {
+            refetch();
+          }}
+        />
       ) : !filteredLessons?.length ? (
-        <Card>
-          <Text style={styles.empty}>{emptyMessage}</Text>
-        </Card>
+        <ScreenState type="empty" title="Nothing here yet" message={emptyMessage} />
       ) : (
         filteredLessons.map((lesson) => (
           <Pressable
             key={lesson.id}
+            accessibilityRole="button"
+            accessibilityLabel={`${lesson.title}, ${lesson.duration_minutes} minutes`}
             onPress={() =>
               navigation.navigate('LessonDetail', {
                 lessonId: lesson.id,
@@ -122,9 +135,8 @@ export function LessonListScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.marginMobile },
+  content: { padding: spacing.marginMobile, paddingBottom: 80 },
   subtitle: { ...typography.bodyMd, color: colors.onSurfaceVariant, marginBottom: spacing.stackLg },
-  empty: { ...typography.bodyMd, color: colors.onSurfaceVariant, textAlign: 'center' },
   lessonCard: { marginBottom: spacing.stackMd },
   row: { flexDirection: 'row', alignItems: 'center' },
   icon: { marginRight: spacing.stackSm },

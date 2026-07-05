@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import type { ComponentProps } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
 import { learningApi } from '../api/endpoints';
 import { Card } from '../components/Card';
+import { ScreenState } from '../components/ScreenState';
 import { colors, spacing, typography } from '../theme';
 
 const ICON_MAP: Record<string, IoniconName> = {
@@ -17,7 +18,7 @@ const ICON_MAP: Record<string, IoniconName> = {
 };
 
 export function AchievementsScreen() {
-  const { data: achievements, isLoading } = useQuery({
+  const { data: achievements, isLoading, isError, refetch } = useQuery({
     queryKey: ['achievements'],
     queryFn: learningApi.achievements,
   });
@@ -25,7 +26,23 @@ export function AchievementsScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} />
+        <ScreenState type="loading" title="Loading achievements" />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.center}>
+        <ScreenState
+          type="error"
+          title="Could not load achievements"
+          message="Please check your connection and try again."
+          actionLabel="Try Again"
+          onAction={() => {
+            refetch();
+          }}
+        />
       </View>
     );
   }
@@ -36,8 +53,19 @@ export function AchievementsScreen() {
       contentContainerStyle={styles.list}
       data={achievements}
       keyExtractor={(item) => String(item.id)}
+      ListEmptyComponent={
+        <ScreenState
+          type="empty"
+          title="No achievements yet"
+          message="Complete quizzes and save words to unlock achievements."
+        />
+      }
       renderItem={({ item }) => (
-        <Card style={[styles.card, !item.earned && styles.locked]}>
+        <Card
+          style={[styles.card, !item.earned && styles.locked]}
+          accessibilityRole="summary"
+          accessibilityLabel={`${item.title}, ${item.earned ? 'earned' : 'locked'}`}
+        >
           <View style={styles.row}>
             <View style={[styles.iconWrap, item.earned && styles.iconEarned]}>
               <Ionicons

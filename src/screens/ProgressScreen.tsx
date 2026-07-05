@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { progressApi } from '../api/endpoints';
 import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
+import { ScreenState } from '../components/ScreenState';
 import { colors, spacing, typography } from '../theme';
 
 export function ProgressScreen() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['dashboard'],
     queryFn: progressApi.dashboard,
   });
@@ -15,12 +16,40 @@ export function ProgressScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} />
+        <ScreenState type="loading" title="Loading progress" />
       </View>
     );
   }
 
-  const dailyPercent = data
+  if (isError) {
+    return (
+      <View style={styles.center}>
+        <ScreenState
+          type="error"
+          title="Could not load progress"
+          message="Please check your connection and try again."
+          actionLabel="Try Again"
+          onAction={() => {
+            refetch();
+          }}
+        />
+      </View>
+    );
+  }
+
+  if (!data) {
+    return (
+      <View style={styles.center}>
+        <ScreenState
+          type="empty"
+          title="No progress yet"
+          message="Complete a lesson quiz to start building your dashboard."
+        />
+      </View>
+    );
+  }
+
+  const dailyPercent = data.daily_goal_minutes
     ? Math.round((data.minutes_studied_today / data.daily_goal_minutes) * 100)
     : 0;
 
@@ -28,42 +57,42 @@ export function ProgressScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Progress Dashboard</Text>
 
-      <Card>
-        <Text style={styles.cardTitle}>HSK Level {data?.current_hsk_level ?? 1}</Text>
-        <Text style={styles.cardSub}>Target: HSK {data?.target_hsk_level ?? 1}</Text>
+      <Card style={styles.cardSpacing}>
+        <Text style={styles.cardTitle}>HSK Level {data.current_hsk_level}</Text>
+        <Text style={styles.cardSub}>Target: HSK {data.target_hsk_level}</Text>
         <View style={{ marginTop: spacing.stackMd }}>
-          <ProgressBar progress={data?.exam_readiness_percent ?? 0} />
+          <ProgressBar progress={data.exam_readiness_percent} />
         </View>
         <Text style={styles.meta}>
-          {data?.current_level_completed_lessons ?? 0} / {data?.current_level_total_lessons ?? 0} lessons at this level
+          {data.current_level_completed_lessons} / {data.current_level_total_lessons} lessons at this level
         </Text>
       </Card>
 
       <View style={styles.grid}>
         <Card style={styles.half}>
           <Text style={styles.statLabel}>Completed</Text>
-          <Text style={styles.statValue}>{data?.lessons_completed ?? 0}</Text>
+          <Text style={styles.statValue}>{data.lessons_completed}</Text>
         </Card>
         <Card style={styles.half}>
           <Text style={styles.statLabel}>In Progress</Text>
-          <Text style={styles.statValue}>{data?.lessons_in_progress ?? 0}</Text>
+          <Text style={styles.statValue}>{data.lessons_in_progress}</Text>
         </Card>
       </View>
 
-      <Card>
+      <Card style={styles.cardSpacing}>
         <Text style={styles.cardTitle}>Daily Goal</Text>
         <Text style={styles.statValue}>
-          {data?.minutes_studied_today ?? 0} / {data?.daily_goal_minutes ?? 30} min
+          {data.minutes_studied_today} / {data.daily_goal_minutes} min
         </Text>
         <ProgressBar progress={dailyPercent} color={colors.tertiaryContainer} />
       </Card>
 
-      <Card>
+      <Card style={styles.cardSpacing}>
         <Text style={styles.cardTitle}>Study Streak</Text>
-        <Text style={styles.statValue}>{data?.study_streak_days ?? 0} days</Text>
+        <Text style={styles.statValue}>{data.study_streak_days} days</Text>
       </Card>
 
-      {data?.skill_breakdown?.length ? (
+      {data.skill_breakdown.length ? (
         <>
           <Text style={styles.sectionTitle}>Skill Readiness</Text>
           {data.skill_breakdown.map((skill) => {
@@ -81,9 +110,17 @@ export function ProgressScreen() {
             );
           })}
         </>
-      ) : null}
+      ) : (
+        <ScreenState
+          type="empty"
+          title="No skill readiness yet"
+          message="Skill progress appears after you complete lesson quizzes."
+          compact
+          style={styles.cardSpacing}
+        />
+      )}
 
-      {data?.recent_attempts && data.recent_attempts.length > 0 && (
+      {data.recent_attempts.length > 0 && (
         <>
           <Text style={styles.sectionTitle}>Recent Quizzes</Text>
           {data.recent_attempts.map((a) => (
@@ -101,8 +138,9 @@ export function ProgressScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.marginMobile, paddingBottom: 100 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.marginMobile },
   title: { ...typography.headlineLgMobile, color: colors.onSurface, marginBottom: spacing.stackLg },
+  cardSpacing: { marginBottom: spacing.stackMd },
   cardTitle: { ...typography.headlineMd, color: colors.onSurface },
   cardSub: { ...typography.labelMd, color: colors.onSurfaceVariant, marginTop: 4 },
   meta: { ...typography.labelSm, color: colors.onSurfaceVariant, marginTop: spacing.stackSm },

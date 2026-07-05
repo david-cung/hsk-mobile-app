@@ -13,7 +13,7 @@ const GOALS = [
   { label: 'Culture', marker: 'C', value: 'culture' },
 ];
 
-const LEVELS = [1, 2, 3, 4, 5];
+const LEVELS = [1, 2, 3, 4, 5, 6];
 
 export function OnboardingScreen() {
   const { refreshProfile } = useAuth();
@@ -23,8 +23,10 @@ export function OnboardingScreen() {
   const [targetLevel, setTargetLevel] = useState(1);
   const [dailyGoal, setDailyGoal] = useState(30);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const finish = async () => {
+    setError(null);
     setLoading(true);
     try {
       await profileApi.update({
@@ -35,6 +37,8 @@ export function OnboardingScreen() {
         onboarding_completed: true,
       });
       await refreshProfile();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not save your learning path.');
     } finally {
       setLoading(false);
     }
@@ -51,7 +55,7 @@ export function OnboardingScreen() {
             Learn Mandarin with structured lessons, quizzes, and progress tracking aligned to HSK
             levels.
           </Text>
-          <Button title="Get Started" onPress={() => setStep(1)} />
+          <Button title="Get Started" rightIcon="arrow-forward" onPress={() => setStep(1)} />
         </>
       )}
 
@@ -64,13 +68,16 @@ export function OnboardingScreen() {
                 key={goal.value}
                 style={[styles.goalCard, learningGoal === goal.value && styles.goalSelected]}
                 onPress={() => setLearningGoal(goal.value)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: learningGoal === goal.value }}
+                accessibilityLabel={goal.label}
               >
                 <Text style={styles.goalIcon}>{goal.marker}</Text>
                 <Text style={styles.goalLabel}>{goal.label}</Text>
               </Pressable>
             ))}
           </View>
-          <Button title="Continue" onPress={() => setStep(2)} />
+          <Button title="Continue" rightIcon="arrow-forward" onPress={() => setStep(2)} />
         </>
       )}
 
@@ -94,6 +101,7 @@ export function OnboardingScreen() {
           </View>
 
           <Text style={styles.subtitle}>Target HSK level</Text>
+          <Text style={styles.hint}>Target cannot be lower than your current level.</Text>
           <View style={styles.levelRow}>
             {LEVELS.map((level) => (
               <Button
@@ -118,7 +126,18 @@ export function OnboardingScreen() {
               />
             ))}
           </View>
-          <Button title="Start Learning" onPress={finish} loading={loading} />
+          {error ? (
+            <View style={styles.errorBox} accessibilityLiveRegion="polite">
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+          <Button
+            title="Start Learning"
+            leftIcon="sparkles-outline"
+            onPress={finish}
+            loading={loading}
+            disabled={loading}
+          />
         </>
       )}
     </ScrollView>
@@ -137,11 +156,17 @@ const styles = StyleSheet.create({
     marginTop: spacing.stackLg,
     marginBottom: spacing.stackMd,
   },
+  hint: {
+    ...typography.labelSm,
+    color: colors.onSurfaceVariant,
+    marginTop: -spacing.stackSm,
+    marginBottom: spacing.stackMd,
+  },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.stackMd, marginBottom: spacing.stackLg },
   goalCard: {
     width: '47%',
     backgroundColor: colors.surfaceContainerLowest,
-    borderRadius: radius.xl,
+    borderRadius: radius.md,
     padding: spacing.cardPadding,
     alignItems: 'center',
     borderWidth: 1,
@@ -160,4 +185,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.stackMd,
   },
   levelChip: { minWidth: 70, paddingHorizontal: 12 },
+  errorBox: {
+    backgroundColor: colors.errorContainer,
+    borderRadius: radius.md,
+    padding: spacing.stackMd,
+    marginBottom: spacing.stackMd,
+  },
+  errorText: { ...typography.bodyMd, color: colors.onErrorContainer },
 });

@@ -1,14 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { contentApi } from '../api/endpoints';
 import { Card } from '../components/Card';
+import { ScreenState } from '../components/ScreenState';
 import { useRootNavigation } from '../navigation/useRootNavigation';
 import { colors, spacing, typography } from '../theme';
 
 export function PracticeScreen() {
   const navigation = useRootNavigation();
-  const { data: levels, isLoading } = useQuery({
+  const { data: levels, isLoading, isError, refetch } = useQuery({
     queryKey: ['levels'],
     queryFn: contentApi.levels,
   });
@@ -19,11 +20,29 @@ export function PracticeScreen() {
       <Text style={styles.subtitle}>Choose an HSK level to start practicing</Text>
 
       {isLoading ? (
-        <ActivityIndicator color={colors.primary} />
+        <ScreenState type="loading" title="Loading levels" />
+      ) : isError ? (
+        <ScreenState
+          type="error"
+          title="Could not load levels"
+          message="Please check your connection and try again."
+          actionLabel="Try Again"
+          onAction={() => {
+            refetch();
+          }}
+        />
+      ) : !levels?.length ? (
+        <ScreenState
+          type="empty"
+          title="No HSK levels yet"
+          message="Start the backend seed data, then return to practice."
+        />
       ) : (
         levels?.map((level) => (
           <Pressable
             key={level.id}
+            accessibilityRole="button"
+            accessibilityLabel={`${level.title}, ${level.total_characters} characters`}
             onPress={() =>
               navigation.navigate('LessonList', { levelId: level.id, levelTitle: level.title })
             }

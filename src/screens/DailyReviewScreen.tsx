@@ -1,11 +1,12 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
-import { ActivityIndicator, ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet, Text } from 'react-native';
 
 import { contentApi, learningApi } from '../api/endpoints';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { ScreenState } from '../components/ScreenState';
 import { useAuth } from '../context/AuthContext';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
@@ -15,7 +16,12 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 export function DailyReviewScreen() {
   const navigation = useNavigation<Nav>();
   const { profile } = useAuth();
-  const { data: levels, isLoading } = useQuery({
+  const {
+    data: levels,
+    isLoading: isLevelsLoading,
+    isError: isLevelsError,
+    refetch: refetchLevels,
+  } = useQuery({
     queryKey: ['levels'],
     queryFn: contentApi.levels,
   });
@@ -23,19 +29,43 @@ export function DailyReviewScreen() {
     levels?.find((level) => level.level_number === (profile?.current_hsk_level ?? 1)) ??
     levels?.[0];
 
-  const { data: lessons } = useQuery({
+  const {
+    data: lessons,
+    isLoading: isLessonsLoading,
+    isError: isLessonsError,
+    refetch: refetchLessons,
+  } = useQuery({
     queryKey: ['lessons', reviewLevel?.id],
     queryFn: () => contentApi.lessons(reviewLevel!.id),
     enabled: !!reviewLevel,
   });
-  const { data: savedWords } = useQuery({
+  const {
+    data: savedWords,
+    isLoading: isSavedWordsLoading,
+    isError: isSavedWordsError,
+    refetch: refetchSavedWords,
+  } = useQuery({
     queryKey: ['savedWords'],
     queryFn: learningApi.savedWords,
   });
-  const { data: mistakes } = useQuery({
+  const {
+    data: mistakes,
+    isLoading: isMistakesLoading,
+    isError: isMistakesError,
+    refetch: refetchMistakes,
+  } = useQuery({
     queryKey: ['mistakes'],
     queryFn: learningApi.mistakes,
   });
+
+  const isLoading = isLevelsLoading || isLessonsLoading || isSavedWordsLoading || isMistakesLoading;
+  const isError = isLevelsError || isLessonsError || isSavedWordsError || isMistakesError;
+  const retry = () => {
+    if (isLevelsError) refetchLevels();
+    if (isLessonsError) refetchLessons();
+    if (isSavedWordsError) refetchSavedWords();
+    if (isMistakesError) refetchMistakes();
+  };
 
   const reviewLessons = lessons?.filter((l) => l.status === 'completed').slice(0, 3) ?? [];
   const reviewWords = savedWords?.slice(0, 5) ?? [];
@@ -48,14 +78,21 @@ export function DailyReviewScreen() {
       <Text style={styles.subtitle}>Revisit mistakes, saved words, and completed lessons</Text>
 
       {isLoading ? (
-        <ActivityIndicator color={colors.primary} />
+        <ScreenState type="loading" title="Preparing review" />
+      ) : isError ? (
+        <ScreenState
+          type="error"
+          title="Could not prepare review"
+          message="Please check your connection and try again."
+          actionLabel="Try Again"
+          onAction={retry}
+        />
       ) : !hasReview ? (
-        <Card>
-          <Text style={styles.emptyTitle}>No review items yet</Text>
-          <Text style={styles.emptyBody}>
-            Complete quizzes or save words, then come back for daily review.
-          </Text>
-        </Card>
+        <ScreenState
+          type="empty"
+          title="No review items yet"
+          message="Complete quizzes or save words, then come back for daily review."
+        />
       ) : (
         <>
           {reviewMistakes.length > 0 && (
@@ -67,6 +104,18 @@ export function DailyReviewScreen() {
                   <Text style={styles.meta}>Your answer: {mistake.user_answer || 'No answer'}</Text>
                   <Text style={styles.correct}>Correct answer: {mistake.correct_answer}</Text>
                   {mistake.explanation ? <Text style={styles.meta}>{mistake.explanation}</Text> : null}
+                  <Button
+                    title="Review Lesson"
+                    variant="ghost"
+                    rightIcon="arrow-forward"
+                    onPress={() =>
+                      navigation.navigate('LessonDetail', {
+                        lessonId: mistake.lesson_id,
+                        lessonTitle: mistake.lesson_title ?? 'Lesson Review',
+                      })
+                    }
+                    style={styles.btn}
+                  />
                 </Card>
               ))}
             </>
@@ -97,6 +146,7 @@ export function DailyReviewScreen() {
                   <Button
                     title="Review"
                     variant="secondary"
+                    rightIcon="arrow-forward"
                     onPress={() =>
                       navigation.navigate('LessonDetail', {
                         lessonId: lesson.id,
@@ -121,8 +171,6 @@ const styles = StyleSheet.create({
   title: { ...typography.headlineLgMobile, color: colors.onSurface },
   subtitle: { ...typography.bodyMd, color: colors.onSurfaceVariant, marginBottom: spacing.stackLg },
   sectionTitle: { ...typography.headlineMd, color: colors.onSurface, marginBottom: spacing.stackMd },
-  emptyTitle: { ...typography.headlineMd, color: colors.onSurface },
-  emptyBody: { ...typography.bodyMd, color: colors.onSurfaceVariant, marginTop: spacing.stackSm },
   card: { marginBottom: spacing.stackMd },
   lessonTitle: { ...typography.headlineMd, color: colors.onSurface },
   meta: { ...typography.labelMd, color: colors.onSurfaceVariant, marginTop: 4, marginBottom: spacing.stackMd },

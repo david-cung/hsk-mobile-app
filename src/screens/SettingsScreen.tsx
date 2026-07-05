@@ -1,23 +1,29 @@
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { profileApi } from '../api/endpoints';
 import { Button } from '../components/Button';
+import { ScreenState } from '../components/ScreenState';
 import { useAuth } from '../context/AuthContext';
 import { colors, spacing, typography } from '../theme';
 
 export function SettingsScreen() {
   const { profile, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const hskLevels = [1, 2, 3, 4, 5, 6];
 
   const updateProfile = async (data: Parameters<typeof profileApi.update>[0], message: string) => {
+    setNotice(null);
+    setError(null);
     setLoading(true);
     try {
       await profileApi.update(data);
       await refreshProfile();
-      Alert.alert('Saved', message);
+      setNotice(message);
     } catch (e) {
-      Alert.alert('Error', e instanceof Error ? e.message : 'Update failed');
+      setError(e instanceof Error ? e.message : 'Update failed');
     } finally {
       setLoading(false);
     }
@@ -25,6 +31,13 @@ export function SettingsScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {notice ? (
+        <ScreenState type="success" title={notice} compact style={styles.state} />
+      ) : null}
+      {error ? (
+        <ScreenState type="error" title="Could not save settings" message={error} compact style={styles.state} />
+      ) : null}
+
       <Text style={styles.section}>Study Goals</Text>
       <Text style={styles.label}>Daily goal: {profile?.daily_goal_minutes ?? 30} minutes</Text>
       <View style={styles.row}>
@@ -43,7 +56,7 @@ export function SettingsScreen() {
       <Text style={styles.section}>HSK Levels</Text>
       <Text style={styles.label}>Current: HSK {profile?.current_hsk_level ?? 1}</Text>
       <View style={styles.row}>
-        {[1, 2, 3, 4, 5].map((level) => (
+        {hskLevels.map((level) => (
           <Button
             key={level}
             title={`HSK ${level}`}
@@ -64,7 +77,7 @@ export function SettingsScreen() {
       </View>
       <Text style={styles.label}>Target: HSK {profile?.target_hsk_level ?? 1}</Text>
       <View style={styles.row}>
-        {[1, 2, 3, 4, 5].map((level) => (
+        {hskLevels.map((level) => (
           <Button
             key={level}
             title={`HSK ${level}`}
@@ -91,6 +104,7 @@ export function SettingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.marginMobile },
+  state: { marginBottom: spacing.stackMd },
   section: { ...typography.headlineMd, color: colors.onSurface, marginTop: spacing.stackLg, marginBottom: spacing.stackMd },
   label: { ...typography.bodyMd, color: colors.onSurfaceVariant, marginBottom: spacing.stackSm },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.stackSm },
