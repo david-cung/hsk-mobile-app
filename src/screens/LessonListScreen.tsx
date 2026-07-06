@@ -21,6 +21,11 @@ const TYPE_ICONS: Record<string, IoniconName> = {
   grammar: 'document-text',
   reading: 'book',
   listening: 'headset',
+  sentence_pattern: 'text',
+  conversation: 'chatbubbles',
+  review: 'refresh',
+  practice: 'fitness',
+  quiz: 'help-circle',
   writing: 'create',
   mixed: 'layers',
 };

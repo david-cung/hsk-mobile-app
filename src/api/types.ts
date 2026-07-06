@@ -51,11 +51,26 @@ export interface GrammarPoint {
 }
 
 export interface LessonContent {
+  source_id?: string;
+  focus?: string;
   vocabulary?: ChineseEntry[];
   grammar_points?: GrammarPoint[];
   passage_title?: string;
   passage?: ChineseEntry[];
   transcript?: ChineseEntry[];
+  dialogue?: ChineseEntry;
+  patterns?: ChineseEntry[];
+  activities?: string[];
+  review_items?: string[];
+  items?: string[];
+  translations?: {
+    english?: string;
+    vietnamese?: string;
+  };
+  cultural_note?: {
+    english?: string;
+    vietnamese?: string;
+  };
   characters?: ChineseEntry[];
   tip?: string;
 }
