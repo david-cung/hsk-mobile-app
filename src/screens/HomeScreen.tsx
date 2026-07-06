@@ -21,7 +21,9 @@ const FOCUS_AREAS = [
   { label: 'Grammar', icon: 'document-text' as const, type: 'grammar' },
   { label: 'Listening', icon: 'headset' as const, type: 'listening' },
   { label: 'Reading', icon: 'book' as const, type: 'reading' },
-  { label: 'Writing', icon: 'create' as const, type: 'writing' },
+  { label: 'Patterns', icon: 'text' as const, type: 'sentence_pattern' },
+  { label: 'Conversation', icon: 'chatbubbles' as const, type: 'conversation' },
+  { label: 'Practice', icon: 'fitness' as const, type: 'practice' },
   { label: 'Mock Test', icon: 'help-circle' as const, route: 'MockTests' as const },
 ];
 

@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 
@@ -97,6 +98,7 @@ export function QuizScreen() {
   const question = questions[currentIndex];
   const selected = answers[String(question.id)];
   const isLast = currentIndex === questions.length - 1;
+  const hasOptions = Boolean(question.options?.length);
 
   const handleSelect = (option: string) => {
     setSelectionError(null);
@@ -124,20 +126,31 @@ export function QuizScreen() {
       <ProgressBar progress={((currentIndex + 1) / questions.length) * 100} />
       <Card>
         <Text style={styles.prompt}>{question.prompt}</Text>
-        {question.options?.map((option) => (
-          <Pressable
-            key={option}
-            style={[styles.option, selected === option && styles.optionSelected]}
-            onPress={() => handleSelect(option)}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: selected === option }}
-            accessibilityLabel={option}
-          >
-            <Text style={[styles.optionText, selected === option && styles.optionTextSelected]}>
-              {option}
-            </Text>
-          </Pressable>
-        ))}
+        {hasOptions ? (
+          question.options?.map((option) => (
+            <Pressable
+              key={option}
+              style={[styles.option, selected === option && styles.optionSelected]}
+              onPress={() => handleSelect(option)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: selected === option }}
+              accessibilityLabel={option}
+            >
+              <Text style={[styles.optionText, selected === option && styles.optionTextSelected]}>
+                {option}
+              </Text>
+            </Pressable>
+          ))
+        ) : (
+          <TextInput
+            value={selected ?? ''}
+            onChangeText={(text) => handleSelect(text)}
+            placeholder="Type your answer"
+            placeholderTextColor={colors.onSurfaceVariant}
+            autoCapitalize="none"
+            style={styles.answerInput}
+          />
+        )}
       </Card>
       {selectionError ? <Text style={styles.errorText}>{selectionError}</Text> : null}
       {submitError ? (
@@ -187,6 +200,15 @@ const styles = StyleSheet.create({
   },
   optionText: { ...typography.bodyMd, color: colors.onSurface },
   optionTextSelected: { color: colors.primary, fontWeight: '600' },
+  answerInput: {
+    ...typography.bodyMd,
+    color: colors.onSurface,
+    borderWidth: 1,
+    borderColor: colors.surfaceContainerHigh,
+    borderRadius: radius.lg,
+    padding: spacing.stackMd,
+    backgroundColor: colors.surfaceContainerLow,
+  },
   errorText: { ...typography.labelMd, color: colors.error, marginTop: spacing.stackMd },
   errorState: { marginTop: spacing.stackMd },
   actions: { flexDirection: 'row', gap: spacing.stackMd, marginTop: spacing.stackLg },

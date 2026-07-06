@@ -22,6 +22,11 @@ const TYPE_LABELS: Record<string, string> = {
   grammar: 'Grammar',
   reading: 'Reading',
   listening: 'Listening',
+  sentence_pattern: 'Sentence Pattern',
+  conversation: 'Conversation',
+  review: 'Review',
+  practice: 'Practice',
+  quiz: 'Quiz',
   writing: 'Writing',
   mixed: 'Mixed Lesson',
 };
@@ -68,6 +73,59 @@ function GrammarSection({ points }: { points: NonNullable<LessonContent['grammar
           ))}
         </Card>
       ))}
+    </>
+  );
+}
+
+function ChineseEntrySection({ title, line }: { title: string; line: NonNullable<LessonContent['dialogue']> }) {
+  return (
+    <>
+      <Text style={styles.section}>{title}</Text>
+      <Card style={styles.block}>
+        <ChineseLine line={line} />
+      </Card>
+    </>
+  );
+}
+
+function PatternsSection({ patterns }: { patterns: NonNullable<LessonContent['patterns']> }) {
+  return (
+    <>
+      <Text style={styles.section}>Patterns</Text>
+      {patterns.map((pattern) => (
+        <Card key={pattern.hanzi} style={styles.block}>
+          <ChineseLine line={pattern} />
+        </Card>
+      ))}
+    </>
+  );
+}
+
+function TextListSection({ title, items }: { title: string; items: string[] }) {
+  if (!items.length) return null;
+  return (
+    <>
+      <Text style={styles.section}>{title}</Text>
+      <Card style={styles.block}>
+        {items.map((item) => (
+          <Text key={item} style={styles.listItem}>
+            {item}
+          </Text>
+        ))}
+      </Card>
+    </>
+  );
+}
+
+function CulturalNoteSection({ note }: { note: NonNullable<LessonContent['cultural_note']> }) {
+  if (!note.english && !note.vietnamese) return null;
+  return (
+    <>
+      <Text style={styles.section}>Cultural Note</Text>
+      <Card style={styles.block}>
+        {note.english ? <Text style={styles.pointBody}>{note.english}</Text> : null}
+        {note.vietnamese ? <Text style={styles.pointBody}>{note.vietnamese}</Text> : null}
+      </Card>
     </>
   );
 }
@@ -171,6 +229,29 @@ function LessonBody({
       return <ReadingSection content={content} />;
     case 'listening':
       return <ListeningSection content={content} />;
+    case 'sentence_pattern':
+      return (
+        <>
+          {content.patterns ? <PatternsSection patterns={content.patterns} /> : null}
+          {content.grammar_points ? <GrammarSection points={content.grammar_points} /> : null}
+          {content.vocabulary ? <VocabularySection items={content.vocabulary} onSave={onSaveWord} /> : null}
+        </>
+      );
+    case 'conversation':
+      return (
+        <>
+          {content.dialogue ? <ChineseEntrySection title="Dialogue" line={content.dialogue} /> : null}
+          {content.vocabulary ? <VocabularySection items={content.vocabulary} onSave={onSaveWord} /> : null}
+          {content.grammar_points ? <GrammarSection points={content.grammar_points} /> : null}
+          {content.cultural_note ? <CulturalNoteSection note={content.cultural_note} /> : null}
+        </>
+      );
+    case 'review':
+      return <TextListSection title="Review" items={content.review_items ?? content.items ?? []} />;
+    case 'practice':
+      return <TextListSection title="Practice" items={content.activities ?? content.items ?? []} />;
+    case 'quiz':
+      return <TextListSection title="Quiz Focus" items={content.items ?? []} />;
     case 'writing':
       return <WritingSection content={content} />;
     case 'vocabulary':
@@ -312,6 +393,7 @@ const styles = StyleSheet.create({
   inlineState: { marginBottom: spacing.stackMd },
   pointTitle: { ...typography.headlineMd, color: colors.onSurface, marginBottom: spacing.stackSm },
   pointBody: { ...typography.bodyMd, color: colors.onSurfaceVariant, marginBottom: spacing.stackMd },
+  listItem: { ...typography.bodyMd, color: colors.onSurface, marginBottom: spacing.stackSm },
   examplesLabel: { ...typography.labelSm, color: colors.primary, marginBottom: spacing.stackSm },
   example: { borderTopWidth: 1, borderTopColor: colors.surfaceContainer, paddingTop: spacing.stackSm },
   passageTitle: {
