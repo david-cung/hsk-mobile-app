@@ -16,6 +16,7 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
 import { ScreenState } from '../components/ScreenState';
+import { useI18n } from '../i18n/I18nContext';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing, typography } from '../theme';
 
@@ -26,6 +27,7 @@ export function QuizScreen() {
   const { params } = useRoute<Route>();
   const navigation = useNavigation<Nav>();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [selectionError, setSelectionError] = useState<string | null>(null);
@@ -56,13 +58,13 @@ export function QuizScreen() {
         source: 'lesson',
       });
     },
-    onError: (e) => setSubmitError(e instanceof Error ? e.message : 'Submit failed'),
+    onError: (e) => setSubmitError(e instanceof Error ? e.message : t('quiz.submitFailed')),
   });
 
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ScreenState type="loading" title="Loading quiz" />
+        <ScreenState type="loading" title={t('quiz.loading')} />
       </View>
     );
   }
@@ -72,9 +74,9 @@ export function QuizScreen() {
       <View style={styles.center}>
         <ScreenState
           type="error"
-          title="Could not load quiz"
-          message="Please check your connection and try again."
-          actionLabel="Try Again"
+          title={t('quiz.couldNotLoad')}
+          message={t('common.connectionRetry')}
+          actionLabel={t('common.tryAgain')}
           onAction={() => {
             refetch();
           }}
@@ -88,8 +90,8 @@ export function QuizScreen() {
       <View style={styles.center}>
         <ScreenState
           type="empty"
-          title="No quiz questions yet"
-          message="Review the lesson content for now and try again later."
+          title={t('quiz.noQuestions')}
+          message={t('quiz.noQuestionsMessage')}
         />
       </View>
     );
@@ -108,7 +110,7 @@ export function QuizScreen() {
 
   const handleNext = () => {
     if (!selected) {
-      setSelectionError('Choose an option before continuing.');
+      setSelectionError(t('quiz.chooseOption'));
       return;
     }
     if (isLast) {
@@ -121,7 +123,7 @@ export function QuizScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.progress}>
-        Question {currentIndex + 1} of {questions.length}
+        {t('quiz.progress', { current: currentIndex + 1, total: questions.length })}
       </Text>
       <ProgressBar progress={((currentIndex + 1) / questions.length) * 100} />
       <Card>
@@ -145,7 +147,7 @@ export function QuizScreen() {
           <TextInput
             value={selected ?? ''}
             onChangeText={(text) => handleSelect(text)}
-            placeholder="Type your answer"
+            placeholder={t('quiz.answerPlaceholder')}
             placeholderTextColor={colors.onSurfaceVariant}
             autoCapitalize="none"
             style={styles.answerInput}
@@ -154,11 +156,11 @@ export function QuizScreen() {
       </Card>
       {selectionError ? <Text style={styles.errorText}>{selectionError}</Text> : null}
       {submitError ? (
-        <ScreenState type="error" title="Could not submit quiz" message={submitError} compact style={styles.errorState} />
+        <ScreenState type="error" title={t('quiz.couldNotSubmit')} message={submitError} compact style={styles.errorState} />
       ) : null}
       <View style={styles.actions}>
         <Button
-          title="Previous"
+          title={t('common.previous')}
           variant="ghost"
           disabled={currentIndex === 0 || submitMutation.isPending}
           onPress={() => {
@@ -168,7 +170,7 @@ export function QuizScreen() {
           style={styles.actionButton}
         />
         <Button
-          title={isLast ? 'Submit Quiz' : 'Next Question'}
+          title={isLast ? t('quiz.submitQuiz') : t('quiz.nextQuestion')}
           rightIcon={isLast ? 'checkmark-circle-outline' : 'arrow-forward'}
           onPress={handleNext}
           loading={submitMutation.isPending}

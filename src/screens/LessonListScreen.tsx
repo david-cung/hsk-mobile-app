@@ -14,6 +14,8 @@ import { contentApi } from '../api/endpoints';
 import { Card } from '../components/Card';
 import { Ionicons } from '../components/Icon';
 import { ScreenState } from '../components/ScreenState';
+import { useI18n } from '../i18n/I18nContext';
+import { getLessonTypeLabel } from '../i18n/lessonTypes';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
 
@@ -39,6 +41,10 @@ export function LessonListScreen() {
   const { params } = useRoute<Route>();
   const navigation = useNavigation<Nav>();
   const queryClient = useQueryClient();
+  const { t, formatNumber } = useI18n();
+  const localizedFocusLabel = params.lessonType
+    ? getLessonTypeLabel(params.lessonType, t)
+    : params.focusLabel;
 
   useFocusEffect(
     useCallback(() => {
@@ -50,9 +56,9 @@ export function LessonListScreen() {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: params.focusLabel ?? params.levelTitle,
+      title: localizedFocusLabel ?? params.levelTitle,
     });
-  }, [navigation, params.focusLabel, params.levelTitle]);
+  }, [navigation, localizedFocusLabel, params.levelTitle]);
 
   const {
     data: lessons,
@@ -72,25 +78,27 @@ export function LessonListScreen() {
     : lessons;
 
   const emptyMessage = params.lessonType
-    ? `No ${params.focusLabel ?? params.lessonType} lessons yet for this level.`
-    : 'No lessons available.';
+    ? t('lessonList.noTypedLessons', {
+        type: localizedFocusLabel ?? getLessonTypeLabel(params.lessonType, t),
+      })
+    : t('lessonList.noLessons');
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.subtitle}>
-        {params.focusLabel
-          ? `${params.focusLabel} · ${params.levelTitle}`
-          : 'Select a lesson to begin'}
+        {localizedFocusLabel
+          ? `${localizedFocusLabel} · ${params.levelTitle}`
+          : t('lessonList.selectLesson')}
       </Text>
 
       {isLoading ? (
-        <ScreenState type="loading" title="Loading lessons" />
+        <ScreenState type="loading" title={t('home.loadingLessons')} />
       ) : isError ? (
         <ScreenState
           type="error"
-          title="Could not load lessons"
-          message="Please check your connection and try again."
-          actionLabel="Try Again"
+          title={t('lessonList.couldNotLoad')}
+          message={t('common.connectionRetry')}
+          actionLabel={t('common.tryAgain')}
           onAction={() => {
             refetch();
           }}
@@ -98,9 +106,9 @@ export function LessonListScreen() {
       ) : !filteredLessons?.length ? (
         <ScreenState
           type="empty"
-          title="Nothing here yet"
+          title={t('lessonList.nothingHere')}
           message={emptyMessage}
-          actionLabel="Reload"
+          actionLabel={t('common.reload')}
           onAction={() => {
             refetch();
           }}
@@ -110,7 +118,7 @@ export function LessonListScreen() {
           <Pressable
             key={lesson.id}
             accessibilityRole="button"
-            accessibilityLabel={`${lesson.title}, ${lesson.duration_minutes} minutes`}
+            accessibilityLabel={`${lesson.title}, ${formatNumber(lesson.duration_minutes)} ${t('common.minutesUnit')}`}
             onPress={() =>
               navigation.navigate('LessonDetail', {
                 lessonId: lesson.id,
@@ -129,7 +137,7 @@ export function LessonListScreen() {
                 <Text style={styles.lessonTitle}>{lesson.title}</Text>
                 {lesson.status === 'completed' && (
                   <View style={styles.doneBadge}>
-                    <Text style={styles.doneText}>Done</Text>
+                    <Text style={styles.doneText}>{t('lessonList.done')}</Text>
                   </View>
                 )}
               </View>
@@ -139,9 +147,9 @@ export function LessonListScreen() {
                 </Text>
               )}
               <View style={styles.meta}>
-                <Text style={styles.metaText}>{lesson.lesson_type}</Text>
+                <Text style={styles.metaText}>{getLessonTypeLabel(lesson.lesson_type, t)}</Text>
                 <Text style={styles.metaText}>
-                  {lesson.duration_minutes} min
+                  {formatNumber(lesson.duration_minutes)} {t('common.minutesShort')}
                 </Text>
                 {lesson.score_percent != null && (
                   <Text style={styles.score}>{lesson.score_percent}%</Text>

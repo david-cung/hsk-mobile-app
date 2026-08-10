@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 import { Ionicons } from './Icon';
+import { useI18n } from '../i18n/I18nContext';
 import { colors, radius, shadows, typography } from '../theme';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
@@ -30,6 +31,7 @@ export function Button({
   accessibilityLabel,
   style,
 }: ButtonProps) {
+  const { t } = useI18n();
   const isPrimary = variant === 'primary';
   const contentColor = isPrimary
     ? colors.onPrimary
@@ -57,7 +59,7 @@ export function Button({
       {loading ? (
         <ActivityIndicator
           color={isPrimary ? colors.onPrimary : colors.primary}
-          accessibilityLabel="Loading"
+          accessibilityLabel={t('common.loading')}
         />
       ) : (
         <View style={styles.content}>

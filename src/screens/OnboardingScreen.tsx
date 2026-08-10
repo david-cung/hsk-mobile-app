@@ -4,19 +4,21 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { profileApi } from '../api/endpoints';
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
+import { useI18n } from '../i18n/I18nContext';
 import { colors, radius, spacing, typography } from '../theme';
 
 const GOALS = [
-  { label: 'Travel', marker: 'T', value: 'travel' },
-  { label: 'Business', marker: 'B', value: 'business' },
-  { label: 'HSK Exam', marker: 'H', value: 'hsk_exam' },
-  { label: 'Culture', marker: 'C', value: 'culture' },
+  { labelKey: 'onboarding.goal.travel' as const, marker: 'T', value: 'travel' },
+  { labelKey: 'onboarding.goal.business' as const, marker: 'B', value: 'business' },
+  { labelKey: 'onboarding.goal.hsk_exam' as const, marker: 'H', value: 'hsk_exam' },
+  { labelKey: 'onboarding.goal.culture' as const, marker: 'C', value: 'culture' },
 ];
 
 const LEVELS = [1, 2, 3, 4, 5, 6];
 
 export function OnboardingScreen() {
   const { refreshProfile } = useAuth();
+  const { t } = useI18n();
   const [step, setStep] = useState(0);
   const [learningGoal, setLearningGoal] = useState('hsk_exam');
   const [currentLevel, setCurrentLevel] = useState(1);
@@ -38,7 +40,7 @@ export function OnboardingScreen() {
       });
       await refreshProfile();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not save your learning path.');
+      setError(e instanceof Error ? e.message : t('onboarding.saveFailed'));
     } finally {
       setLoading(false);
     }
@@ -46,22 +48,21 @@ export function OnboardingScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.step}>Step {step + 1} of 3</Text>
+      <Text style={styles.step}>
+        {t('onboarding.step', { current: step + 1, total: 3 })}
+      </Text>
 
       {step === 0 && (
         <>
-          <Text style={styles.title}>Welcome to HSK Chinese Master</Text>
-          <Text style={styles.body}>
-            Learn Mandarin with structured lessons, quizzes, and progress tracking aligned to HSK
-            levels.
-          </Text>
-          <Button title="Get Started" rightIcon="arrow-forward" onPress={() => setStep(1)} />
+          <Text style={styles.title}>{t('onboarding.welcome')}</Text>
+          <Text style={styles.body}>{t('onboarding.body')}</Text>
+          <Button title={t('onboarding.getStarted')} rightIcon="arrow-forward" onPress={() => setStep(1)} />
         </>
       )}
 
       {step === 1 && (
         <>
-          <Text style={styles.title}>What is your goal?</Text>
+          <Text style={styles.title}>{t('onboarding.goalQuestion')}</Text>
           <View style={styles.grid}>
             {GOALS.map((goal) => (
               <Pressable
@@ -70,21 +71,21 @@ export function OnboardingScreen() {
                 onPress={() => setLearningGoal(goal.value)}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: learningGoal === goal.value }}
-                accessibilityLabel={goal.label}
+                accessibilityLabel={t(goal.labelKey)}
               >
                 <Text style={styles.goalIcon}>{goal.marker}</Text>
-                <Text style={styles.goalLabel}>{goal.label}</Text>
+                <Text style={styles.goalLabel}>{t(goal.labelKey)}</Text>
               </Pressable>
             ))}
           </View>
-          <Button title="Continue" rightIcon="arrow-forward" onPress={() => setStep(2)} />
+          <Button title={t('common.continue')} rightIcon="arrow-forward" onPress={() => setStep(2)} />
         </>
       )}
 
       {step === 2 && (
         <>
-          <Text style={styles.title}>Set your HSK path</Text>
-          <Text style={styles.subtitle}>Current HSK level</Text>
+          <Text style={styles.title}>{t('onboarding.setPath')}</Text>
+          <Text style={styles.subtitle}>{t('onboarding.currentLevel')}</Text>
           <View style={styles.levelRow}>
             {LEVELS.map((level) => (
               <Button
@@ -100,8 +101,8 @@ export function OnboardingScreen() {
             ))}
           </View>
 
-          <Text style={styles.subtitle}>Target HSK level</Text>
-          <Text style={styles.hint}>Target cannot be lower than your current level.</Text>
+          <Text style={styles.subtitle}>{t('onboarding.targetLevel')}</Text>
+          <Text style={styles.hint}>{t('onboarding.targetHint')}</Text>
           <View style={styles.levelRow}>
             {LEVELS.map((level) => (
               <Button
@@ -114,7 +115,7 @@ export function OnboardingScreen() {
             ))}
           </View>
 
-          <Text style={styles.subtitle}>Daily study goal (minutes)</Text>
+          <Text style={styles.subtitle}>{t('onboarding.dailyGoal')}</Text>
           <View style={styles.levelRow}>
             {[15, 30, 45, 60].map((minutes) => (
               <Button
@@ -132,7 +133,7 @@ export function OnboardingScreen() {
             </View>
           ) : null}
           <Button
-            title="Start Learning"
+            title={t('onboarding.startLearning')}
             leftIcon="sparkles-outline"
             onPress={finish}
             loading={loading}

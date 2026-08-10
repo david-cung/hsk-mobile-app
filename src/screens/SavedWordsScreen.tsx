@@ -13,10 +13,12 @@ import { learningApi } from '../api/endpoints';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { ScreenState } from '../components/ScreenState';
+import { useI18n } from '../i18n/I18nContext';
 import { colors, radius, spacing, typography } from '../theme';
 
 export function SavedWordsScreen() {
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   const [hanzi, setHanzi] = useState('');
   const [pinyin, setPinyin] = useState('');
   const [meaning, setMeaning] = useState('');
@@ -40,26 +42,26 @@ export function SavedWordsScreen() {
       setHanzi('');
       setPinyin('');
       setMeaning('');
-      setNotice('Word saved.');
+      setNotice(t('savedWords.wordSaved'));
       queryClient.invalidateQueries({ queryKey: ['savedWords'] });
     },
     onError: (e) => {
       setNotice(null);
-      setFormError(e instanceof Error ? e.message : 'Failed to save');
+      setFormError(e instanceof Error ? e.message : t('savedWords.failedSave'));
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => learningApi.deleteSavedWord(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savedWords'] }),
-    onError: (e) => Alert.alert('Error', e instanceof Error ? e.message : 'Failed to remove word'),
+    onError: (e) => Alert.alert(t('common.error'), e instanceof Error ? e.message : t('savedWords.failedRemove')),
   });
 
   const saveWord = () => {
     setNotice(null);
     setFormError(null);
     if (!hanzi.trim()) {
-      setHanziError('Hanzi is required.');
+      setHanziError(t('savedWords.hanziRequired'));
       return;
     }
     setHanziError(null);
@@ -67,9 +69,9 @@ export function SavedWordsScreen() {
   };
 
   const confirmDelete = (id: number) => {
-    Alert.alert('Remove saved word?', 'This word will be removed from your review list.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Remove', style: 'destructive', onPress: () => deleteMutation.mutate(id) },
+    Alert.alert(t('savedWords.removeQuestion'), t('savedWords.removeMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.remove'), style: 'destructive', onPress: () => deleteMutation.mutate(id) },
     ]);
   };
 
@@ -78,7 +80,7 @@ export function SavedWordsScreen() {
       <View style={styles.form}>
         <TextInput
           style={[styles.input, hanziError && styles.inputError]}
-          placeholder="汉字 (Hanzi)"
+          placeholder="汉字"
           placeholderTextColor={colors.onSurfaceVariant}
           value={hanzi}
           onChangeText={(value) => {
@@ -87,12 +89,12 @@ export function SavedWordsScreen() {
             setFormError(null);
             setNotice(null);
           }}
-          accessibilityLabel="Hanzi"
+          accessibilityLabel={t('savedWords.hanzi')}
         />
         {hanziError ? <Text style={styles.errorText}>{hanziError}</Text> : null}
         <TextInput
           style={styles.input}
-          placeholder="Pinyin"
+          placeholder={t('savedWords.pinyin')}
           placeholderTextColor={colors.onSurfaceVariant}
           value={pinyin}
           onChangeText={(value) => {
@@ -100,11 +102,11 @@ export function SavedWordsScreen() {
             setFormError(null);
             setNotice(null);
           }}
-          accessibilityLabel="Pinyin"
+          accessibilityLabel={t('savedWords.pinyin')}
         />
         <TextInput
           style={styles.input}
-          placeholder="Meaning"
+          placeholder={t('savedWords.meaning')}
           placeholderTextColor={colors.onSurfaceVariant}
           value={meaning}
           onChangeText={(value) => {
@@ -112,7 +114,7 @@ export function SavedWordsScreen() {
             setFormError(null);
             setNotice(null);
           }}
-          accessibilityLabel="Meaning"
+          accessibilityLabel={t('savedWords.meaning')}
         />
         {notice ? (
           <ScreenState type="success" title={notice} compact style={styles.notice} />
@@ -120,14 +122,14 @@ export function SavedWordsScreen() {
         {formError ? (
           <ScreenState
             type="error"
-            title="Could not save word"
+            title={t('savedWords.couldNotSave')}
             message={formError}
             compact
             style={styles.notice}
           />
         ) : null}
         <Button
-          title="Save Word"
+          title={t('savedWords.saveWord')}
           leftIcon="bookmark-outline"
           onPress={saveWord}
           loading={addMutation.isPending}
@@ -137,15 +139,15 @@ export function SavedWordsScreen() {
 
       {isLoading ? (
         <View style={styles.stateWrap}>
-          <ScreenState type="loading" title="Loading saved words" />
+          <ScreenState type="loading" title={t('savedWords.loading')} />
         </View>
       ) : isError ? (
         <View style={styles.stateWrap}>
           <ScreenState
             type="error"
-            title="Could not load saved words"
-            message="Please check your connection and try again."
-            actionLabel="Try Again"
+            title={t('savedWords.couldNotLoad')}
+            message={t('common.connectionRetry')}
+            actionLabel={t('common.tryAgain')}
             onAction={() => {
               refetch();
             }}
@@ -160,8 +162,8 @@ export function SavedWordsScreen() {
           ListEmptyComponent={
             <ScreenState
               type="empty"
-              title="No saved words yet"
-              message="Save words from lessons or add your own above."
+              title={t('savedWords.empty')}
+              message={t('savedWords.emptyMessage')}
             />
           }
           renderItem={({ item }) => (
@@ -173,7 +175,7 @@ export function SavedWordsScreen() {
                   {item.meaning && <Text style={styles.meaning}>{item.meaning}</Text>}
                 </View>
                 <Button
-                  title="Remove"
+                  title={t('common.remove')}
                   leftIcon="trash-outline"
                   variant="ghost"
                   disabled={deleteMutation.isPending}

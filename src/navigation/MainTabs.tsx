@@ -8,6 +8,7 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { PracticeScreen } from '../screens/PracticeScreen';
 import { ProgressScreen } from '../screens/ProgressScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
+import { useI18n } from '../i18n/I18nContext';
 import { colors, typography } from '../theme';
 import type { MainTabParamList } from './types';
 
@@ -24,6 +25,8 @@ function tabBarIcon(routeName: string, color: string, size: number, focused: boo
 }
 
 export function MainTabs() {
+  const { t } = useI18n();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -40,10 +43,10 @@ export function MainTabs() {
         tabBarIcon: ({ color, size, focused }) => tabBarIcon(route.name, color, size, focused),
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
-      <Tab.Screen name="Practice" component={PracticeScreen} options={{ title: 'Practice' }} />
-      <Tab.Screen name="Progress" component={ProgressScreen} options={{ title: 'Progress' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: t('nav.home') }} />
+      <Tab.Screen name="Practice" component={PracticeScreen} options={{ title: t('nav.practice') }} />
+      <Tab.Screen name="Progress" component={ProgressScreen} options={{ title: t('nav.progress') }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: t('nav.profile') }} />
     </Tab.Navigator>
   );
 }

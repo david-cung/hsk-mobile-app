@@ -8,6 +8,8 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { ScreenState } from '../components/ScreenState';
 import { useAuth } from '../context/AuthContext';
+import { useI18n } from '../i18n/I18nContext';
+import { getLessonTypeLabel } from '../i18n/lessonTypes';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
 
@@ -16,6 +18,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 export function DailyReviewScreen() {
   const navigation = useNavigation<Nav>();
   const { profile } = useAuth();
+  const { t, formatNumber } = useI18n();
   const {
     data: levels,
     isLoading: isLevelsLoading,
@@ -74,44 +77,48 @@ export function DailyReviewScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Daily Review</Text>
-      <Text style={styles.subtitle}>Revisit mistakes, saved words, and completed lessons</Text>
+      <Text style={styles.title}>{t('dailyReview.title')}</Text>
+      <Text style={styles.subtitle}>{t('dailyReview.subtitle')}</Text>
 
       {isLoading ? (
-        <ScreenState type="loading" title="Preparing review" />
+        <ScreenState type="loading" title={t('dailyReview.preparing')} />
       ) : isError ? (
         <ScreenState
           type="error"
-          title="Could not prepare review"
-          message="Please check your connection and try again."
-          actionLabel="Try Again"
+          title={t('dailyReview.couldNotPrepare')}
+          message={t('common.connectionRetry')}
+          actionLabel={t('common.tryAgain')}
           onAction={retry}
         />
       ) : !hasReview ? (
         <ScreenState
           type="empty"
-          title="No review items yet"
-          message="Complete quizzes or save words, then come back for daily review."
+          title={t('dailyReview.empty')}
+          message={t('dailyReview.emptyMessage')}
         />
       ) : (
         <>
           {reviewMistakes.length > 0 && (
             <>
-              <Text style={styles.sectionTitle}>Mistakes to Retry</Text>
+              <Text style={styles.sectionTitle}>{t('dailyReview.mistakes')}</Text>
               {reviewMistakes.map((mistake) => (
                 <Card key={`${mistake.attempt_id}-${mistake.question_id}`} style={styles.card}>
-                  <Text style={styles.lessonTitle}>{mistake.prompt ?? 'Question review'}</Text>
-                  <Text style={styles.meta}>Your answer: {mistake.user_answer || 'No answer'}</Text>
-                  <Text style={styles.correct}>Correct answer: {mistake.correct_answer}</Text>
+                  <Text style={styles.lessonTitle}>{mistake.prompt ?? t('dailyReview.questionReview')}</Text>
+                  <Text style={styles.meta}>
+                    {t('dailyReview.yourAnswer', { answer: mistake.user_answer || t('common.noAnswer') })}
+                  </Text>
+                  <Text style={styles.correct}>
+                    {t('dailyReview.correctAnswer', { answer: mistake.correct_answer })}
+                  </Text>
                   {mistake.explanation ? <Text style={styles.meta}>{mistake.explanation}</Text> : null}
                   <Button
-                    title="Review Lesson"
+                    title={t('dailyReview.reviewLesson')}
                     variant="ghost"
                     rightIcon="arrow-forward"
                     onPress={() =>
                       navigation.navigate('LessonDetail', {
                         lessonId: mistake.lesson_id,
-                        lessonTitle: mistake.lesson_title ?? 'Lesson Review',
+                        lessonTitle: mistake.lesson_title ?? t('dailyReview.lessonReview'),
                       })
                     }
                     style={styles.btn}
@@ -123,7 +130,7 @@ export function DailyReviewScreen() {
 
           {reviewWords.length > 0 && (
             <>
-              <Text style={styles.sectionTitle}>Saved Words</Text>
+              <Text style={styles.sectionTitle}>{t('nav.savedWords')}</Text>
               {reviewWords.map((word) => (
                 <Card key={word.id} style={styles.card}>
                   <Text style={styles.hanzi}>{word.hanzi}</Text>
@@ -136,15 +143,18 @@ export function DailyReviewScreen() {
 
           {reviewLessons.length > 0 && (
             <>
-              <Text style={styles.sectionTitle}>Completed Lessons</Text>
+              <Text style={styles.sectionTitle}>{t('dailyReview.completedLessons')}</Text>
               {reviewLessons.map((lesson) => (
                 <Card key={lesson.id} style={styles.card}>
                   <Text style={styles.lessonTitle}>{lesson.title}</Text>
                   <Text style={styles.meta}>
-                    Last score: {lesson.score_percent ?? 0}% · {lesson.lesson_type}
+                    {t('dailyReview.lastScore', {
+                      score: formatNumber(lesson.score_percent ?? 0),
+                      type: getLessonTypeLabel(lesson.lesson_type, t),
+                    })}
                   </Text>
                   <Button
-                    title="Review"
+                    title={t('dailyReview.review')}
                     variant="secondary"
                     rightIcon="arrow-forward"
                     onPress={() =>

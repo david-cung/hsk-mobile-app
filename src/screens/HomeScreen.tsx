@@ -8,19 +8,20 @@ import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
 import { ScreenState } from '../components/ScreenState';
 import { useAuth } from '../context/AuthContext';
+import { useI18n } from '../i18n/I18nContext';
 import { colors, spacing, typography } from '../theme';
 
 const FOCUS_AREAS = [
-  { label: 'Core Lessons', icon: 'layers' as const, type: 'mixed' },
-  { label: 'Vocabulary', icon: 'language' as const, type: 'vocabulary' },
-  { label: 'Grammar', icon: 'document-text' as const, type: 'grammar' },
-  { label: 'Listening', icon: 'headset' as const, type: 'listening' },
-  { label: 'Reading', icon: 'book' as const, type: 'reading' },
-  { label: 'Patterns', icon: 'text' as const, type: 'sentence_pattern' },
-  { label: 'Conversation', icon: 'chatbubbles' as const, type: 'conversation' },
-  { label: 'Practice', icon: 'fitness' as const, type: 'practice' },
+  { labelKey: 'lessonType.mixed' as const, icon: 'layers' as const, type: 'mixed' },
+  { labelKey: 'lessonType.vocabulary' as const, icon: 'language' as const, type: 'vocabulary' },
+  { labelKey: 'lessonType.grammar' as const, icon: 'document-text' as const, type: 'grammar' },
+  { labelKey: 'lessonType.listening' as const, icon: 'headset' as const, type: 'listening' },
+  { labelKey: 'lessonType.reading' as const, icon: 'book' as const, type: 'reading' },
+  { labelKey: 'lessonType.patterns' as const, icon: 'text' as const, type: 'sentence_pattern' },
+  { labelKey: 'lessonType.conversation' as const, icon: 'chatbubbles' as const, type: 'conversation' },
+  { labelKey: 'lessonType.practice' as const, icon: 'fitness' as const, type: 'practice' },
   {
-    label: 'Mock Test',
+    labelKey: 'nav.mockTest' as const,
     icon: 'help-circle' as const,
     route: 'MockTests' as const,
   },
@@ -29,6 +30,7 @@ const FOCUS_AREAS = [
 export function HomeScreen() {
   const navigation = useRootNavigation();
   const { user, profile } = useAuth();
+  const { t, formatNumber } = useI18n();
 
   const {
     data: dashboard,
@@ -50,33 +52,33 @@ export function HomeScreen() {
   );
   const greeting =
     new Date().getHours() < 12
-      ? 'Good morning'
+      ? t('home.goodMorning')
       : new Date().getHours() < 18
-      ? 'Good afternoon'
-      : 'Good evening';
+      ? t('home.goodAfternoon')
+      : t('home.goodEvening');
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.greeting}>
-          {greeting}, {user?.display_name ?? 'Learner'}
+          {greeting}, {user?.display_name ?? t('home.learner')}
         </Text>
-        <Text style={styles.subGreeting}>Ready for your daily practice?</Text>
+        <Text style={styles.subGreeting}>{t('home.ready')}</Text>
       </View>
 
       {isDashboardLoading ? (
         <ScreenState
           type="loading"
-          title="Loading your progress"
+          title={t('home.loadingProgress')}
           compact
           style={styles.state}
         />
       ) : isDashboardError ? (
         <ScreenState
           type="error"
-          title="Progress unavailable"
-          message="Check your connection and try again."
-          actionLabel="Try Again"
+          title={t('home.progressUnavailable')}
+          message={t('common.connectionRetry')}
+          actionLabel={t('common.tryAgain')}
           onAction={() => {
             refetchDashboard();
           }}
@@ -92,7 +94,9 @@ export function HomeScreen() {
               </Text>
             </View>
             <Text style={styles.progressLabel}>
-              {dashboard?.lessons_completed ?? 0} lessons completed
+              {t('home.lessonsCompleted', {
+                count: formatNumber(dashboard?.lessons_completed ?? 0),
+              })}
             </Text>
           </View>
           <ProgressBar
@@ -104,18 +108,18 @@ export function HomeScreen() {
       <View style={styles.statsRow}>
         <Card style={styles.statCard}>
           <Ionicons name="time-outline" size={24} color={colors.tertiary} />
-          <Text style={styles.statLabel}>Daily Goal</Text>
+          <Text style={styles.statLabel}>{t('home.dailyGoal')}</Text>
           <Text style={styles.statValue}>
             {dashboard?.minutes_studied_today ?? 0}/
             {dashboard?.daily_goal_minutes ?? 30}{' '}
-            <Text style={styles.statUnit}>min</Text>
+            <Text style={styles.statUnit}>{t('common.minutesShort')}</Text>
           </Text>
         </Card>
         <Card style={styles.statCard}>
           <Ionicons name="flame" size={24} color={colors.secondary} />
-          <Text style={styles.statLabel}>Study Streak</Text>
+          <Text style={styles.statLabel}>{t('home.studyStreak')}</Text>
           <Text style={styles.statValue}>
-            {dashboard?.study_streak_days ?? 0} Days
+            {formatNumber(dashboard?.study_streak_days ?? 0)} {t('common.days')}
           </Text>
         </Card>
       </View>
@@ -123,7 +127,7 @@ export function HomeScreen() {
       {isLevelsLoading ? (
         <ScreenState
           type="loading"
-          title="Loading lessons"
+          title={t('home.loadingLessons')}
           compact
           style={styles.state}
         />
@@ -136,15 +140,15 @@ export function HomeScreen() {
             })
           }
           accessibilityRole="button"
-          accessibilityLabel={`Continue HSK ${currentLevel.level_number}`}
+          accessibilityLabel={t('home.continueHsk', { level: currentLevel.level_number })}
         >
           <View style={styles.hero}>
-            <Text style={styles.heroLabel}>NEXT LESSON</Text>
+            <Text style={styles.heroLabel}>{t('home.nextLesson')}</Text>
             <Text style={styles.heroTitle}>
-              Continue HSK {currentLevel.level_number}
+              {t('home.continueHsk', { level: currentLevel.level_number })}
             </Text>
             <View style={styles.heroButton}>
-              <Text style={styles.heroButtonText}>Continue Lesson</Text>
+              <Text style={styles.heroButtonText}>{t('home.continueLesson')}</Text>
               <Ionicons name="play" size={18} color={colors.primary} />
             </View>
           </View>
@@ -152,25 +156,26 @@ export function HomeScreen() {
       ) : (
         <ScreenState
           type="empty"
-          title="No current level found"
-          message="Update your HSK level in Settings to continue lessons."
+          title={t('home.noCurrentLevel')}
+          message={t('home.updateLevel')}
           compact
           style={styles.state}
         />
       )}
 
-      <Text style={styles.sectionTitle}>Focus Areas</Text>
+      <Text style={styles.sectionTitle}>{t('home.focusAreas')}</Text>
       <View style={styles.focusGrid}>
         {FOCUS_AREAS.map(area => {
           const disabled = !('route' in area) && !currentLevel;
+          const label = t(area.labelKey);
           return (
             <Pressable
-              key={area.label}
+              key={area.labelKey}
               style={[styles.focusItem, disabled && styles.focusDisabled]}
               disabled={disabled}
               accessibilityRole="button"
               accessibilityState={{ disabled }}
-              accessibilityLabel={area.label}
+              accessibilityLabel={label}
               onPress={() => {
                 if ('route' in area && area.route) {
                   navigation.navigate(area.route);
@@ -179,7 +184,7 @@ export function HomeScreen() {
                     levelId: currentLevel.id,
                     levelTitle: currentLevel.title,
                     lessonType: area.type,
-                    focusLabel: area.label,
+                    focusLabel: label,
                   });
                 }
               }}
@@ -187,7 +192,7 @@ export function HomeScreen() {
               <View style={styles.focusIcon}>
                 <Ionicons name={area.icon} size={24} color={colors.primary} />
               </View>
-              <Text style={styles.focusLabel}>{area.label}</Text>
+              <Text style={styles.focusLabel}>{label}</Text>
             </Pressable>
           );
         })}

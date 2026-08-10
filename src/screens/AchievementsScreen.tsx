@@ -8,7 +8,9 @@ type IoniconName = ComponentProps<typeof Ionicons>['name'];
 import { learningApi } from '../api/endpoints';
 import { Card } from '../components/Card';
 import { ScreenState } from '../components/ScreenState';
+import { useI18n } from '../i18n/I18nContext';
 import { colors, spacing, typography } from '../theme';
+import type { TranslationKey } from '../i18n/translations';
 
 const ICON_MAP: Record<string, IoniconName> = {
   school: 'school',
@@ -18,6 +20,7 @@ const ICON_MAP: Record<string, IoniconName> = {
 };
 
 export function AchievementsScreen() {
+  const { t, formatDate } = useI18n();
   const { data: achievements, isLoading, isError, refetch } = useQuery({
     queryKey: ['achievements'],
     queryFn: learningApi.achievements,
@@ -26,7 +29,7 @@ export function AchievementsScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ScreenState type="loading" title="Loading achievements" />
+        <ScreenState type="loading" title={t('achievements.loading')} />
       </View>
     );
   }
@@ -36,9 +39,9 @@ export function AchievementsScreen() {
       <View style={styles.center}>
         <ScreenState
           type="error"
-          title="Could not load achievements"
-          message="Please check your connection and try again."
-          actionLabel="Try Again"
+          title={t('achievements.couldNotLoad')}
+          message={t('common.connectionRetry')}
+          actionLabel={t('common.tryAgain')}
           onAction={() => {
             refetch();
           }}
@@ -56,15 +59,21 @@ export function AchievementsScreen() {
       ListEmptyComponent={
         <ScreenState
           type="empty"
-          title="No achievements yet"
-          message="Complete quizzes and save words to unlock achievements."
+          title={t('achievements.empty')}
+          message={t('achievements.emptyMessage')}
         />
       }
       renderItem={({ item }) => (
+        (() => {
+          const titleKey = `achievements.${item.code}.title` as TranslationKey;
+          const descriptionKey = `achievements.${item.code}.description` as TranslationKey;
+          const title = t(titleKey, undefined, item.title);
+          const description = t(descriptionKey, undefined, item.description ?? '');
+          return (
         <Card
           style={[styles.card, !item.earned && styles.locked]}
           accessibilityRole="summary"
-          accessibilityLabel={`${item.title}, ${item.earned ? 'earned' : 'locked'}`}
+          accessibilityLabel={`${title}, ${item.earned ? t('common.earnedState') : t('common.locked')}`}
         >
           <View style={styles.row}>
             <View style={[styles.iconWrap, item.earned && styles.iconEarned]}>
@@ -75,14 +84,16 @@ export function AchievementsScreen() {
               />
             </View>
             <View style={styles.textWrap}>
-              <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.description}>{item.description}</Text>
+              <Text style={styles.title}>{title}</Text>
+              <Text style={styles.description}>{description}</Text>
               {item.earned && item.earned_at && (
-                <Text style={styles.earned}>Earned {new Date(item.earned_at).toLocaleDateString()}</Text>
+                <Text style={styles.earned}>{t('common.earned')} {formatDate(item.earned_at)}</Text>
               )}
             </View>
           </View>
         </Card>
+          );
+        })()
       )}
     />
   );

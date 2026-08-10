@@ -7,6 +7,7 @@ import { learningApi } from '../api/endpoints';
 import { Card } from '../components/Card';
 import { ScreenState } from '../components/ScreenState';
 import { useAuth } from '../context/AuthContext';
+import { useI18n } from '../i18n/I18nContext';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
 
@@ -15,6 +16,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 export function MockTestsScreen() {
   const navigation = useNavigation<Nav>();
   const { profile } = useAuth();
+  const { t, formatNumber } = useI18n();
 
   const { data: tests, isLoading, isError, refetch } = useQuery({
     queryKey: ['mockTests'],
@@ -24,18 +26,17 @@ export function MockTestsScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.intro}>
-        Simulate the HSK exam with timed practice. Your target level is HSK{' '}
-        {profile?.target_hsk_level ?? 1}.
+        {t('mockTests.intro', { level: profile?.target_hsk_level ?? 1 })}
       </Text>
 
       {isLoading ? (
-        <ScreenState type="loading" title="Loading mock tests" />
+        <ScreenState type="loading" title={t('mockTests.loading')} />
       ) : isError ? (
         <ScreenState
           type="error"
-          title="Could not load mock tests"
-          message="Please check your connection and try again."
-          actionLabel="Try Again"
+          title={t('mockTests.couldNotLoad')}
+          message={t('common.connectionRetry')}
+          actionLabel={t('common.tryAgain')}
           onAction={() => {
             refetch();
           }}
@@ -43,15 +44,15 @@ export function MockTestsScreen() {
       ) : !tests?.length ? (
         <ScreenState
           type="empty"
-          title="No mock tests yet"
-          message="Mock tests appear after they are added for your HSK levels."
+          title={t('mockTests.empty')}
+          message={t('mockTests.emptyMessage')}
         />
       ) : (
         tests?.map((test) => (
           <Pressable
             key={test.id}
             accessibilityRole="button"
-            accessibilityLabel={`${test.title}, ${test.duration_minutes} minutes, ${test.question_count} questions`}
+            accessibilityLabel={`${test.title}, ${formatNumber(test.duration_minutes)} ${t('common.minutesUnit')}, ${formatNumber(test.question_count)} ${t('common.questions')}`}
             onPress={() =>
               navigation.navigate('MockTestSession', {
                 mockTestId: test.id,
@@ -64,10 +65,14 @@ export function MockTestsScreen() {
             <Card style={styles.testCard}>
               <Text style={styles.testTitle}>{test.title}</Text>
               <View style={styles.meta}>
-                <Text style={styles.metaText}>{test.duration_minutes} min</Text>
-                <Text style={styles.metaText}>{test.question_count} questions</Text>
+                <Text style={styles.metaText}>
+                  {formatNumber(test.duration_minutes)} {t('common.minutesShort')}
+                </Text>
+                <Text style={styles.metaText}>
+                  {formatNumber(test.question_count)} {t('common.questions')}
+                </Text>
               </View>
-              <Text style={styles.start}>Tap to start</Text>
+              <Text style={styles.start}>{t('mockTests.tapStart')}</Text>
             </Card>
           </Pressable>
         ))

@@ -18,6 +18,13 @@ export interface Profile {
   onboarding_completed: boolean;
 }
 
+export type LocalizedText = Partial<{
+  en: string;
+  vi: string;
+  english: string;
+  vietnamese: string;
+}>;
+
 export interface HskLevel {
   id: number;
   level_number: number;
@@ -41,7 +48,9 @@ export interface ChineseEntry {
   hanzi: string;
   pinyin?: string;
   meaning?: string;
+  meaning_vi?: string;
   meaning_en?: string;
+  translations?: LocalizedText;
   word_type?: string;
   category?: string;
   hsk_level?: number;
@@ -50,20 +59,27 @@ export interface ChineseEntry {
   example_pinyin?: string;
   example_vi?: string;
   example_en?: string;
+  example_translations?: LocalizedText;
   usage_note?: string;
+  usage_note_translations?: LocalizedText;
 }
 
 export interface GrammarPoint {
   title: string;
+  title_translations?: LocalizedText;
   structure?: string;
   explanation: string;
+  explanation_translations?: LocalizedText;
   examples: ChineseEntry[];
   common_mistakes?: string[];
+  common_mistakes_translations?: Partial<Record<'en' | 'vi', string[]>>;
 }
 
 export interface SentencePattern {
   pattern: string;
   meaning_vi?: string;
+  meaning_en?: string;
+  translations?: LocalizedText;
   examples?: string[];
 }
 
@@ -72,26 +88,35 @@ export interface DialogueLine {
   chinese: string;
   pinyin?: string;
   vietnamese?: string;
+  english?: string;
+  translations?: LocalizedText;
 }
 
 export interface DialogueContent {
   title?: string;
+  title_translations?: LocalizedText;
   lines: DialogueLine[];
   vocabulary_list?: string[];
   grammar_list?: string[];
   cultural_note?: string;
+  cultural_note_translations?: LocalizedText;
 }
 
 export interface RichReadingContent {
   title?: string;
+  title_translations?: LocalizedText;
   chinese: string;
   pinyin?: string;
   vietnamese?: string;
   english?: string;
+  translations?: LocalizedText;
   questions?: Array<{
     question: string;
+    question_translations?: LocalizedText;
     answer: string;
+    answer_translations?: LocalizedText;
     explanation?: string;
+    explanation_translations?: LocalizedText;
   }>;
 }
 
@@ -99,13 +124,18 @@ export interface ListeningPracticeContent {
   script: string;
   pinyin?: string;
   vietnamese?: string;
+  english?: string;
+  translations?: LocalizedText;
   task?: string;
+  task_translations?: LocalizedText;
   answer?: string;
+  answer_translations?: LocalizedText;
 }
 
 export interface PracticeExercise {
   id: string;
   title?: string;
+  title_translations?: LocalizedText;
   exercise_type:
     | 'multiple_choice'
     | 'text_input'
@@ -114,11 +144,14 @@ export interface PracticeExercise {
     | string;
   skill?: string;
   prompt: string;
+  prompt_translations?: LocalizedText;
   options?: string[];
   correct_answer: string;
   expected_answer?: string;
   hint?: string;
+  hint_translations?: LocalizedText;
   explanation?: string;
+  explanation_translations?: LocalizedText;
   word_bank?: string[];
 }
 
@@ -128,7 +161,9 @@ export interface LessonContent {
   hsk_level?: number;
   category?: string;
   learning_objectives?: string[];
+  learning_objective_translations?: Partial<Record<'en' | 'vi', string[]>>;
   overview?: string;
+  overview_translations?: LocalizedText;
   vocabulary?: ChineseEntry[];
   grammar_points?: GrammarPoint[];
   sentence_patterns?: SentencePattern[];
@@ -136,15 +171,22 @@ export interface LessonContent {
   reading?: RichReadingContent;
   listening?: ListeningPracticeContent;
   speaking_tasks?: string[];
+  speaking_task_translations?: Partial<Record<'en' | 'vi', string[]>>;
   reading_tasks?: string[];
+  reading_task_translations?: Partial<Record<'en' | 'vi', string[]>>;
   writing_tasks?: string[];
+  writing_task_translations?: Partial<Record<'en' | 'vi', string[]>>;
   passage_title?: string;
+  passage_title_translations?: LocalizedText;
   passage?: ChineseEntry[];
   transcript?: ChineseEntry[];
   patterns?: ChineseEntry[];
   activities?: string[];
+  activity_translations?: Partial<Record<'en' | 'vi', string[]>>;
   review_items?: string[];
+  review_item_translations?: Partial<Record<'en' | 'vi', string[]>>;
   items?: string[];
+  item_translations?: Partial<Record<'en' | 'vi', string[]>>;
   translations?: {
     english?: string;
     vietnamese?: string;
@@ -157,6 +199,7 @@ export interface LessonContent {
   practice_exercises?: PracticeExercise[];
   writing_exercises?: PracticeExercise[];
   tip?: string;
+  tip_translations?: LocalizedText;
 }
 
 export interface LessonDetail {

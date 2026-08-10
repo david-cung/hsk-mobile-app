@@ -11,10 +11,12 @@ import {
 
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
+import { useI18n } from '../i18n/I18nContext';
 import { colors, radius, spacing, typography } from '../theme';
 
 export function AuthScreen() {
   const { login, register } = useAuth();
+  const { t } = useI18n();
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,15 +29,15 @@ export function AuthScreen() {
     const nextErrors: typeof errors = {};
     const trimmedEmail = email.trim();
     if (!trimmedEmail) {
-      nextErrors.email = 'Email is required.';
+      nextErrors.email = t('auth.emailRequired');
     } else if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
-      nextErrors.email = 'Enter a valid email address.';
+      nextErrors.email = t('auth.emailInvalid');
     }
     if (password.length < 6) {
-      nextErrors.password = 'Password must be at least 6 characters.';
+      nextErrors.password = t('auth.passwordShort');
     }
     if (displayName.trim().length > 120) {
-      nextErrors.displayName = 'Display name must be 120 characters or fewer.';
+      nextErrors.displayName = t('auth.displayNameLong');
     }
     return nextErrors;
   };
@@ -56,7 +58,7 @@ export function AuthScreen() {
         await login(email.trim(), password);
       }
     } catch (e) {
-      setFormError(e instanceof Error ? e.message : 'Authentication failed');
+      setFormError(e instanceof Error ? e.message : t('auth.failed'));
     } finally {
       setLoading(false);
     }
@@ -69,14 +71,16 @@ export function AuthScreen() {
     >
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.logo}>汉</Text>
-        <Text style={styles.title}>HSK Chinese Master</Text>
-        <Text style={styles.subtitle}>{isRegister ? 'Create your account' : 'Welcome back'}</Text>
+        <Text style={styles.title}>{t('app.name')}</Text>
+        <Text style={styles.subtitle}>
+          {isRegister ? t('auth.createAccount') : t('auth.welcomeBack')}
+        </Text>
 
         {isRegister && (
           <View style={styles.field}>
             <TextInput
               style={[styles.input, errors.displayName && styles.inputError]}
-              placeholder="Display name"
+              placeholder={t('auth.displayName')}
               placeholderTextColor={colors.onSurfaceVariant}
               value={displayName}
               onChangeText={(value) => {
@@ -87,7 +91,7 @@ export function AuthScreen() {
               autoComplete="name"
               textContentType="name"
               returnKeyType="next"
-              accessibilityLabel="Display name"
+              accessibilityLabel={t('auth.displayName')}
             />
             {errors.displayName ? <Text style={styles.errorText}>{errors.displayName}</Text> : null}
           </View>
@@ -95,7 +99,7 @@ export function AuthScreen() {
         <View style={styles.field}>
           <TextInput
             style={[styles.input, errors.email && styles.inputError]}
-            placeholder="Email"
+            placeholder={t('auth.email')}
             placeholderTextColor={colors.onSurfaceVariant}
             autoCapitalize="none"
             autoCorrect={false}
@@ -108,14 +112,14 @@ export function AuthScreen() {
               setErrors((prev) => ({ ...prev, email: undefined }));
             }}
             returnKeyType="next"
-            accessibilityLabel="Email"
+            accessibilityLabel={t('auth.email')}
           />
           {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
         </View>
         <View style={styles.field}>
           <TextInput
             style={[styles.input, errors.password && styles.inputError]}
-            placeholder="Password"
+            placeholder={t('auth.password')}
             placeholderTextColor={colors.onSurfaceVariant}
             secureTextEntry
             textContentType={isRegister ? 'newPassword' : 'password'}
@@ -127,7 +131,7 @@ export function AuthScreen() {
             }}
             returnKeyType="done"
             onSubmitEditing={handleSubmit}
-            accessibilityLabel="Password"
+            accessibilityLabel={t('auth.password')}
           />
           {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
         </View>
@@ -139,7 +143,7 @@ export function AuthScreen() {
         ) : null}
 
         <Button
-          title={isRegister ? 'Sign Up' : 'Sign In'}
+          title={isRegister ? t('auth.signUp') : t('auth.signIn')}
           onPress={handleSubmit}
           loading={loading}
           disabled={loading}
@@ -147,7 +151,7 @@ export function AuthScreen() {
           style={styles.button}
         />
         <Button
-          title={isRegister ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+          title={isRegister ? t('auth.switchToSignIn') : t('auth.switchToSignUp')}
           onPress={() => {
             setIsRegister(!isRegister);
             setErrors({});

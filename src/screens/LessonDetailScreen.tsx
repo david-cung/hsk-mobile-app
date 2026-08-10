@@ -23,6 +23,27 @@ import { Card } from '../components/Card';
 import { ChineseLine } from '../components/ChineseLine';
 import { ScreenState } from '../components/ScreenState';
 import { SpeakButton } from '../components/SpeakButton';
+import { useI18n } from '../i18n/I18nContext';
+import {
+  getCommonMistakes,
+  getEntryExampleMeaning,
+  getEntryMeaning,
+  getGrammarExplanation,
+  getGrammarTitle,
+  getListeningTask,
+  getListeningTranslation,
+  getPatternMeaning,
+  getPracticeExplanation,
+  getPracticeHint,
+  getPracticePrompt,
+  getPracticeTitle,
+  getReadingTitle,
+  getReadingTranslation,
+  getLocalizedTask,
+  localizeDialogueLine,
+  localizeText,
+} from '../i18n/content';
+import { getLessonTypeLabel } from '../i18n/lessonTypes';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing, typography } from '../theme';
 import {
@@ -32,20 +53,6 @@ import {
 
 type Route = RouteProp<RootStackParamList, 'LessonDetail'>;
 type Nav = NativeStackNavigationProp<RootStackParamList>;
-
-const TYPE_LABELS: Record<string, string> = {
-  vocabulary: 'Vocabulary',
-  grammar: 'Grammar',
-  reading: 'Reading',
-  listening: 'Listening',
-  sentence_pattern: 'Sentence Pattern',
-  conversation: 'Conversation',
-  review: 'Review',
-  practice: 'Practice',
-  quiz: 'Quiz',
-  writing: 'Writing',
-  mixed: 'Mixed Lesson',
-};
 
 function hasItems<T>(items: T[] | undefined): items is T[] {
   return Boolean(items?.length);
@@ -58,23 +65,26 @@ function isDialogueContent(
 }
 
 function IntroSection({ content }: { content: LessonContent }) {
-  const objectives = content.learning_objectives ?? [];
+  const { language, t } = useI18n();
+  const overview = localizeText(content.overview_translations, language, content.overview ?? '');
+  const objectives =
+    content.learning_objective_translations?.[language] ??
+    content.learning_objectives ??
+    [];
   const hasObjectives = objectives.length > 0;
 
-  if (!content.overview && !hasObjectives) {
+  if (!overview && !hasObjectives) {
     return null;
   }
 
   return (
     <Card style={styles.block}>
-      {content.overview ? (
-        <Text style={styles.overview}>{content.overview}</Text>
-      ) : null}
+      {overview ? <Text style={styles.overview}>{overview}</Text> : null}
       {hasObjectives ? (
         <View
-          style={content.overview ? styles.objectivesWithOverview : undefined}
+          style={overview ? styles.objectivesWithOverview : undefined}
         >
-          <Text style={styles.examplesLabel}>Learning goals</Text>
+          <Text style={styles.examplesLabel}>{t('lessonDetail.learningGoals')}</Text>
           {objectives.map(objective => (
             <Text key={objective} style={styles.bulletText}>
               - {objective}
@@ -93,9 +103,11 @@ function VocabularySection({
   items: NonNullable<LessonContent['vocabulary']>;
   onSave: (word: NonNullable<LessonContent['vocabulary']>[number]) => void;
 }) {
+  const { language, t } = useI18n();
+
   return (
     <>
-      <Text style={styles.section}>Vocabulary</Text>
+      <Text style={styles.section}>{t('lessonType.vocabulary')}</Text>
       {items.map((word, index) => (
         <Card key={`${word.hanzi}-${index}`} style={styles.block}>
           {(() => {
@@ -116,29 +128,25 @@ function VocabularySection({
             ) : null;
           })()}
           <ChineseLine line={word} large />
-          {word.meaning_en ? (
-            <Text style={styles.secondaryMeaning}>{word.meaning_en}</Text>
-          ) : null}
           {word.example_cn ? (
             <View style={styles.exampleBox}>
-              <Text style={styles.examplesLabel}>Example</Text>
+              <Text style={styles.examplesLabel}>{t('lessonDetail.example')}</Text>
               <ChineseLine
                 line={{
                   hanzi: word.example_cn,
                   pinyin: word.example_pinyin,
-                  meaning: word.example_vi,
+                  meaning: getEntryExampleMeaning(word, language),
                 }}
               />
-              {word.example_en ? (
-                <Text style={styles.secondaryMeaning}>{word.example_en}</Text>
-              ) : null}
             </View>
           ) : null}
           {word.usage_note ? (
-            <Text style={styles.usageNote}>{word.usage_note}</Text>
+            <Text style={styles.usageNote}>
+              {localizeText(word.usage_note_translations, language, word.usage_note)}
+            </Text>
           ) : null}
           <Button
-            title="Save Word"
+            title={t('lessonDetail.saveWord')}
             leftIcon="bookmark-outline"
             variant="ghost"
             onPress={() => onSave(word)}
@@ -155,19 +163,21 @@ function GrammarSection({
 }: {
   points: NonNullable<LessonContent['grammar_points']>;
 }) {
+  const { language, t } = useI18n();
+
   return (
     <>
-      <Text style={styles.section}>Grammar</Text>
+      <Text style={styles.section}>{t('lessonType.grammar')}</Text>
       {points.map(point => (
         <Card key={point.title} style={styles.block}>
-          <Text style={styles.pointTitle}>{point.title}</Text>
+          <Text style={styles.pointTitle}>{getGrammarTitle(point, language)}</Text>
           {point.structure ? (
             <Text style={styles.structure}>{point.structure}</Text>
           ) : null}
-          <Text style={styles.pointBody}>{point.explanation}</Text>
+          <Text style={styles.pointBody}>{getGrammarExplanation(point, language)}</Text>
           {hasItems(point.examples) ? (
             <>
-              <Text style={styles.examplesLabel}>Examples</Text>
+              <Text style={styles.examplesLabel}>{t('lessonDetail.examples')}</Text>
               {point.examples.map((ex, index) => (
                 <View key={`${ex.hanzi}-${index}`} style={styles.example}>
                   <ChineseLine line={ex} />
@@ -175,10 +185,10 @@ function GrammarSection({
               ))}
             </>
           ) : null}
-          {hasItems(point.common_mistakes) ? (
+          {hasItems(getCommonMistakes(point, language)) ? (
             <View style={styles.mistakeBox}>
-              <Text style={styles.examplesLabel}>Common mistakes</Text>
-              {point.common_mistakes.map(mistake => (
+              <Text style={styles.examplesLabel}>{t('lessonDetail.commonMistakes')}</Text>
+              {getCommonMistakes(point, language).map(mistake => (
                 <Text key={mistake} style={styles.bulletText}>
                   - {mistake}
                 </Text>
@@ -196,14 +206,16 @@ function SentencePatternsSection({
 }: {
   patterns: NonNullable<LessonContent['sentence_patterns']>;
 }) {
+  const { language, t } = useI18n();
+
   return (
     <>
-      <Text style={styles.section}>Sentence patterns</Text>
+      <Text style={styles.section}>{t('lessonDetail.sentencePatterns')}</Text>
       {patterns.map(pattern => (
         <Card key={pattern.pattern} style={styles.block}>
           <Text style={styles.structure}>{pattern.pattern}</Text>
-          {pattern.meaning_vi ? (
-            <Text style={styles.pointBody}>{pattern.meaning_vi}</Text>
+          {getPatternMeaning(pattern, language) ? (
+            <Text style={styles.pointBody}>{getPatternMeaning(pattern, language)}</Text>
           ) : null}
           {pattern.examples?.map(example => (
             <Text key={example} style={styles.bulletText}>
@@ -221,10 +233,12 @@ function DialogueSection({
 }: {
   dialogue: NonNullable<LessonContent['dialogue']>;
 }) {
+  const { language, t } = useI18n();
+
   if (!isDialogueContent(dialogue)) {
     return (
       <>
-        <Text style={styles.section}>Conversation</Text>
+        <Text style={styles.section}>{t('lessonDetail.conversation')}</Text>
         <Card style={styles.block}>
           <ChineseLine line={dialogue} />
         </Card>
@@ -236,28 +250,26 @@ function DialogueSection({
 
   return (
     <>
-      <Text style={styles.section}>Conversation</Text>
+      <Text style={styles.section}>{t('lessonDetail.conversation')}</Text>
       <Card style={styles.block}>
         <View style={styles.passageHeader}>
-          <Text style={styles.pointTitle}>{dialogue.title ?? 'Dialogue'}</Text>
+          <Text style={styles.pointTitle}>
+            {localizeText(dialogue.title_translations, language, dialogue.title ?? t('lessonDetail.dialogue'))}
+          </Text>
           {fullDialogue ? <SpeakButton text={fullDialogue} size={24} /> : null}
         </View>
         {dialogue.lines.map((line, index) => (
           <View key={`${line.speaker}-${index}`} style={styles.dialogueLine}>
             <Text style={styles.speaker}>{line.speaker}</Text>
-            <ChineseLine
-              line={{
-                hanzi: line.chinese,
-                pinyin: line.pinyin,
-                meaning: line.vietnamese,
-              }}
-            />
+            <ChineseLine line={localizeDialogueLine(line, language)} />
           </View>
         ))}
         {dialogue.cultural_note ? (
           <View style={styles.cultureBox}>
-            <Text style={styles.examplesLabel}>Cultural note</Text>
-            <Text style={styles.pointBody}>{dialogue.cultural_note}</Text>
+            <Text style={styles.examplesLabel}>{t('lessonDetail.culturalNote')}</Text>
+            <Text style={styles.pointBody}>
+              {localizeText(dialogue.cultural_note_translations, language, dialogue.cultural_note)}
+            </Text>
           </View>
         ) : null}
       </Card>
@@ -270,34 +282,39 @@ function RichReadingSection({
 }: {
   reading: NonNullable<LessonContent['reading']>;
 }) {
+  const { language, t } = useI18n();
+  const title = getReadingTitle(reading, language) || t('lessonDetail.shortReading');
+  const translation = getReadingTranslation(reading, language);
+
   return (
     <>
-      <Text style={styles.section}>Reading</Text>
+      <Text style={styles.section}>{t('lessonType.reading')}</Text>
       <Card style={styles.block}>
         <View style={styles.passageHeader}>
-          <Text style={styles.pointTitle}>
-            {reading.title ?? 'Short reading'}
-          </Text>
+          <Text style={styles.pointTitle}>{title}</Text>
           <SpeakButton text={reading.chinese} size={24} />
         </View>
         <ChineseLine
           line={{
             hanzi: reading.chinese,
             pinyin: reading.pinyin,
-            meaning: reading.vietnamese,
+            meaning: translation,
           }}
         />
-        {reading.english ? (
-          <Text style={styles.secondaryMeaning}>{reading.english}</Text>
-        ) : null}
       </Card>
       {reading.questions?.map((question, index) => (
         <Card key={`${question.question}-${index}`} style={styles.block}>
-          <Text style={styles.examplesLabel}>Check understanding</Text>
-          <Text style={styles.pointBody}>{question.question}</Text>
-          <Text style={styles.answerText}>Answer: {question.answer}</Text>
+          <Text style={styles.examplesLabel}>{t('lessonDetail.checkUnderstanding')}</Text>
+          <Text style={styles.pointBody}>
+            {localizeText(question.question_translations, language, question.question)}
+          </Text>
+          <Text style={styles.answerText}>
+            {t('common.answer')}: {localizeText(question.answer_translations, language, question.answer)}
+          </Text>
           {question.explanation ? (
-            <Text style={styles.usageNote}>{question.explanation}</Text>
+            <Text style={styles.usageNote}>
+              {localizeText(question.explanation_translations, language, question.explanation)}
+            </Text>
           ) : null}
         </Card>
       ))}
@@ -310,25 +327,29 @@ function ListeningPracticeSection({
 }: {
   listening: NonNullable<LessonContent['listening']>;
 }) {
+  const { language, t } = useI18n();
+  const task = getListeningTask(listening, language) || t('lessonDetail.listenRepeat');
+  const translation = getListeningTranslation(listening, language);
+
   return (
     <>
-      <Text style={styles.section}>Listening</Text>
+      <Text style={styles.section}>{t('lessonType.listening')}</Text>
       <Card style={styles.block}>
         <View style={styles.passageHeader}>
-          <Text style={styles.readAloud}>
-            {listening.task ?? 'Listen and repeat'}
-          </Text>
+          <Text style={styles.readAloud}>{task}</Text>
           <SpeakButton text={listening.script} size={24} />
         </View>
         <ChineseLine
           line={{
             hanzi: listening.script,
             pinyin: listening.pinyin,
-            meaning: listening.vietnamese,
+            meaning: translation,
           }}
         />
         {listening.answer ? (
-          <Text style={styles.answerText}>Answer: {listening.answer}</Text>
+          <Text style={styles.answerText}>
+            {t('common.answer')}: {localizeText(listening.answer_translations, language, listening.answer)}
+          </Text>
         ) : null}
       </Card>
     </>
@@ -365,6 +386,8 @@ function TaskListSection({
   title: string;
   tasks?: string[];
 }) {
+  const { language } = useI18n();
+
   if (!hasItems(tasks)) {
     return null;
   }
@@ -375,7 +398,7 @@ function TaskListSection({
       <Card style={styles.block}>
         {tasks.map(task => (
           <Text key={task} style={styles.bulletText}>
-            - {task}
+            - {getLocalizedTask(task, language)}
           </Text>
         ))}
       </Card>
@@ -388,19 +411,18 @@ function CulturalNoteSection({
 }: {
   note?: NonNullable<LessonContent['cultural_note']>;
 }) {
+  const { language, t } = useI18n();
+
   if (!note || (!note.english && !note.vietnamese)) {
     return null;
   }
 
   return (
     <>
-      <Text style={styles.section}>Cultural note</Text>
+      <Text style={styles.section}>{t('lessonDetail.culturalNote')}</Text>
       <Card style={styles.block}>
-        {note.english ? (
-          <Text style={styles.pointBody}>{note.english}</Text>
-        ) : null}
-        {note.vietnamese ? (
-          <Text style={styles.pointBody}>{note.vietnamese}</Text>
+        {localizeText(note, language) ? (
+          <Text style={styles.pointBody}>{localizeText(note, language)}</Text>
         ) : null}
       </Card>
     </>
@@ -420,14 +442,22 @@ function KeyVocabularySection({
 }
 
 function PracticeSections({ content }: { content: LessonContent }) {
+  const { language, t } = useI18n();
+
   return (
     <>
       <TaskListSection
-        title="Speaking practice"
-        tasks={content.speaking_tasks}
+        title={t('lessonDetail.speakingPractice')}
+        tasks={content.speaking_task_translations?.[language] ?? content.speaking_tasks}
       />
-      <TaskListSection title="Reading practice" tasks={content.reading_tasks} />
-      <TaskListSection title="Writing practice" tasks={content.writing_tasks} />
+      <TaskListSection
+        title={t('lessonDetail.readingPractice')}
+        tasks={content.reading_task_translations?.[language] ?? content.reading_tasks}
+      />
+      <TaskListSection
+        title={t('lessonDetail.writingPractice')}
+        tasks={content.writing_task_translations?.[language] ?? content.writing_tasks}
+      />
     </>
   );
 }
@@ -448,6 +478,7 @@ function PracticeExerciseSection({
   const [responses, setResponses] = useState<Record<string, ExerciseResponse>>(
     {},
   );
+  const { language, t } = useI18n();
 
   if (!hasItems(exercises)) {
     return null;
@@ -488,13 +519,14 @@ function PracticeExerciseSection({
           <Card key={exerciseId} style={styles.block}>
             <View style={styles.exerciseHeader}>
               <Text style={styles.examplesLabel}>
-                {exercise.title ?? `Exercise ${index + 1}`}
+                {getPracticeTitle(exercise, language) ||
+                  t('lessonDetail.exercise', { number: index + 1 })}
               </Text>
               {exercise.skill ? (
                 <Text style={styles.skillText}>{exercise.skill}</Text>
               ) : null}
             </View>
-            <Text style={styles.exercisePrompt}>{exercise.prompt}</Text>
+            <Text style={styles.exercisePrompt}>{getPracticePrompt(exercise, language)}</Text>
             {hasItems(exercise.word_bank) ? (
               <View style={styles.wordBank}>
                 {exercise.word_bank.map(word => (
@@ -539,15 +571,17 @@ function PracticeExerciseSection({
                 onChangeText={answer =>
                   updateResponse(exerciseId, { answer, submitted: false })
                 }
-                placeholder="Nhập câu trả lời"
+                placeholder={t('lessonDetail.answerPlaceholder')}
                 placeholderTextColor={colors.outline}
                 autoCapitalize="none"
                 autoCorrect={false}
                 style={styles.answerInput}
               />
             )}
-            {response.showHint && exercise.hint ? (
-              <Text style={styles.hintText}>Hint: {exercise.hint}</Text>
+            {response.showHint && getPracticeHint(exercise, language) ? (
+              <Text style={styles.hintText}>
+                {t('common.hint')}: {getPracticeHint(exercise, language)}
+              </Text>
             ) : null}
             {response.submitted ? (
               <View
@@ -562,24 +596,24 @@ function PracticeExerciseSection({
                     correct ? styles.correctText : styles.incorrectText,
                   ]}
                 >
-                  {correct ? 'Correct' : 'Needs review'}
+                  {correct ? t('common.correct') : t('common.needsReview')}
                 </Text>
                 {!correct ? (
                   <Text style={styles.answerText}>
-                    Answer: {expectedAnswer}
+                    {t('common.answer')}: {expectedAnswer}
                   </Text>
                 ) : null}
-                {exercise.explanation ? (
+                {getPracticeExplanation(exercise, language) ? (
                   <Text style={styles.feedbackText}>
-                    {exercise.explanation}
+                    {getPracticeExplanation(exercise, language)}
                   </Text>
                 ) : null}
               </View>
             ) : null}
             <View style={styles.exerciseActions}>
-              {exercise.hint ? (
+              {getPracticeHint(exercise, language) ? (
                 <Button
-                  title={response.showHint ? 'Hide Hint' : 'Show Hint'}
+                  title={response.showHint ? t('common.hideHint') : t('common.showHint')}
                   variant="ghost"
                   leftIcon="bulb-outline"
                   onPress={() =>
@@ -589,7 +623,7 @@ function PracticeExerciseSection({
                 />
               ) : null}
               <Button
-                title="Check"
+                title={t('common.check')}
                 rightIcon="checkmark-circle-outline"
                 onPress={() => updateResponse(exerciseId, { submitted: true })}
                 disabled={!response.answer.trim()}
@@ -604,16 +638,22 @@ function PracticeExerciseSection({
 }
 
 function ReadingSection({ content }: { content: LessonContent }) {
+  const { language, t } = useI18n();
   const fullPassage = content.passage?.map(l => l.hanzi).join('') ?? '';
+  const passageTitle = localizeText(
+    content.passage_title_translations,
+    language,
+    content.passage_title ?? '',
+  );
   return (
     <>
-      <Text style={styles.section}>Reading</Text>
-      {content.passage_title ? (
-        <Text style={styles.passageTitle}>{content.passage_title}</Text>
+      <Text style={styles.section}>{t('lessonType.reading')}</Text>
+      {passageTitle ? (
+        <Text style={styles.passageTitle}>{passageTitle}</Text>
       ) : null}
       <Card style={styles.block}>
         <View style={styles.passageHeader}>
-          <Text style={styles.readAloud}>Read aloud</Text>
+          <Text style={styles.readAloud}>{t('lessonDetail.readAloud')}</Text>
           {fullPassage ? <SpeakButton text={fullPassage} size={24} /> : null}
         </View>
         {content.passage?.map((line, i) => (
@@ -624,7 +664,7 @@ function ReadingSection({ content }: { content: LessonContent }) {
       </Card>
       {content.vocabulary && content.vocabulary.length > 0 ? (
         <>
-          <Text style={styles.subSection}>Key words</Text>
+          <Text style={styles.subSection}>{t('lessonDetail.keyWords')}</Text>
           {content.vocabulary.map(w => (
             <Card key={w.hanzi} style={styles.block}>
               <ChineseLine line={w} />
@@ -637,10 +677,13 @@ function ReadingSection({ content }: { content: LessonContent }) {
 }
 
 function ListeningSection({ content }: { content: LessonContent }) {
+  const { language, t } = useI18n();
+  const tip = localizeText(content.tip_translations, language, content.tip ?? '');
+
   return (
     <>
-      <Text style={styles.section}>Listening</Text>
-      {content.tip ? <Text style={styles.tip}>{content.tip}</Text> : null}
+      <Text style={styles.section}>{t('lessonType.listening')}</Text>
+      {tip ? <Text style={styles.tip}>{tip}</Text> : null}
       {content.transcript?.map((line, i) => (
         <Card key={i} style={styles.block}>
           <ChineseLine line={line} />
@@ -651,10 +694,13 @@ function ListeningSection({ content }: { content: LessonContent }) {
 }
 
 function WritingSection({ content }: { content: LessonContent }) {
+  const { language, t } = useI18n();
+  const tip = localizeText(content.tip_translations, language, content.tip ?? '');
+
   return (
     <>
-      <Text style={styles.section}>Writing</Text>
-      {content.tip ? <Text style={styles.tip}>{content.tip}</Text> : null}
+      <Text style={styles.section}>{t('lessonType.writing')}</Text>
+      {tip ? <Text style={styles.tip}>{tip}</Text> : null}
       {content.characters?.map(ch => (
         <Card key={ch.hanzi} style={styles.block}>
           <View style={styles.writingRow}>
@@ -662,9 +708,11 @@ function WritingSection({ content }: { content: LessonContent }) {
             <SpeakButton text={ch.hanzi} size={26} />
           </View>
           {ch.pinyin ? <Text style={styles.pinyin}>{ch.pinyin}</Text> : null}
-          {ch.meaning ? <Text style={styles.meaning}>{ch.meaning}</Text> : null}
+          {getEntryMeaning(ch, language) ? (
+            <Text style={styles.meaning}>{getEntryMeaning(ch, language)}</Text>
+          ) : null}
           {ch.strokes != null ? (
-            <Text style={styles.strokes}>{ch.strokes} strokes</Text>
+            <Text style={styles.strokes}>{t('lessonDetail.strokes', { count: ch.strokes })}</Text>
           ) : null}
         </Card>
       ))}
@@ -681,12 +729,14 @@ function LessonBody({
   content: LessonContent | null;
   onSaveWord: (word: NonNullable<LessonContent['vocabulary']>[number]) => void;
 }) {
+  const { language, t } = useI18n();
+
   if (!content) {
     return (
       <ScreenState
         type="empty"
-        title="Lesson content unavailable"
-        message="You can still start the quiz if questions are ready."
+        title={t('lessonDetail.noContent')}
+        message={t('lessonDetail.noContentQuiz')}
         compact
         style={styles.block}
       />
@@ -703,7 +753,7 @@ function LessonBody({
           ) : (
             <ScreenState
               type="empty"
-              title="No grammar points yet"
+              title={t('lessonDetail.noGrammar')}
               compact
               style={styles.block}
             />
@@ -712,7 +762,7 @@ function LessonBody({
             <SentencePatternsSection patterns={content.sentence_patterns} />
           ) : null}
           <PracticeExerciseSection
-            title="Interactive practice"
+            title={t('lessonDetail.interactivePractice')}
             exercises={content.practice_exercises}
           />
           <PracticeSections content={content} />
@@ -734,7 +784,7 @@ function LessonBody({
             />
           ) : null}
           <PracticeExerciseSection
-            title="Interactive practice"
+            title={t('lessonDetail.interactivePractice')}
             exercises={content.practice_exercises}
           />
           <PracticeSections content={content} />
@@ -750,7 +800,7 @@ function LessonBody({
             <ListeningSection content={content} />
           )}
           <PracticeExerciseSection
-            title="Interactive practice"
+            title={t('lessonDetail.interactivePractice')}
             exercises={content.practice_exercises}
           />
           <PracticeSections content={content} />
@@ -764,7 +814,7 @@ function LessonBody({
           {hasItems(content.sentence_patterns) ? (
             <SentencePatternsSection patterns={content.sentence_patterns} />
           ) : null}
-          <ChineseEntryListSection title="Patterns" items={content.patterns} />
+          <ChineseEntryListSection title={t('lessonType.patterns')} items={content.patterns} />
           {hasItems(content.grammar_points) ? (
             <GrammarSection points={content.grammar_points} />
           ) : null}
@@ -772,7 +822,7 @@ function LessonBody({
             <VocabularySection items={content.vocabulary} onSave={onSaveWord} />
           ) : null}
           <PracticeExerciseSection
-            title="Interactive practice"
+            title={t('lessonDetail.interactivePractice')}
             exercises={content.practice_exercises}
           />
           <PracticeSections content={content} />
@@ -793,7 +843,7 @@ function LessonBody({
           ) : null}
           <CulturalNoteSection note={content.cultural_note} />
           <PracticeExerciseSection
-            title="Interactive practice"
+            title={t('lessonDetail.interactivePractice')}
             exercises={content.practice_exercises}
           />
           <PracticeSections content={content} />
@@ -804,11 +854,16 @@ function LessonBody({
         <>
           <IntroSection content={content} />
           <TaskListSection
-            title="Review"
-            tasks={content.review_items ?? content.items}
+            title={t('lessonDetail.reviewTitle')}
+            tasks={
+              content.review_item_translations?.[language] ??
+              content.item_translations?.[language] ??
+              content.review_items ??
+              content.items
+            }
           />
           <PracticeExerciseSection
-            title="Interactive practice"
+            title={t('lessonDetail.interactivePractice')}
             exercises={content.practice_exercises}
           />
         </>
@@ -818,11 +873,16 @@ function LessonBody({
         <>
           <IntroSection content={content} />
           <TaskListSection
-            title="Practice"
-            tasks={content.activities ?? content.items}
+            title={t('lessonDetail.practiceTitle')}
+            tasks={
+              content.activity_translations?.[language] ??
+              content.item_translations?.[language] ??
+              content.activities ??
+              content.items
+            }
           />
           <PracticeExerciseSection
-            title="Interactive practice"
+            title={t('lessonDetail.interactivePractice')}
             exercises={content.practice_exercises}
           />
           <PracticeSections content={content} />
@@ -832,9 +892,12 @@ function LessonBody({
       return (
         <>
           <IntroSection content={content} />
-          <TaskListSection title="Quiz Focus" tasks={content.items} />
+          <TaskListSection
+            title={t('lessonDetail.quizFocus')}
+            tasks={content.item_translations?.[language] ?? content.items}
+          />
           <PracticeExerciseSection
-            title="Interactive practice"
+            title={t('lessonDetail.interactivePractice')}
             exercises={content.practice_exercises}
           />
         </>
@@ -845,11 +908,11 @@ function LessonBody({
           <IntroSection content={content} />
           <WritingSection content={content} />
           <PracticeExerciseSection
-            title="Writing exercises"
+            title={t('lessonDetail.writingExercises')}
             exercises={content.writing_exercises}
           />
           <PracticeExerciseSection
-            title="Interactive practice"
+            title={t('lessonDetail.interactivePractice')}
             exercises={content.practice_exercises}
           />
           <PracticeSections content={content} />
@@ -864,13 +927,13 @@ function LessonBody({
           ) : (
             <ScreenState
               type="empty"
-              title="No vocabulary yet"
+              title={t('lessonDetail.noVocabulary')}
               compact
               style={styles.block}
             />
           )}
           <PracticeExerciseSection
-            title="Interactive practice"
+            title={t('lessonDetail.interactivePractice')}
             exercises={content.practice_exercises}
           />
           <PracticeSections content={content} />
@@ -899,11 +962,11 @@ function LessonBody({
             <ListeningPracticeSection listening={content.listening} />
           ) : null}
           <PracticeExerciseSection
-            title="Writing exercises"
+            title={t('lessonDetail.writingExercises')}
             exercises={content.writing_exercises}
           />
           <PracticeExerciseSection
-            title="Interactive practice"
+            title={t('lessonDetail.interactivePractice')}
             exercises={content.practice_exercises}
           />
           <PracticeSections content={content} />
@@ -918,7 +981,7 @@ function LessonBody({
           ) : (
             <ScreenState
               type="empty"
-              title="Lesson content unavailable"
+              title={t('lessonDetail.noContent')}
               compact
               style={styles.block}
             />
@@ -932,6 +995,7 @@ export function LessonDetailScreen() {
   const { params } = useRoute<Route>();
   const navigation = useNavigation<Nav>();
   const queryClient = useQueryClient();
+  const { language, t } = useI18n();
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -949,25 +1013,25 @@ export function LessonDetailScreen() {
       learningApi.addSavedWord({
         hanzi: word.hanzi,
         pinyin: word.pinyin,
-        meaning: word.meaning ?? word.meaning_en,
+        meaning: getEntryMeaning(word, language),
         hsk_level:
           word.hsk_level ?? lesson?.content?.hsk_level ?? lesson?.hsk_level_id,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['savedWords'] });
       setSaveError(null);
-      setSaveNotice('Word saved to your list.');
+      setSaveNotice(t('lessonDetail.wordSaved'));
     },
     onError: e => {
       setSaveNotice(null);
-      setSaveError(e instanceof Error ? e.message : 'Failed to save word');
+      setSaveError(e instanceof Error ? e.message : t('lessonDetail.saveFailed'));
     },
   });
 
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ScreenState type="loading" title="Loading lesson" />
+        <ScreenState type="loading" title={t('lessonDetail.loading')} />
       </View>
     );
   }
@@ -977,11 +1041,11 @@ export function LessonDetailScreen() {
       <View style={styles.center}>
         <ScreenState
           type={isError ? 'error' : 'empty'}
-          title={isError ? 'Could not load lesson' : 'Lesson not found'}
+          title={isError ? t('lessonDetail.couldNotLoad') : t('lessonDetail.notFound')}
           message={
-            isError ? 'Please check your connection and try again.' : undefined
+            isError ? t('common.connectionRetry') : undefined
           }
-          actionLabel={isError ? 'Try Again' : undefined}
+          actionLabel={isError ? t('common.tryAgain') : undefined}
           onAction={
             isError
               ? () => {
@@ -994,7 +1058,7 @@ export function LessonDetailScreen() {
     );
   }
 
-  const typeLabel = TYPE_LABELS[lesson.lesson_type] ?? lesson.lesson_type;
+  const typeLabel = getLessonTypeLabel(lesson.lesson_type, t);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -1014,7 +1078,7 @@ export function LessonDetailScreen() {
       {saveError ? (
         <ScreenState
           type="error"
-          title="Could not save word"
+          title={t('lessonDetail.couldNotSave')}
           message={saveError}
           compact
           style={styles.inlineState}
@@ -1028,7 +1092,7 @@ export function LessonDetailScreen() {
       />
 
       <Button
-        title="Start Quiz"
+        title={t('lessonDetail.startQuiz')}
         onPress={() =>
           navigation.navigate('Quiz', {
             lessonId: params.lessonId,

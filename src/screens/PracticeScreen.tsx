@@ -4,11 +4,13 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { contentApi } from '../api/endpoints';
 import { Card } from '../components/Card';
 import { ScreenState } from '../components/ScreenState';
+import { useI18n } from '../i18n/I18nContext';
 import { useRootNavigation } from '../navigation/useRootNavigation';
 import { colors, spacing, typography } from '../theme';
 
 export function PracticeScreen() {
   const navigation = useRootNavigation();
+  const { t, formatNumber } = useI18n();
   const { data: levels, isLoading, isError, refetch } = useQuery({
     queryKey: ['levels'],
     queryFn: contentApi.levels,
@@ -16,17 +18,17 @@ export function PracticeScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Practice Hub</Text>
-      <Text style={styles.subtitle}>Choose an HSK level to start practicing</Text>
+      <Text style={styles.title}>{t('practice.title')}</Text>
+      <Text style={styles.subtitle}>{t('practice.subtitle')}</Text>
 
       {isLoading ? (
-        <ScreenState type="loading" title="Loading levels" />
+        <ScreenState type="loading" title={t('practice.loadingLevels')} />
       ) : isError ? (
         <ScreenState
           type="error"
-          title="Could not load levels"
-          message="Please check your connection and try again."
-          actionLabel="Try Again"
+          title={t('practice.couldNotLoad')}
+          message={t('common.connectionRetry')}
+          actionLabel={t('common.tryAgain')}
           onAction={() => {
             refetch();
           }}
@@ -34,15 +36,15 @@ export function PracticeScreen() {
       ) : !levels?.length ? (
         <ScreenState
           type="empty"
-          title="No HSK levels yet"
-          message="Start the backend seed data, then return to practice."
+          title={t('practice.noLevels')}
+          message={t('practice.noLevelsMessage')}
         />
       ) : (
         levels?.map((level) => (
           <Pressable
             key={level.id}
             accessibilityRole="button"
-            accessibilityLabel={`${level.title}, ${level.total_characters} characters`}
+            accessibilityLabel={`${level.title}, ${formatNumber(level.total_characters)} ${t('common.characters')}`}
             onPress={() =>
               navigation.navigate('LessonList', { levelId: level.id, levelTitle: level.title })
             }
@@ -57,7 +59,9 @@ export function PracticeScreen() {
               {level.description && (
                 <Text style={styles.description}>{level.description}</Text>
               )}
-              <Text style={styles.meta}>{level.total_characters} characters</Text>
+              <Text style={styles.meta}>
+                {formatNumber(level.total_characters)} {t('common.characters')}
+              </Text>
             </Card>
           </Pressable>
         ))

@@ -1,13 +1,16 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
+import { useI18n } from '../i18n/I18nContext';
 import { colors, spacing, typography } from '../theme';
 
 export function SplashScreen() {
+  const { t } = useI18n();
+
   return (
     <View style={styles.container}>
       <Text style={styles.logo}>汉</Text>
-      <Text style={styles.title}>HSK Chinese Master</Text>
-      <Text style={styles.subtitle}>Master Mandarin with confidence</Text>
+      <Text style={styles.title}>{t('app.name')}</Text>
+      <Text style={styles.subtitle}>{t('app.tagline')}</Text>
       <ActivityIndicator color={colors.primary} style={styles.loader} />
     </View>
   );

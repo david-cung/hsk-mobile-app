@@ -5,9 +5,12 @@ import { progressApi } from '../api/endpoints';
 import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
 import { ScreenState } from '../components/ScreenState';
+import { useI18n } from '../i18n/I18nContext';
+import { getLessonTypeLabel } from '../i18n/lessonTypes';
 import { colors, spacing, typography } from '../theme';
 
 export function ProgressScreen() {
+  const { t, formatNumber } = useI18n();
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['dashboard'],
     queryFn: progressApi.dashboard,
@@ -16,7 +19,7 @@ export function ProgressScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ScreenState type="loading" title="Loading progress" />
+        <ScreenState type="loading" title={t('progress.loading')} />
       </View>
     );
   }
@@ -26,9 +29,9 @@ export function ProgressScreen() {
       <View style={styles.center}>
         <ScreenState
           type="error"
-          title="Could not load progress"
-          message="Please check your connection and try again."
-          actionLabel="Try Again"
+          title={t('progress.couldNotLoad')}
+          message={t('common.connectionRetry')}
+          actionLabel={t('common.tryAgain')}
           onAction={() => {
             refetch();
           }}
@@ -42,8 +45,8 @@ export function ProgressScreen() {
       <View style={styles.center}>
         <ScreenState
           type="empty"
-          title="No progress yet"
-          message="Complete a lesson quiz to start building your dashboard."
+          title={t('progress.noProgress')}
+          message={t('progress.noProgressMessage')}
         />
       </View>
     );
@@ -55,54 +58,59 @@ export function ProgressScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Progress Dashboard</Text>
+      <Text style={styles.title}>{t('progress.title')}</Text>
 
       <Card style={styles.cardSpacing}>
-        <Text style={styles.cardTitle}>HSK Level {data.current_hsk_level}</Text>
-        <Text style={styles.cardSub}>Target: HSK {data.target_hsk_level}</Text>
+        <Text style={styles.cardTitle}>{t('progress.hskLevel', { level: data.current_hsk_level })}</Text>
+        <Text style={styles.cardSub}>{t('common.target')}: HSK {data.target_hsk_level}</Text>
         <View style={{ marginTop: spacing.stackMd }}>
           <ProgressBar progress={data.exam_readiness_percent} />
         </View>
         <Text style={styles.meta}>
-          {data.current_level_completed_lessons} / {data.current_level_total_lessons} lessons at this level
+          {t('progress.lessonsAtLevel', {
+            completed: formatNumber(data.current_level_completed_lessons),
+            total: formatNumber(data.current_level_total_lessons),
+          })}
         </Text>
       </Card>
 
       <View style={styles.grid}>
         <Card style={styles.half}>
-          <Text style={styles.statLabel}>Completed</Text>
-          <Text style={styles.statValue}>{data.lessons_completed}</Text>
+          <Text style={styles.statLabel}>{t('progress.completed')}</Text>
+          <Text style={styles.statValue}>{formatNumber(data.lessons_completed)}</Text>
         </Card>
         <Card style={styles.half}>
-          <Text style={styles.statLabel}>In Progress</Text>
-          <Text style={styles.statValue}>{data.lessons_in_progress}</Text>
+          <Text style={styles.statLabel}>{t('progress.inProgress')}</Text>
+          <Text style={styles.statValue}>{formatNumber(data.lessons_in_progress)}</Text>
         </Card>
       </View>
 
       <Card style={styles.cardSpacing}>
-        <Text style={styles.cardTitle}>Daily Goal</Text>
+        <Text style={styles.cardTitle}>{t('home.dailyGoal')}</Text>
         <Text style={styles.statValue}>
-          {data.minutes_studied_today} / {data.daily_goal_minutes} min
+          {formatNumber(data.minutes_studied_today)} / {formatNumber(data.daily_goal_minutes)} {t('common.minutesShort')}
         </Text>
         <ProgressBar progress={dailyPercent} color={colors.tertiaryContainer} />
       </Card>
 
       <Card style={styles.cardSpacing}>
-        <Text style={styles.cardTitle}>Study Streak</Text>
-        <Text style={styles.statValue}>{data.study_streak_days} days</Text>
+        <Text style={styles.cardTitle}>{t('home.studyStreak')}</Text>
+        <Text style={styles.statValue}>{formatNumber(data.study_streak_days)} {t('common.dayLower')}</Text>
       </Card>
 
       {data.skill_breakdown.length ? (
         <>
-          <Text style={styles.sectionTitle}>Skill Readiness</Text>
+          <Text style={styles.sectionTitle}>{t('progress.skillReadiness')}</Text>
           {data.skill_breakdown.map((skill) => {
             const percent = skill.total ? Math.round((skill.completed / skill.total) * 100) : 0;
             return (
               <Card key={skill.lesson_type} style={styles.attemptCard}>
                 <View style={styles.skillHeader}>
-                  <Text style={styles.attemptTitle}>{skill.lesson_type}</Text>
+                  <Text style={styles.attemptTitle}>{getLessonTypeLabel(skill.lesson_type, t)}</Text>
                   <Text style={styles.attemptScore}>
-                    {skill.average_score != null ? `${skill.average_score}% avg` : `${percent}%`}
+                    {skill.average_score != null
+                      ? t('progress.averageShort', { score: skill.average_score })
+                      : `${formatNumber(percent)}%`}
                   </Text>
                 </View>
                 <ProgressBar progress={percent} />
@@ -113,8 +121,8 @@ export function ProgressScreen() {
       ) : (
         <ScreenState
           type="empty"
-          title="No skill readiness yet"
-          message="Skill progress appears after you complete lesson quizzes."
+          title={t('progress.noSkill')}
+          message={t('progress.noSkillMessage')}
           compact
           style={styles.cardSpacing}
         />
@@ -122,11 +130,13 @@ export function ProgressScreen() {
 
       {data.recent_attempts.length > 0 && (
         <>
-          <Text style={styles.sectionTitle}>Recent Quizzes</Text>
+          <Text style={styles.sectionTitle}>{t('progress.recentQuizzes')}</Text>
           {data.recent_attempts.map((a) => (
             <Card key={a.attempt_id} style={styles.attemptCard}>
-              <Text style={styles.attemptTitle}>{a.lesson_title ?? `Lesson #${a.lesson_id}`}</Text>
-              <Text style={styles.attemptScore}>Score: {a.score}%</Text>
+              <Text style={styles.attemptTitle}>
+                {a.lesson_title ?? t('progress.lessonNumber', { id: a.lesson_id })}
+              </Text>
+              <Text style={styles.attemptScore}>{t('common.score')}: {formatNumber(a.score)}%</Text>
             </Card>
           ))}
         </>

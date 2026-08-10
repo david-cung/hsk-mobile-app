@@ -4,6 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider } from './src/context/AuthContext';
+import { I18nProvider } from './src/i18n/I18nContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 
 const queryClient = new QueryClient({
@@ -17,10 +18,12 @@ function App() {
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <StatusBar barStyle="dark-content" backgroundColor="#fcf9f8" />
-            <RootNavigator />
-          </AuthProvider>
+          <I18nProvider>
+            <AuthProvider>
+              <StatusBar barStyle="dark-content" backgroundColor="#fcf9f8" />
+              <RootNavigator />
+            </AuthProvider>
+          </I18nProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

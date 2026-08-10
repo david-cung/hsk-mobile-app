@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '../context/AuthContext';
+import { useI18n } from '../i18n/I18nContext';
 import { AchievementsScreen } from '../screens/AchievementsScreen';
 import { AuthScreen } from '../screens/AuthScreen';
 import { LessonDetailScreen } from '../screens/LessonDetailScreen';
@@ -24,6 +25,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   const { isLoading, isAuthenticated, profile } = useAuth();
+  const { isLoading: isLanguageLoading, t } = useI18n();
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
@@ -31,7 +33,7 @@ export function RootNavigator() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (showSplash || isLoading) {
+  if (showSplash || isLoading || isLanguageLoading) {
     return <SplashScreen />;
   }
 
@@ -56,16 +58,16 @@ export function RootNavigator() {
         ) : (
           <>
             <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
-            <Stack.Screen name="LessonList" component={LessonListScreen} options={{ title: 'Lessons' }} />
-            <Stack.Screen name="LessonDetail" component={LessonDetailScreen} options={{ title: 'Lesson' }} />
-            <Stack.Screen name="Quiz" component={QuizScreen} options={{ title: 'Quiz' }} />
-            <Stack.Screen name="QuizResult" component={QuizResultScreen} options={{ title: 'Results' }} />
-            <Stack.Screen name="SavedWords" component={SavedWordsScreen} options={{ title: 'Saved Words' }} />
-            <Stack.Screen name="Achievements" component={AchievementsScreen} options={{ title: 'Achievements' }} />
-            <Stack.Screen name="MockTests" component={MockTestsScreen} options={{ title: 'Mock Tests' }} />
-            <Stack.Screen name="MockTestSession" component={MockTestSessionScreen} options={{ title: 'Mock Test' }} />
-            <Stack.Screen name="DailyReview" component={DailyReviewScreen} options={{ title: 'Daily Review' }} />
-            <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
+            <Stack.Screen name="LessonList" component={LessonListScreen} options={{ title: t('nav.lessons') }} />
+            <Stack.Screen name="LessonDetail" component={LessonDetailScreen} options={{ title: t('nav.lesson') }} />
+            <Stack.Screen name="Quiz" component={QuizScreen} options={{ title: t('nav.quiz') }} />
+            <Stack.Screen name="QuizResult" component={QuizResultScreen} options={{ title: t('nav.results') }} />
+            <Stack.Screen name="SavedWords" component={SavedWordsScreen} options={{ title: t('nav.savedWords') }} />
+            <Stack.Screen name="Achievements" component={AchievementsScreen} options={{ title: t('nav.achievements') }} />
+            <Stack.Screen name="MockTests" component={MockTestsScreen} options={{ title: t('nav.mockTests') }} />
+            <Stack.Screen name="MockTestSession" component={MockTestSessionScreen} options={{ title: t('nav.mockTest') }} />
+            <Stack.Screen name="DailyReview" component={DailyReviewScreen} options={{ title: t('nav.dailyReview') }} />
+            <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t('nav.settings') }} />
           </>
         )}
       </Stack.Navigator>

@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
+import { useI18n } from '../i18n/I18nContext';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
 
@@ -14,6 +15,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 export function QuizResultScreen() {
   const { params } = useRoute<Route>();
   const navigation = useNavigation<Nav>();
+  const { t, formatNumber } = useI18n();
 
   const passed = params.score >= 60;
   const canRetryMock =
@@ -48,14 +50,17 @@ export function QuizResultScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.emoji}>{passed ? '🎉' : '📚'}</Text>
       <Text style={styles.title}>
-        {passed ? 'Great job!' : 'Keep practicing!'}
+        {passed ? t('quizResult.greatJob') : t('quizResult.keepPracticing')}
       </Text>
       <Text style={styles.lesson}>{params.lessonTitle}</Text>
 
       <Card style={styles.scoreCard}>
         <Text style={styles.score}>{params.score}%</Text>
         <Text style={styles.detail}>
-          {params.correctCount} / {params.totalQuestions} correct
+          {t('quizResult.correctCount', {
+            correct: formatNumber(params.correctCount),
+            total: formatNumber(params.totalQuestions),
+          })}
         </Text>
         <View style={styles.scoreProgress}>
           <ProgressBar
@@ -67,24 +72,24 @@ export function QuizResultScreen() {
 
       {params.results?.length ? (
         <View style={styles.review}>
-          <Text style={styles.reviewTitle}>Answer Review</Text>
+          <Text style={styles.reviewTitle}>{t('quizResult.answerReview')}</Text>
           {params.results.map((result, index) => (
             <Card
               key={`${result.question_id}-${index}`}
               style={styles.resultCard}
             >
               <Text style={styles.question}>
-                {result.prompt ?? `Question ${index + 1}`}
+                {result.prompt ?? t('quiz.progress', { current: index + 1, total: params.totalQuestions })}
               </Text>
               <Text style={result.correct ? styles.correct : styles.incorrect}>
-                {result.correct ? 'Correct' : 'Needs review'}
+                {result.correct ? t('common.correct') : t('common.needsReview')}
               </Text>
               <Text style={styles.answer}>
-                Your answer: {result.user_answer || 'No answer'}
+                {t('quizResult.yourAnswer', { answer: result.user_answer || t('common.noAnswer') })}
               </Text>
               {!result.correct && (
                 <Text style={styles.answer}>
-                  Correct answer: {result.correct_answer}
+                  {t('quizResult.correctAnswer', { answer: result.correct_answer })}
                 </Text>
               )}
               {result.explanation ? (
@@ -96,13 +101,13 @@ export function QuizResultScreen() {
       ) : null}
 
       <Button
-        title="Back to Lessons"
+        title={t('quizResult.backToLessons')}
         leftIcon="list-outline"
         onPress={() => navigation.popToTop()}
       />
       {canRetry && (
         <Button
-          title="Try Again"
+          title={t('quizResult.tryAgain')}
           variant="ghost"
           leftIcon="refresh-outline"
           onPress={retry}

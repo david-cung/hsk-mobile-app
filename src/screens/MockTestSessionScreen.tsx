@@ -16,6 +16,7 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
 import { ScreenState } from '../components/ScreenState';
+import { useI18n } from '../i18n/I18nContext';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing, typography } from '../theme';
 
@@ -32,6 +33,7 @@ export function MockTestSessionScreen() {
   const { params } = useRoute<Route>();
   const navigation = useNavigation<Nav>();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [secondsLeft, setSecondsLeft] = useState(params.durationMinutes * 60);
@@ -65,7 +67,7 @@ export function MockTestSessionScreen() {
       });
     },
     onError: e =>
-      setSubmitError(e instanceof Error ? e.message : 'Submit failed'),
+      setSubmitError(e instanceof Error ? e.message : t('quiz.submitFailed')),
   });
   const {
     mutate: submitAnswers,
@@ -96,7 +98,7 @@ export function MockTestSessionScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ScreenState type="loading" title="Loading mock test" />
+        <ScreenState type="loading" title={t('mockSession.loading')} />
       </View>
     );
   }
@@ -106,9 +108,9 @@ export function MockTestSessionScreen() {
       <View style={styles.center}>
         <ScreenState
           type="error"
-          title="Could not load mock test"
-          message="Please check your connection and try again."
-          actionLabel="Try Again"
+          title={t('mockSession.couldNotLoad')}
+          message={t('common.connectionRetry')}
+          actionLabel={t('common.tryAgain')}
           onAction={() => {
             refetch();
           }}
@@ -122,8 +124,8 @@ export function MockTestSessionScreen() {
       <View style={styles.center}>
         <ScreenState
           type="empty"
-          title="No questions available"
-          message="This mock test will be ready after more lessons are added for this HSK level."
+          title={t('mockSession.noQuestions')}
+          message={t('mockSession.noQuestionsMessage')}
         />
       </View>
     );
@@ -132,12 +134,12 @@ export function MockTestSessionScreen() {
   const submit = () => {
     if (answeredCount < questions.length) {
       Alert.alert(
-        'Submit mock test?',
-        `${questions.length - answeredCount} questions are unanswered.`,
+        t('mockSession.submitQuestion'),
+        t('mockSession.unanswered', { count: questions.length - answeredCount }),
         [
-          { text: 'Continue', style: 'cancel' },
+          { text: t('common.continue'), style: 'cancel' },
           {
-            text: 'Submit',
+            text: t('common.submit'),
             onPress: () => {
               setSubmitError(null);
               submitAnswers();
@@ -154,12 +156,15 @@ export function MockTestSessionScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.meta}>HSK {params.hskLevel} Mock Test</Text>
+        <Text style={styles.meta}>{t('mockSession.hskTitle', { level: params.hskLevel })}</Text>
         <Text style={styles.timer}>{formatTime(secondsLeft)}</Text>
       </View>
       <Text style={styles.progress}>
-        Question {currentIndex + 1} of {questions.length} · {answeredCount}{' '}
-        answered
+        {t('mockSession.progress', {
+          current: currentIndex + 1,
+          total: questions.length,
+          answered: answeredCount,
+        })}
       </Text>
       <ProgressBar progress={((currentIndex + 1) / questions.length) * 100} />
 
@@ -195,7 +200,7 @@ export function MockTestSessionScreen() {
       {submitError ? (
         <ScreenState
           type="error"
-          title="Could not submit mock test"
+          title={t('mockSession.couldNotSubmit')}
           message={submitError}
           compact
           style={styles.errorState}
@@ -204,7 +209,7 @@ export function MockTestSessionScreen() {
 
       <View style={styles.actions}>
         <Button
-          title="Previous"
+          title={t('common.previous')}
           variant="ghost"
           disabled={currentIndex === 0 || isSubmitting}
           onPress={() => setCurrentIndex(index => Math.max(0, index - 1))}
@@ -212,7 +217,7 @@ export function MockTestSessionScreen() {
         />
         {currentIndex === questions.length - 1 ? (
           <Button
-            title="Submit"
+            title={t('common.submit')}
             rightIcon="checkmark-circle-outline"
             onPress={submit}
             loading={isSubmitting}
@@ -221,7 +226,7 @@ export function MockTestSessionScreen() {
           />
         ) : (
           <Button
-            title="Next"
+            title={t('common.next')}
             rightIcon="arrow-forward"
             onPress={() =>
               setCurrentIndex(index =>
