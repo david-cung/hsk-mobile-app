@@ -21,11 +21,19 @@ export type RootStackParamList = {
     totalQuestions: number;
     results?: QuestionResult[];
     source?: 'lesson' | 'mock';
+    mockTestId?: number;
+    hskLevel?: number;
+    durationMinutes?: number;
   };
   SavedWords: undefined;
   Achievements: undefined;
   MockTests: undefined;
-  MockTestSession: { mockTestId: number; title: string; hskLevel: number; durationMinutes: number };
+  MockTestSession: {
+    mockTestId: number;
+    title: string;
+    hskLevel: number;
+    durationMinutes: number;
+  };
   DailyReview: undefined;
   Settings: undefined;
 };

@@ -1,4 +1,9 @@
-import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useLayoutEffect } from 'react';
@@ -57,11 +62,13 @@ export function LessonListScreen() {
   } = useQuery({
     queryKey: ['lessons', params.levelId, params.lessonType],
     queryFn: () => contentApi.lessons(params.levelId, params.lessonType),
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
   // Client-side filter fallback (in case API cache or old server ignores lesson_type)
   const filteredLessons = params.lessonType
-    ? lessons?.filter((l) => l.lesson_type === params.lessonType)
+    ? lessons?.filter(l => l.lesson_type === params.lessonType)
     : lessons;
 
   const emptyMessage = params.lessonType
@@ -89,9 +96,17 @@ export function LessonListScreen() {
           }}
         />
       ) : !filteredLessons?.length ? (
-        <ScreenState type="empty" title="Nothing here yet" message={emptyMessage} />
+        <ScreenState
+          type="empty"
+          title="Nothing here yet"
+          message={emptyMessage}
+          actionLabel="Reload"
+          onAction={() => {
+            refetch();
+          }}
+        />
       ) : (
-        filteredLessons.map((lesson) => (
+        filteredLessons.map(lesson => (
           <Pressable
             key={lesson.id}
             accessibilityRole="button"
@@ -125,7 +140,9 @@ export function LessonListScreen() {
               )}
               <View style={styles.meta}>
                 <Text style={styles.metaText}>{lesson.lesson_type}</Text>
-                <Text style={styles.metaText}>{lesson.duration_minutes} min</Text>
+                <Text style={styles.metaText}>
+                  {lesson.duration_minutes} min
+                </Text>
                 {lesson.score_percent != null && (
                   <Text style={styles.score}>{lesson.score_percent}%</Text>
                 )}
@@ -141,7 +158,11 @@ export function LessonListScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.marginMobile, paddingBottom: 80 },
-  subtitle: { ...typography.bodyMd, color: colors.onSurfaceVariant, marginBottom: spacing.stackLg },
+  subtitle: {
+    ...typography.bodyMd,
+    color: colors.onSurfaceVariant,
+    marginBottom: spacing.stackLg,
+  },
   lessonCard: { marginBottom: spacing.stackMd },
   row: { flexDirection: 'row', alignItems: 'center' },
   icon: { marginRight: spacing.stackSm },
@@ -153,8 +174,20 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   doneText: { ...typography.labelSm, color: colors.onSecondaryContainer },
-  description: { ...typography.bodyMd, color: colors.onSurfaceVariant, marginTop: spacing.stackSm },
-  meta: { flexDirection: 'row', gap: spacing.stackMd, marginTop: spacing.stackSm },
-  metaText: { ...typography.labelSm, color: colors.onSurfaceVariant, textTransform: 'capitalize' },
+  description: {
+    ...typography.bodyMd,
+    color: colors.onSurfaceVariant,
+    marginTop: spacing.stackSm,
+  },
+  meta: {
+    flexDirection: 'row',
+    gap: spacing.stackMd,
+    marginTop: spacing.stackSm,
+  },
+  metaText: {
+    ...typography.labelSm,
+    color: colors.onSurfaceVariant,
+    textTransform: 'capitalize',
+  },
   score: { ...typography.labelSm, color: colors.primary },
 });

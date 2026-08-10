@@ -49,7 +49,7 @@ export function MockTestSessionScreen() {
 
   const submitMutation = useMutation({
     mutationFn: () => learningApi.submitMockTest(params.mockTestId, answers),
-    onSuccess: (result) => {
+    onSuccess: result => {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       navigation.replace('QuizResult', {
         lessonId: params.mockTestId,
@@ -59,16 +59,25 @@ export function MockTestSessionScreen() {
         totalQuestions: result.total_questions,
         results: result.results,
         source: 'mock',
+        mockTestId: params.mockTestId,
+        hskLevel: params.hskLevel,
+        durationMinutes: params.durationMinutes,
       });
     },
-    onError: (e) => setSubmitError(e instanceof Error ? e.message : 'Submit failed'),
+    onError: e =>
+      setSubmitError(e instanceof Error ? e.message : 'Submit failed'),
   });
-  const { mutate: submitAnswers, isPending: isSubmitting, isSuccess: isSubmitted } = submitMutation;
+  const {
+    mutate: submitAnswers,
+    isPending: isSubmitting,
+    isSuccess: isSubmitted,
+  } = submitMutation;
 
   useEffect(() => {
-    if (isLoading || !questions?.length || isSubmitting || isSubmitted) return undefined;
+    if (isLoading || !questions?.length || isSubmitting || isSubmitted)
+      return undefined;
     const timer = setInterval(() => {
-      setSecondsLeft((value) => {
+      setSecondsLeft(value => {
         if (value <= 1) {
           clearInterval(timer);
           submitAnswers();
@@ -122,16 +131,20 @@ export function MockTestSessionScreen() {
 
   const submit = () => {
     if (answeredCount < questions.length) {
-      Alert.alert('Submit mock test?', `${questions.length - answeredCount} questions are unanswered.`, [
-        { text: 'Continue', style: 'cancel' },
-        {
-          text: 'Submit',
-          onPress: () => {
-            setSubmitError(null);
-            submitAnswers();
+      Alert.alert(
+        'Submit mock test?',
+        `${questions.length - answeredCount} questions are unanswered.`,
+        [
+          { text: 'Continue', style: 'cancel' },
+          {
+            text: 'Submit',
+            onPress: () => {
+              setSubmitError(null);
+              submitAnswers();
+            },
           },
-        },
-      ]);
+        ],
+      );
       return;
     }
     setSubmitError(null);
@@ -145,33 +158,48 @@ export function MockTestSessionScreen() {
         <Text style={styles.timer}>{formatTime(secondsLeft)}</Text>
       </View>
       <Text style={styles.progress}>
-        Question {currentIndex + 1} of {questions.length} · {answeredCount} answered
+        Question {currentIndex + 1} of {questions.length} · {answeredCount}{' '}
+        answered
       </Text>
       <ProgressBar progress={((currentIndex + 1) / questions.length) * 100} />
 
       <Card>
         <Text style={styles.lesson}>{question.lesson_title}</Text>
         <Text style={styles.prompt}>{question.prompt}</Text>
-        {question.options?.map((option) => (
+        {question.options?.map(option => (
           <Pressable
             key={option}
-            style={[styles.option, selected === option && styles.optionSelected]}
+            style={[
+              styles.option,
+              selected === option && styles.optionSelected,
+            ]}
             onPress={() => {
               setSubmitError(null);
-              setAnswers((prev) => ({ ...prev, [String(question.id)]: option }));
+              setAnswers(prev => ({ ...prev, [String(question.id)]: option }));
             }}
             accessibilityRole="radio"
             accessibilityState={{ selected: selected === option }}
             accessibilityLabel={option}
           >
-            <Text style={[styles.optionText, selected === option && styles.optionTextSelected]}>
+            <Text
+              style={[
+                styles.optionText,
+                selected === option && styles.optionTextSelected,
+              ]}
+            >
               {option}
             </Text>
           </Pressable>
         ))}
       </Card>
       {submitError ? (
-        <ScreenState type="error" title="Could not submit mock test" message={submitError} compact style={styles.errorState} />
+        <ScreenState
+          type="error"
+          title="Could not submit mock test"
+          message={submitError}
+          compact
+          style={styles.errorState}
+        />
       ) : null}
 
       <View style={styles.actions}>
@@ -179,7 +207,7 @@ export function MockTestSessionScreen() {
           title="Previous"
           variant="ghost"
           disabled={currentIndex === 0 || isSubmitting}
-          onPress={() => setCurrentIndex((index) => Math.max(0, index - 1))}
+          onPress={() => setCurrentIndex(index => Math.max(0, index - 1))}
           style={styles.actionButton}
         />
         {currentIndex === questions.length - 1 ? (
@@ -195,7 +223,11 @@ export function MockTestSessionScreen() {
           <Button
             title="Next"
             rightIcon="arrow-forward"
-            onPress={() => setCurrentIndex((index) => Math.min(questions.length - 1, index + 1))}
+            onPress={() =>
+              setCurrentIndex(index =>
+                Math.min(questions.length - 1, index + 1),
+              )
+            }
             style={styles.actionButton}
           />
         )}
@@ -207,13 +239,35 @@ export function MockTestSessionScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.marginMobile, paddingBottom: 40 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.marginMobile },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.marginMobile,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   meta: { ...typography.labelMd, color: colors.onSurfaceVariant },
   timer: { ...typography.headlineMd, color: colors.primary },
-  progress: { ...typography.labelMd, color: colors.onSurfaceVariant, marginVertical: spacing.stackMd },
-  lesson: { ...typography.labelSm, color: colors.tertiary, marginBottom: spacing.stackSm, marginTop: spacing.stackMd },
-  prompt: { ...typography.headlineMd, color: colors.onSurface, marginBottom: spacing.stackLg },
+  progress: {
+    ...typography.labelMd,
+    color: colors.onSurfaceVariant,
+    marginVertical: spacing.stackMd,
+  },
+  lesson: {
+    ...typography.labelSm,
+    color: colors.tertiary,
+    marginBottom: spacing.stackSm,
+    marginTop: spacing.stackMd,
+  },
+  prompt: {
+    ...typography.headlineMd,
+    color: colors.onSurface,
+    marginBottom: spacing.stackLg,
+  },
   option: {
     padding: spacing.stackMd,
     borderRadius: radius.lg,
@@ -229,6 +283,10 @@ const styles = StyleSheet.create({
   optionText: { ...typography.bodyMd, color: colors.onSurface },
   optionTextSelected: { color: colors.primary, fontWeight: '600' },
   errorState: { marginTop: spacing.stackMd },
-  actions: { flexDirection: 'row', gap: spacing.stackMd, marginTop: spacing.stackLg },
+  actions: {
+    flexDirection: 'row',
+    gap: spacing.stackMd,
+    marginTop: spacing.stackLg,
+  },
   actionButton: { flex: 1 },
 });

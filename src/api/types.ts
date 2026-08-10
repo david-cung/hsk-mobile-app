@@ -41,24 +41,106 @@ export interface ChineseEntry {
   hanzi: string;
   pinyin?: string;
   meaning?: string;
+  meaning_en?: string;
+  word_type?: string;
+  category?: string;
+  hsk_level?: number;
   strokes?: number;
+  example_cn?: string;
+  example_pinyin?: string;
+  example_vi?: string;
+  example_en?: string;
+  usage_note?: string;
 }
 
 export interface GrammarPoint {
   title: string;
+  structure?: string;
   explanation: string;
   examples: ChineseEntry[];
+  common_mistakes?: string[];
+}
+
+export interface SentencePattern {
+  pattern: string;
+  meaning_vi?: string;
+  examples?: string[];
+}
+
+export interface DialogueLine {
+  speaker: string;
+  chinese: string;
+  pinyin?: string;
+  vietnamese?: string;
+}
+
+export interface DialogueContent {
+  title?: string;
+  lines: DialogueLine[];
+  vocabulary_list?: string[];
+  grammar_list?: string[];
+  cultural_note?: string;
+}
+
+export interface RichReadingContent {
+  title?: string;
+  chinese: string;
+  pinyin?: string;
+  vietnamese?: string;
+  english?: string;
+  questions?: Array<{
+    question: string;
+    answer: string;
+    explanation?: string;
+  }>;
+}
+
+export interface ListeningPracticeContent {
+  script: string;
+  pinyin?: string;
+  vietnamese?: string;
+  task?: string;
+  answer?: string;
+}
+
+export interface PracticeExercise {
+  id: string;
+  title?: string;
+  exercise_type:
+    | 'multiple_choice'
+    | 'text_input'
+    | 'fill_blank'
+    | 'rearrange'
+    | string;
+  skill?: string;
+  prompt: string;
+  options?: string[];
+  correct_answer: string;
+  expected_answer?: string;
+  hint?: string;
+  explanation?: string;
+  word_bank?: string[];
 }
 
 export interface LessonContent {
   source_id?: string;
   focus?: string;
+  hsk_level?: number;
+  category?: string;
+  learning_objectives?: string[];
+  overview?: string;
   vocabulary?: ChineseEntry[];
   grammar_points?: GrammarPoint[];
+  sentence_patterns?: SentencePattern[];
+  dialogue?: DialogueContent | ChineseEntry;
+  reading?: RichReadingContent;
+  listening?: ListeningPracticeContent;
+  speaking_tasks?: string[];
+  reading_tasks?: string[];
+  writing_tasks?: string[];
   passage_title?: string;
   passage?: ChineseEntry[];
   transcript?: ChineseEntry[];
-  dialogue?: ChineseEntry;
   patterns?: ChineseEntry[];
   activities?: string[];
   review_items?: string[];
@@ -72,6 +154,8 @@ export interface LessonContent {
     vietnamese?: string;
   };
   characters?: ChineseEntry[];
+  practice_exercises?: PracticeExercise[];
+  writing_exercises?: PracticeExercise[];
   tip?: string;
 }
 
