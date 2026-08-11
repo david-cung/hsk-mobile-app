@@ -2,8 +2,15 @@ import type {
   ChineseEntry,
   DialogueLine,
   GrammarPoint,
+  HskLevel,
   ListeningPracticeContent,
+  LessonDetail,
+  LessonListItem,
+  MockTest,
+  MockTestQuestion,
   PracticeExercise,
+  Question,
+  QuestionResult,
   RichReadingContent,
   SentencePattern,
 } from '../api/types';
@@ -40,6 +47,102 @@ export function localizeText(
   return fromPair(value, language) ?? fallback;
 }
 
+export function getLocalizedTitle(
+  item: {
+    title?: string | null;
+    title_translations?: LocalizedPair;
+  },
+  language: LanguageCode,
+) {
+  return localizeText(item.title_translations, language, item.title ?? '');
+}
+
+export function getLocalizedDescription(
+  item: {
+    description?: string | null;
+    description_translations?: LocalizedPair;
+  },
+  language: LanguageCode,
+) {
+  return localizeText(item.description_translations, language, item.description ?? '');
+}
+
+export function getLevelTitle(level: HskLevel, language: LanguageCode) {
+  return getLocalizedTitle(level, language);
+}
+
+export function getLevelDescription(level: HskLevel, language: LanguageCode) {
+  return getLocalizedDescription(level, language);
+}
+
+export function getLessonTitle(
+  lesson:
+    | LessonListItem
+    | LessonDetail
+    | MockTestQuestion
+    | { lesson_title?: string | null; lesson_title_translations?: LocalizedPair },
+  language: LanguageCode,
+) {
+  if ('lesson_title' in lesson) {
+    return localizeText(
+      lesson.lesson_title_translations,
+      language,
+      lesson.lesson_title ?? '',
+    );
+  }
+  return getLocalizedTitle(
+    lesson as LessonListItem | LessonDetail,
+    language,
+  );
+}
+
+export function getLessonDescription(
+  lesson: LessonListItem | LessonDetail,
+  language: LanguageCode,
+) {
+  return getLocalizedDescription(lesson, language);
+}
+
+export function getMockTestTitle(test: MockTest, language: LanguageCode) {
+  return getLocalizedTitle(test, language);
+}
+
+export function getQuestionPrompt(
+  question: Question | QuestionResult | { prompt?: string | null; prompt_translations?: LocalizedPair },
+  language: LanguageCode,
+) {
+  return localizeText(question.prompt_translations, language, question.prompt ?? '');
+}
+
+export function getQuestionExplanation(
+  question: QuestionResult | { explanation?: string | null; explanation_translations?: LocalizedPair },
+  language: LanguageCode,
+) {
+  return localizeText(
+    question.explanation_translations,
+    language,
+    question.explanation ?? '',
+  );
+}
+
+export function getQuestionOptionLabel(
+  question: Question,
+  option: string,
+  optionIndex: number,
+  language: LanguageCode,
+) {
+  return question.options_translations?.[language]?.[optionIndex] ?? option;
+}
+
+export function getPracticeOptionLabel(
+  exercise: PracticeExercise,
+  option: string,
+  optionIndex: number,
+  language: LanguageCode,
+) {
+  return exercise.options_translations?.[language]?.[optionIndex] ?? option;
+}
+
 export function getEntryMeaning(entry: ChineseEntry, language: LanguageCode) {
   const translated = localizeText(entry.translations, language);
   if (translated) {
@@ -64,6 +167,10 @@ export function getEntryExampleMeaning(entry: ChineseEntry, language: LanguageCo
     : entry.example_en ?? entry.example_vi ?? '';
 }
 
+export function getEntryCategory(entry: ChineseEntry, language: LanguageCode) {
+  return localizeText(entry.category_translations, language, entry.category ?? '');
+}
+
 export function localizeEntry(entry: ChineseEntry, language: LanguageCode): ChineseEntry {
   return {
     ...entry,
@@ -75,7 +182,13 @@ export function localizeDialogueLine(line: DialogueLine, language: LanguageCode)
   return {
     hanzi: line.chinese,
     pinyin: line.pinyin,
-    meaning: localizeText(line.translations, language, line.vietnamese ?? ''),
+    meaning: localizeText(
+      line.translations,
+      language,
+      language === 'vi'
+        ? line.vietnamese ?? line.english ?? ''
+        : line.english ?? line.vietnamese ?? '',
+    ),
   };
 }
 
@@ -92,7 +205,13 @@ export function getCommonMistakes(point: GrammarPoint, language: LanguageCode) {
 }
 
 export function getPatternMeaning(pattern: SentencePattern, language: LanguageCode) {
-  return localizeText(pattern.translations, language, pattern.meaning_vi ?? pattern.meaning_en ?? '');
+  return localizeText(
+    pattern.translations,
+    language,
+    language === 'vi'
+      ? pattern.meaning_vi ?? pattern.meaning_en ?? ''
+      : pattern.meaning_en ?? pattern.meaning_vi ?? '',
+  );
 }
 
 export function getReadingTranslation(reading: RichReadingContent, language: LanguageCode) {
@@ -118,7 +237,9 @@ export function getListeningTranslation(
   return localizeText(
     listening.translations,
     language,
-    language === 'vi' ? listening.vietnamese ?? '' : listening.english ?? listening.vietnamese ?? '',
+    language === 'vi'
+      ? listening.vietnamese ?? listening.english ?? ''
+      : listening.english ?? listening.vietnamese ?? '',
   );
 }
 

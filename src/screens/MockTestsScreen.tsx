@@ -8,6 +8,7 @@ import { Card } from '../components/Card';
 import { ScreenState } from '../components/ScreenState';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n/I18nContext';
+import { getMockTestTitle } from '../i18n/content';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
 
@@ -16,7 +17,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 export function MockTestsScreen() {
   const navigation = useNavigation<Nav>();
   const { profile } = useAuth();
-  const { t, formatNumber } = useI18n();
+  const { language, t, formatNumber } = useI18n();
 
   const { data: tests, isLoading, isError, refetch } = useQuery({
     queryKey: ['mockTests'],
@@ -48,22 +49,25 @@ export function MockTestsScreen() {
           message={t('mockTests.emptyMessage')}
         />
       ) : (
-        tests?.map((test) => (
+        tests?.map((test) => {
+          const title = getMockTestTitle(test, language);
+          return (
           <Pressable
             key={test.id}
             accessibilityRole="button"
-            accessibilityLabel={`${test.title}, ${formatNumber(test.duration_minutes)} ${t('common.minutesUnit')}, ${formatNumber(test.question_count)} ${t('common.questions')}`}
+            accessibilityLabel={`${title}, ${formatNumber(test.duration_minutes)} ${t('common.minutesUnit')}, ${formatNumber(test.question_count)} ${t('common.questions')}`}
             onPress={() =>
               navigation.navigate('MockTestSession', {
                 mockTestId: test.id,
-                title: test.title,
+                title,
+                titleTranslations: test.title_translations,
                 hskLevel: test.hsk_level,
                 durationMinutes: test.duration_minutes,
               })
             }
           >
             <Card style={styles.testCard}>
-              <Text style={styles.testTitle}>{test.title}</Text>
+              <Text style={styles.testTitle}>{title}</Text>
               <View style={styles.meta}>
                 <Text style={styles.metaText}>
                   {formatNumber(test.duration_minutes)} {t('common.minutesShort')}
@@ -75,7 +79,8 @@ export function MockTestsScreen() {
               <Text style={styles.start}>{t('mockTests.tapStart')}</Text>
             </Card>
           </Pressable>
-        ))
+          );
+        })
       )}
     </ScrollView>
   );

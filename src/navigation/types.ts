@@ -1,4 +1,4 @@
-import type { QuestionResult } from '../api/types';
+import type { LocalizedText, QuestionResult } from '../api/types';
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -8,14 +8,24 @@ export type RootStackParamList = {
   LessonList: {
     levelId: number;
     levelTitle: string;
+    levelTitleTranslations?: LocalizedText;
     lessonType?: string;
     focusLabel?: string;
   };
-  LessonDetail: { lessonId: number; lessonTitle: string };
-  Quiz: { lessonId: number; lessonTitle: string };
+  LessonDetail: {
+    lessonId: number;
+    lessonTitle: string;
+    lessonTitleTranslations?: LocalizedText;
+  };
+  Quiz: {
+    lessonId: number;
+    lessonTitle: string;
+    lessonTitleTranslations?: LocalizedText;
+  };
   QuizResult: {
     lessonId: number;
     lessonTitle: string;
+    lessonTitleTranslations?: LocalizedText;
     score: number;
     correctCount: number;
     totalQuestions: number;
@@ -31,6 +41,7 @@ export type RootStackParamList = {
   MockTestSession: {
     mockTestId: number;
     title: string;
+    titleTranslations?: LocalizedText;
     hskLevel: number;
     durationMinutes: number;
   };

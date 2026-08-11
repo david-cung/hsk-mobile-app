@@ -29,14 +29,18 @@ export interface HskLevel {
   id: number;
   level_number: number;
   title: string;
+  title_translations?: LocalizedText;
   description: string | null;
+  description_translations?: LocalizedText;
   total_characters: number;
 }
 
 export interface LessonListItem {
   id: number;
   title: string;
+  title_translations?: LocalizedText;
   description: string | null;
+  description_translations?: LocalizedText;
   lesson_type: string;
   sort_order: number;
   duration_minutes: number;
@@ -53,6 +57,7 @@ export interface ChineseEntry {
   translations?: LocalizedText;
   word_type?: string;
   category?: string;
+  category_translations?: LocalizedText;
   hsk_level?: number;
   strokes?: number;
   example_cn?: string;
@@ -146,6 +151,7 @@ export interface PracticeExercise {
   prompt: string;
   prompt_translations?: LocalizedText;
   options?: string[];
+  options_translations?: Partial<Record<'en' | 'vi', string[]>>;
   correct_answer: string;
   expected_answer?: string;
   hint?: string;
@@ -206,7 +212,9 @@ export interface LessonDetail {
   id: number;
   hsk_level_id: number;
   title: string;
+  title_translations?: LocalizedText;
   description: string | null;
+  description_translations?: LocalizedText;
   lesson_type: string;
   duration_minutes: number;
   content: LessonContent | null;
@@ -216,17 +224,21 @@ export interface Question {
   id: number;
   question_type: string;
   prompt: string;
+  prompt_translations?: LocalizedText;
   options: string[] | null;
+  options_translations?: Partial<Record<'en' | 'vi', string[]>>;
   sort_order: number;
 }
 
 export interface QuestionResult {
   question_id: number;
   prompt?: string;
+  prompt_translations?: LocalizedText;
   correct: boolean;
   user_answer: string;
   correct_answer: string;
   explanation?: string | null;
+  explanation_translations?: LocalizedText;
 }
 
 export interface QuizSubmitResult {
@@ -260,6 +272,7 @@ export interface ProgressDashboard {
     attempt_id: number;
     lesson_id: number;
     lesson_title?: string | null;
+    lesson_title_translations?: LocalizedText;
     score: number;
     finished_at: string;
   }>;
@@ -278,11 +291,14 @@ export interface Mistake {
   attempt_id: number;
   lesson_id: number;
   lesson_title: string | null;
+  lesson_title_translations?: LocalizedText;
   question_id: number;
   prompt: string | null;
+  prompt_translations?: LocalizedText;
   user_answer: string;
   correct_answer: string;
   explanation?: string | null;
+  explanation_translations?: LocalizedText;
   finished_at: string;
 }
 
@@ -299,6 +315,7 @@ export interface Achievement {
 export interface MockTest {
   id: number;
   title: string;
+  title_translations?: LocalizedText;
   hsk_level: number;
   duration_minutes: number;
   question_count: number;
@@ -307,4 +324,5 @@ export interface MockTest {
 export interface MockTestQuestion extends Question {
   lesson_id: number;
   lesson_title: string;
+  lesson_title_translations?: LocalizedText;
 }

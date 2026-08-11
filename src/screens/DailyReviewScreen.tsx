@@ -9,6 +9,11 @@ import { Card } from '../components/Card';
 import { ScreenState } from '../components/ScreenState';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n/I18nContext';
+import {
+  getLessonTitle,
+  getQuestionExplanation,
+  getQuestionPrompt,
+} from '../i18n/content';
 import { getLessonTypeLabel } from '../i18n/lessonTypes';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
@@ -18,7 +23,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 export function DailyReviewScreen() {
   const navigation = useNavigation<Nav>();
   const { profile } = useAuth();
-  const { t, formatNumber } = useI18n();
+  const { language, t, formatNumber } = useI18n();
   const {
     data: levels,
     isLoading: isLevelsLoading,
@@ -103,14 +108,18 @@ export function DailyReviewScreen() {
               <Text style={styles.sectionTitle}>{t('dailyReview.mistakes')}</Text>
               {reviewMistakes.map((mistake) => (
                 <Card key={`${mistake.attempt_id}-${mistake.question_id}`} style={styles.card}>
-                  <Text style={styles.lessonTitle}>{mistake.prompt ?? t('dailyReview.questionReview')}</Text>
+                  <Text style={styles.lessonTitle}>
+                    {getQuestionPrompt(mistake, language) || t('dailyReview.questionReview')}
+                  </Text>
                   <Text style={styles.meta}>
                     {t('dailyReview.yourAnswer', { answer: mistake.user_answer || t('common.noAnswer') })}
                   </Text>
                   <Text style={styles.correct}>
                     {t('dailyReview.correctAnswer', { answer: mistake.correct_answer })}
                   </Text>
-                  {mistake.explanation ? <Text style={styles.meta}>{mistake.explanation}</Text> : null}
+                  {getQuestionExplanation(mistake, language) ? (
+                    <Text style={styles.meta}>{getQuestionExplanation(mistake, language)}</Text>
+                  ) : null}
                   <Button
                     title={t('dailyReview.reviewLesson')}
                     variant="ghost"
@@ -118,7 +127,8 @@ export function DailyReviewScreen() {
                     onPress={() =>
                       navigation.navigate('LessonDetail', {
                         lessonId: mistake.lesson_id,
-                        lessonTitle: mistake.lesson_title ?? t('dailyReview.lessonReview'),
+                        lessonTitle: getLessonTitle(mistake, language) || t('dailyReview.lessonReview'),
+                        lessonTitleTranslations: mistake.lesson_title_translations,
                       })
                     }
                     style={styles.btn}
@@ -144,9 +154,11 @@ export function DailyReviewScreen() {
           {reviewLessons.length > 0 && (
             <>
               <Text style={styles.sectionTitle}>{t('dailyReview.completedLessons')}</Text>
-              {reviewLessons.map((lesson) => (
+              {reviewLessons.map((lesson) => {
+                const lessonTitle = getLessonTitle(lesson, language);
+                return (
                 <Card key={lesson.id} style={styles.card}>
-                  <Text style={styles.lessonTitle}>{lesson.title}</Text>
+                  <Text style={styles.lessonTitle}>{lessonTitle}</Text>
                   <Text style={styles.meta}>
                     {t('dailyReview.lastScore', {
                       score: formatNumber(lesson.score_percent ?? 0),
@@ -160,13 +172,15 @@ export function DailyReviewScreen() {
                     onPress={() =>
                       navigation.navigate('LessonDetail', {
                         lessonId: lesson.id,
-                        lessonTitle: lesson.title,
+                        lessonTitle,
+                        lessonTitleTranslations: lesson.title_translations,
                       })
                     }
                     style={styles.btn}
                   />
                 </Card>
-              ))}
+                );
+              })}
             </>
           )}
         </>

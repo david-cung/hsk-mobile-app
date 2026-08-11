@@ -9,6 +9,7 @@ import { ProgressBar } from '../components/ProgressBar';
 import { ScreenState } from '../components/ScreenState';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n/I18nContext';
+import { getLevelTitle } from '../i18n/content';
 import { colors, spacing, typography } from '../theme';
 
 const FOCUS_AREAS = [
@@ -30,7 +31,7 @@ const FOCUS_AREAS = [
 export function HomeScreen() {
   const navigation = useRootNavigation();
   const { user, profile } = useAuth();
-  const { t, formatNumber } = useI18n();
+  const { language, t, formatNumber } = useI18n();
 
   const {
     data: dashboard,
@@ -50,6 +51,7 @@ export function HomeScreen() {
   const currentLevel = levels?.find(
     l => l.level_number === (profile?.current_hsk_level ?? 1),
   );
+  const currentLevelTitle = currentLevel ? getLevelTitle(currentLevel, language) : '';
   const greeting =
     new Date().getHours() < 12
       ? t('home.goodMorning')
@@ -136,7 +138,8 @@ export function HomeScreen() {
           onPress={() =>
             navigation.navigate('LessonList', {
               levelId: currentLevel.id,
-              levelTitle: currentLevel.title,
+              levelTitle: currentLevelTitle,
+              levelTitleTranslations: currentLevel.title_translations,
             })
           }
           accessibilityRole="button"
@@ -182,7 +185,8 @@ export function HomeScreen() {
                 } else if (currentLevel && 'type' in area) {
                   navigation.push('LessonList', {
                     levelId: currentLevel.id,
-                    levelTitle: currentLevel.title,
+                    levelTitle: currentLevelTitle,
+                    levelTitleTranslations: currentLevel.title_translations,
                     lessonType: area.type,
                     focusLabel: label,
                   });

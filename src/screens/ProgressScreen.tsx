@@ -6,11 +6,12 @@ import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
 import { ScreenState } from '../components/ScreenState';
 import { useI18n } from '../i18n/I18nContext';
+import { getLessonTitle } from '../i18n/content';
 import { getLessonTypeLabel } from '../i18n/lessonTypes';
 import { colors, spacing, typography } from '../theme';
 
 export function ProgressScreen() {
-  const { t, formatNumber } = useI18n();
+  const { language, t, formatNumber } = useI18n();
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['dashboard'],
     queryFn: progressApi.dashboard,
@@ -134,7 +135,7 @@ export function ProgressScreen() {
           {data.recent_attempts.map((a) => (
             <Card key={a.attempt_id} style={styles.attemptCard}>
               <Text style={styles.attemptTitle}>
-                {a.lesson_title ?? t('progress.lessonNumber', { id: a.lesson_id })}
+                {getLessonTitle(a, language) || t('progress.lessonNumber', { id: a.lesson_id })}
               </Text>
               <Text style={styles.attemptScore}>{t('common.score')}: {formatNumber(a.score)}%</Text>
             </Card>

@@ -5,12 +5,13 @@ import { contentApi } from '../api/endpoints';
 import { Card } from '../components/Card';
 import { ScreenState } from '../components/ScreenState';
 import { useI18n } from '../i18n/I18nContext';
+import { getLevelDescription, getLevelTitle } from '../i18n/content';
 import { useRootNavigation } from '../navigation/useRootNavigation';
 import { colors, spacing, typography } from '../theme';
 
 export function PracticeScreen() {
   const navigation = useRootNavigation();
-  const { t, formatNumber } = useI18n();
+  const { language, t, formatNumber } = useI18n();
   const { data: levels, isLoading, isError, refetch } = useQuery({
     queryKey: ['levels'],
     queryFn: contentApi.levels,
@@ -40,31 +41,39 @@ export function PracticeScreen() {
           message={t('practice.noLevelsMessage')}
         />
       ) : (
-        levels?.map((level) => (
+        levels?.map((level) => {
+          const title = getLevelTitle(level, language);
+          const description = getLevelDescription(level, language);
+          return (
           <Pressable
             key={level.id}
             accessibilityRole="button"
-            accessibilityLabel={`${level.title}, ${formatNumber(level.total_characters)} ${t('common.characters')}`}
+            accessibilityLabel={`${title}, ${formatNumber(level.total_characters)} ${t('common.characters')}`}
             onPress={() =>
-              navigation.navigate('LessonList', { levelId: level.id, levelTitle: level.title })
+              navigation.navigate('LessonList', {
+                levelId: level.id,
+                levelTitle: title,
+                levelTitleTranslations: level.title_translations,
+              })
             }
           >
             <Card style={styles.levelCard}>
               <View style={styles.row}>
-                <Text style={styles.levelTitle}>{level.title}</Text>
+                <Text style={styles.levelTitle}>{title}</Text>
                 <View style={styles.chip}>
                   <Text style={styles.chipText}>HSK {level.level_number}</Text>
                 </View>
               </View>
-              {level.description && (
-                <Text style={styles.description}>{level.description}</Text>
-              )}
+              {description ? (
+                <Text style={styles.description}>{description}</Text>
+              ) : null}
               <Text style={styles.meta}>
                 {formatNumber(level.total_characters)} {t('common.characters')}
               </Text>
             </Card>
           </Pressable>
-        ))
+          );
+        })
       )}
     </ScrollView>
   );

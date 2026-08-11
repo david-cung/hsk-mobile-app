@@ -7,7 +7,8 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "jest",
+    "audit:i18n": "node scripts/audit-i18n.js"
   },
   "dependencies": {
     "@react-navigation/bottom-tabs": "^7.16.1",

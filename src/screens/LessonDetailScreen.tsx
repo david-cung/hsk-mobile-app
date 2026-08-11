@@ -26,6 +26,7 @@ import { SpeakButton } from '../components/SpeakButton';
 import { useI18n } from '../i18n/I18nContext';
 import {
   getCommonMistakes,
+  getEntryCategory,
   getEntryExampleMeaning,
   getEntryMeaning,
   getGrammarExplanation,
@@ -35,15 +36,18 @@ import {
   getPatternMeaning,
   getPracticeExplanation,
   getPracticeHint,
+  getPracticeOptionLabel,
   getPracticePrompt,
   getPracticeTitle,
   getReadingTitle,
   getReadingTranslation,
   getLocalizedTask,
+  getLessonDescription,
+  getLessonTitle,
   localizeDialogueLine,
   localizeText,
 } from '../i18n/content';
-import { getLessonTypeLabel } from '../i18n/lessonTypes';
+import { getLessonTypeLabel, getWordTypeLabel } from '../i18n/lessonTypes';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing, typography } from '../theme';
 import {
@@ -112,8 +116,8 @@ function VocabularySection({
         <Card key={`${word.hanzi}-${index}`} style={styles.block}>
           {(() => {
             const metadata = [
-              word.word_type,
-              word.category,
+              getWordTypeLabel(word.word_type, t),
+              getEntryCategory(word, language),
               word.hsk_level ? `HSK ${word.hsk_level}` : undefined,
             ].filter((item): item is string => Boolean(item));
 
@@ -302,22 +306,29 @@ function RichReadingSection({
           }}
         />
       </Card>
-      {reading.questions?.map((question, index) => (
-        <Card key={`${question.question}-${index}`} style={styles.block}>
-          <Text style={styles.examplesLabel}>{t('lessonDetail.checkUnderstanding')}</Text>
-          <Text style={styles.pointBody}>
-            {localizeText(question.question_translations, language, question.question)}
-          </Text>
-          <Text style={styles.answerText}>
-            {t('common.answer')}: {localizeText(question.answer_translations, language, question.answer)}
-          </Text>
-          {question.explanation ? (
-            <Text style={styles.usageNote}>
-              {localizeText(question.explanation_translations, language, question.explanation)}
+      {reading.questions?.map((question, index) => {
+        const explanation = localizeText(
+          question.explanation_translations,
+          language,
+          question.explanation ?? '',
+        );
+        return (
+          <Card key={`${question.question}-${index}`} style={styles.block}>
+            <Text style={styles.examplesLabel}>{t('lessonDetail.checkUnderstanding')}</Text>
+            <Text style={styles.pointBody}>
+              {localizeText(question.question_translations, language, question.question)}
             </Text>
-          ) : null}
-        </Card>
-      ))}
+            <Text style={styles.answerText}>
+              {t('common.answer')}: {localizeText(question.answer_translations, language, question.answer)}
+            </Text>
+            {explanation ? (
+              <Text style={styles.usageNote}>
+                {explanation}
+              </Text>
+            ) : null}
+          </Card>
+        );
+      })}
     </>
   );
 }
@@ -523,7 +534,7 @@ function PracticeExerciseSection({
                   t('lessonDetail.exercise', { number: index + 1 })}
               </Text>
               {exercise.skill ? (
-                <Text style={styles.skillText}>{exercise.skill}</Text>
+                <Text style={styles.skillText}>{getLessonTypeLabel(exercise.skill, t)}</Text>
               ) : null}
             </View>
             <Text style={styles.exercisePrompt}>{getPracticePrompt(exercise, language)}</Text>
@@ -537,34 +548,42 @@ function PracticeExerciseSection({
               </View>
             ) : null}
             {isMultipleChoice ? (
-              exercise.options?.map(option => (
-                <Pressable
-                  key={option}
-                  style={[
-                    styles.practiceOption,
-                    response.answer === option && styles.practiceOptionSelected,
-                  ]}
-                  onPress={() =>
-                    updateResponse(exerciseId, {
-                      answer: option,
-                      submitted: false,
-                    })
-                  }
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: response.answer === option }}
-                  accessibilityLabel={option}
-                >
-                  <Text
+              exercise.options?.map((option, optionIndex) => {
+                const optionLabel = getPracticeOptionLabel(
+                  exercise,
+                  option,
+                  optionIndex,
+                  language,
+                );
+                return (
+                  <Pressable
+                    key={option}
                     style={[
-                      styles.practiceOptionText,
-                      response.answer === option &&
-                        styles.practiceOptionTextSelected,
+                      styles.practiceOption,
+                      response.answer === option && styles.practiceOptionSelected,
                     ]}
+                    onPress={() =>
+                      updateResponse(exerciseId, {
+                        answer: option,
+                        submitted: false,
+                      })
+                    }
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: response.answer === option }}
+                    accessibilityLabel={optionLabel}
                   >
-                    {option}
-                  </Text>
-                </Pressable>
-              ))
+                    <Text
+                      style={[
+                        styles.practiceOptionText,
+                        response.answer === option &&
+                          styles.practiceOptionTextSelected,
+                      ]}
+                    >
+                      {optionLabel}
+                    </Text>
+                  </Pressable>
+                );
+              })
             ) : (
               <TextInput
                 value={response.answer}
@@ -1059,13 +1078,15 @@ export function LessonDetailScreen() {
   }
 
   const typeLabel = getLessonTypeLabel(lesson.lesson_type, t);
+  const title = getLessonTitle(lesson, language);
+  const description = getLessonDescription(lesson, language);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.type}>{typeLabel}</Text>
-      <Text style={styles.title}>{lesson.title}</Text>
-      {lesson.description ? (
-        <Text style={styles.description}>{lesson.description}</Text>
+      <Text style={styles.title}>{title}</Text>
+      {description ? (
+        <Text style={styles.description}>{description}</Text>
       ) : null}
       {saveNotice ? (
         <ScreenState
@@ -1096,7 +1117,8 @@ export function LessonDetailScreen() {
         onPress={() =>
           navigation.navigate('Quiz', {
             lessonId: params.lessonId,
-            lessonTitle: params.lessonTitle,
+            lessonTitle: title || params.lessonTitle,
+            lessonTitleTranslations: lesson?.title_translations ?? params.lessonTitleTranslations,
           })
         }
         rightIcon="arrow-forward"

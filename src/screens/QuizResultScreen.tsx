@@ -6,6 +6,7 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
 import { useI18n } from '../i18n/I18nContext';
+import { getQuestionExplanation, getQuestionPrompt, localizeText } from '../i18n/content';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
 
@@ -15,7 +16,12 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 export function QuizResultScreen() {
   const { params } = useRoute<Route>();
   const navigation = useNavigation<Nav>();
-  const { t, formatNumber } = useI18n();
+  const { language, t, formatNumber } = useI18n();
+  const lessonTitle = localizeText(
+    params.lessonTitleTranslations,
+    language,
+    params.lessonTitle,
+  );
 
   const passed = params.score >= 60;
   const canRetryMock =
@@ -34,6 +40,7 @@ export function QuizResultScreen() {
       navigation.navigate('MockTestSession', {
         mockTestId,
         title: params.lessonTitle,
+        titleTranslations: params.lessonTitleTranslations,
         hskLevel,
         durationMinutes,
       });
@@ -43,6 +50,7 @@ export function QuizResultScreen() {
     navigation.navigate('Quiz', {
       lessonId: params.lessonId,
       lessonTitle: params.lessonTitle,
+      lessonTitleTranslations: params.lessonTitleTranslations,
     });
   };
 
@@ -52,7 +60,7 @@ export function QuizResultScreen() {
       <Text style={styles.title}>
         {passed ? t('quizResult.greatJob') : t('quizResult.keepPracticing')}
       </Text>
-      <Text style={styles.lesson}>{params.lessonTitle}</Text>
+      <Text style={styles.lesson}>{lessonTitle}</Text>
 
       <Card style={styles.scoreCard}>
         <Text style={styles.score}>{params.score}%</Text>
@@ -79,7 +87,8 @@ export function QuizResultScreen() {
               style={styles.resultCard}
             >
               <Text style={styles.question}>
-                {result.prompt ?? t('quiz.progress', { current: index + 1, total: params.totalQuestions })}
+                {getQuestionPrompt(result, language) ||
+                  t('quiz.progress', { current: index + 1, total: params.totalQuestions })}
               </Text>
               <Text style={result.correct ? styles.correct : styles.incorrect}>
                 {result.correct ? t('common.correct') : t('common.needsReview')}
@@ -92,8 +101,10 @@ export function QuizResultScreen() {
                   {t('quizResult.correctAnswer', { answer: result.correct_answer })}
                 </Text>
               )}
-              {result.explanation ? (
-                <Text style={styles.explanation}>{result.explanation}</Text>
+              {getQuestionExplanation(result, language) ? (
+                <Text style={styles.explanation}>
+                  {getQuestionExplanation(result, language)}
+                </Text>
               ) : null}
             </Card>
           ))}

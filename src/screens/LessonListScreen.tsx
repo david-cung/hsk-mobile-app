@@ -15,6 +15,7 @@ import { Card } from '../components/Card';
 import { Ionicons } from '../components/Icon';
 import { ScreenState } from '../components/ScreenState';
 import { useI18n } from '../i18n/I18nContext';
+import { getLessonDescription, getLessonTitle, localizeText } from '../i18n/content';
 import { getLessonTypeLabel } from '../i18n/lessonTypes';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
@@ -41,10 +42,15 @@ export function LessonListScreen() {
   const { params } = useRoute<Route>();
   const navigation = useNavigation<Nav>();
   const queryClient = useQueryClient();
-  const { t, formatNumber } = useI18n();
+  const { language, t, formatNumber } = useI18n();
   const localizedFocusLabel = params.lessonType
     ? getLessonTypeLabel(params.lessonType, t)
     : params.focusLabel;
+  const levelTitle = localizeText(
+    params.levelTitleTranslations,
+    language,
+    params.levelTitle,
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -56,9 +62,9 @@ export function LessonListScreen() {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: localizedFocusLabel ?? params.levelTitle,
+      title: localizedFocusLabel ?? levelTitle,
     });
-  }, [navigation, localizedFocusLabel, params.levelTitle]);
+  }, [navigation, localizedFocusLabel, levelTitle]);
 
   const {
     data: lessons,
@@ -87,7 +93,7 @@ export function LessonListScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.subtitle}>
         {localizedFocusLabel
-          ? `${localizedFocusLabel} · ${params.levelTitle}`
+          ? `${localizedFocusLabel} · ${levelTitle}`
           : t('lessonList.selectLesson')}
       </Text>
 
@@ -114,15 +120,19 @@ export function LessonListScreen() {
           }}
         />
       ) : (
-        filteredLessons.map(lesson => (
+        filteredLessons.map(lesson => {
+          const title = getLessonTitle(lesson, language);
+          const description = getLessonDescription(lesson, language);
+          return (
           <Pressable
             key={lesson.id}
             accessibilityRole="button"
-            accessibilityLabel={`${lesson.title}, ${formatNumber(lesson.duration_minutes)} ${t('common.minutesUnit')}`}
+            accessibilityLabel={`${title}, ${formatNumber(lesson.duration_minutes)} ${t('common.minutesUnit')}`}
             onPress={() =>
               navigation.navigate('LessonDetail', {
                 lessonId: lesson.id,
-                lessonTitle: lesson.title,
+                lessonTitle: title,
+                lessonTitleTranslations: lesson.title_translations,
               })
             }
           >
@@ -134,18 +144,18 @@ export function LessonListScreen() {
                   color={colors.primary}
                   style={styles.icon}
                 />
-                <Text style={styles.lessonTitle}>{lesson.title}</Text>
+                <Text style={styles.lessonTitle}>{title}</Text>
                 {lesson.status === 'completed' && (
                   <View style={styles.doneBadge}>
                     <Text style={styles.doneText}>{t('lessonList.done')}</Text>
                   </View>
                 )}
               </View>
-              {lesson.description && (
+              {description ? (
                 <Text style={styles.description} numberOfLines={2}>
-                  {lesson.description}
+                  {description}
                 </Text>
-              )}
+              ) : null}
               <View style={styles.meta}>
                 <Text style={styles.metaText}>{getLessonTypeLabel(lesson.lesson_type, t)}</Text>
                 <Text style={styles.metaText}>
@@ -157,7 +167,8 @@ export function LessonListScreen() {
               </View>
             </Card>
           </Pressable>
-        ))
+          );
+        })
       )}
     </ScrollView>
   );

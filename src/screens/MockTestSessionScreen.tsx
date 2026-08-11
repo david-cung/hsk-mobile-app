@@ -17,6 +17,11 @@ import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
 import { ScreenState } from '../components/ScreenState';
 import { useI18n } from '../i18n/I18nContext';
+import {
+  getLessonTitle,
+  getQuestionOptionLabel,
+  getQuestionPrompt,
+} from '../i18n/content';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing, typography } from '../theme';
 
@@ -33,7 +38,7 @@ export function MockTestSessionScreen() {
   const { params } = useRoute<Route>();
   const navigation = useNavigation<Nav>();
   const queryClient = useQueryClient();
-  const { t } = useI18n();
+  const { language, t } = useI18n();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [secondsLeft, setSecondsLeft] = useState(params.durationMinutes * 60);
@@ -56,6 +61,7 @@ export function MockTestSessionScreen() {
       navigation.replace('QuizResult', {
         lessonId: params.mockTestId,
         lessonTitle: params.title,
+        lessonTitleTranslations: params.titleTranslations,
         score: result.score,
         correctCount: result.correct_count,
         totalQuestions: result.total_questions,
@@ -169,9 +175,11 @@ export function MockTestSessionScreen() {
       <ProgressBar progress={((currentIndex + 1) / questions.length) * 100} />
 
       <Card>
-        <Text style={styles.lesson}>{question.lesson_title}</Text>
-        <Text style={styles.prompt}>{question.prompt}</Text>
-        {question.options?.map(option => (
+        <Text style={styles.lesson}>{getLessonTitle(question, language)}</Text>
+        <Text style={styles.prompt}>{getQuestionPrompt(question, language)}</Text>
+        {question.options?.map((option, optionIndex) => {
+          const optionLabel = getQuestionOptionLabel(question, option, optionIndex, language);
+          return (
           <Pressable
             key={option}
             style={[
@@ -184,7 +192,7 @@ export function MockTestSessionScreen() {
             }}
             accessibilityRole="radio"
             accessibilityState={{ selected: selected === option }}
-            accessibilityLabel={option}
+            accessibilityLabel={optionLabel}
           >
             <Text
               style={[
@@ -192,10 +200,11 @@ export function MockTestSessionScreen() {
                 selected === option && styles.optionTextSelected,
               ]}
             >
-              {option}
+              {optionLabel}
             </Text>
           </Pressable>
-        ))}
+          );
+        })}
       </Card>
       {submitError ? (
         <ScreenState
