@@ -1,3 +1,5 @@
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -12,10 +14,15 @@ import {
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n/I18nContext';
+import { isGoogleSignInConfigured } from '../auth/google';
+import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing, typography } from '../theme';
 
+type Navigation = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
+
 export function AuthScreen() {
-  const { login, register } = useAuth();
+  const navigation = useNavigation<Navigation>();
+  const { login, register, loginWithGoogle } = useAuth();
   const { t } = useI18n();
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
@@ -33,13 +40,27 @@ export function AuthScreen() {
     } else if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
       nextErrors.email = t('auth.emailInvalid');
     }
-    if (password.length < 6) {
+    if (!password) {
+      nextErrors.password = t('auth.passwordRequired');
+    } else if (isRegister && password.length < 8) {
       nextErrors.password = t('auth.passwordShort');
     }
     if (displayName.trim().length > 120) {
       nextErrors.displayName = t('auth.displayNameLong');
     }
     return nextErrors;
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setFormError(null);
+    try {
+      await loginWithGoogle();
+    } catch (e) {
+      setFormError(e instanceof Error ? e.message : t('auth.googleSignInFailed'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -150,6 +171,25 @@ export function AuthScreen() {
           leftIcon={isRegister ? 'person-add-outline' : 'log-in-outline'}
           style={styles.button}
         />
+        {!isRegister ? (
+          <Button
+            title={t('auth.forgotPassword')}
+            onPress={() => navigation.navigate('ForgotPassword')}
+            variant="ghost"
+            disabled={loading}
+            style={styles.secondaryAction}
+          />
+        ) : null}
+        {isGoogleSignInConfigured ? (
+          <Button
+            title={t('auth.continueWithGoogle')}
+            onPress={handleGoogleSignIn}
+            variant="secondary"
+            disabled={loading}
+            leftIcon="logo-google"
+            style={styles.button}
+          />
+        ) : null}
         <Button
           title={isRegister ? t('auth.switchToSignIn') : t('auth.switchToSignUp')}
           onPress={() => {
@@ -199,4 +239,5 @@ const styles = StyleSheet.create({
   },
   formErrorText: { ...typography.bodyMd, color: colors.onErrorContainer },
   button: { marginTop: spacing.stackSm, marginBottom: spacing.stackMd },
+  secondaryAction: { marginBottom: spacing.stackSm },
 });

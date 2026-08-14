@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { profileApi } from '../api/endpoints';
 import { Button } from '../components/Button';
@@ -7,15 +7,36 @@ import { LanguageSelector } from '../components/LanguageSelector';
 import { ScreenState } from '../components/ScreenState';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n/I18nContext';
+import { useRootNavigation } from '../navigation/useRootNavigation';
 import { colors, spacing, typography } from '../theme';
 
 export function SettingsScreen() {
-  const { profile, refreshProfile } = useAuth();
+  const { profile, refreshProfile, deleteAccount } = useAuth();
   const { t } = useI18n();
+  const navigation = useRootNavigation();
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const hskLevels = [1, 2, 3, 4, 5, 6];
+
+  const confirmDeleteAccount = () => {
+    Alert.alert(t('auth.deleteAccount'), t('auth.deleteAccountWarning'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('auth.deleteAccount'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteAccount();
+          } catch (reason) {
+            setError(
+              reason instanceof Error ? reason.message : t('auth.deleteAccountFailed'),
+            );
+          }
+        },
+      },
+    ]);
+  };
 
   const updateProfile = async (data: Parameters<typeof profileApi.update>[0], message: string) => {
     setNotice(null);
@@ -110,6 +131,19 @@ export function SettingsScreen() {
         ))}
       </View>
 
+      <Text style={styles.section}>{t('auth.accountSecurity')}</Text>
+      <Button
+        title={t('auth.changePassword')}
+        onPress={() => navigation.navigate('ChangePassword')}
+        variant="secondary"
+      />
+      <Button
+        title={t('auth.deleteAccount')}
+        onPress={confirmDeleteAccount}
+        variant="ghost"
+        style={styles.deleteButton}
+      />
+
       <Text style={styles.section}>{t('settings.about')}</Text>
       <Text style={styles.about}>{t('app.name')} v1.0.0</Text>
       <Text style={styles.about}>{t('settings.builtWith')}</Text>
@@ -125,5 +159,6 @@ const styles = StyleSheet.create({
   label: { ...typography.bodyMd, color: colors.onSurfaceVariant, marginBottom: spacing.stackSm },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.stackSm },
   chip: { minWidth: 70 },
+  deleteButton: { marginTop: spacing.stackMd },
   about: { ...typography.bodyMd, color: colors.onSurfaceVariant },
 });

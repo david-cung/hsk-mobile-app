@@ -50,7 +50,7 @@ export function PracticeScreen() {
             accessibilityRole="button"
             accessibilityLabel={`${title}, ${formatNumber(level.total_characters)} ${t('common.characters')}`}
             onPress={() =>
-              navigation.navigate('LessonList', {
+              navigation.navigate('CourseList', {
                 levelId: level.id,
                 levelTitle: title,
                 levelTitleTranslations: level.title_translations,

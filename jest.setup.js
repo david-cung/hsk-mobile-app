@@ -10,6 +10,15 @@ jest.mock('react-native-keychain', () => ({
   resetGenericPassword: jest.fn(async () => undefined),
 }));
 
+jest.mock('@react-native-google-signin/google-signin', () => ({
+  GoogleSignin: {
+    configure: jest.fn(),
+    hasPlayServices: jest.fn(async () => true),
+    signIn: jest.fn(async () => ({ type: 'cancelled', data: null })),
+    signOut: jest.fn(async () => null),
+  },
+}));
+
 jest.mock('react-native-tts', () => ({
   setDefaultLanguage: jest.fn(),
   setDefaultRate: jest.fn(),
