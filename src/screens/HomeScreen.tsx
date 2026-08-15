@@ -136,7 +136,7 @@ export function HomeScreen() {
       ) : currentLevel ? (
         <Pressable
           onPress={() =>
-            navigation.navigate('LessonList', {
+            navigation.navigate('CourseList', {
               levelId: currentLevel.id,
               levelTitle: currentLevelTitle,
               levelTitleTranslations: currentLevel.title_translations,

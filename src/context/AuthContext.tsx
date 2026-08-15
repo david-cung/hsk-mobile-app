@@ -1,8 +1,15 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { authApi } from '../api/endpoints';
-import { clearToken, getToken, setToken } from '../api/client';
+import {
+  clearTokens,
+  getRefreshToken,
+  getToken,
+  setSessionExpiredListener,
+  setTokens,
+} from '../api/client';
 import type { Profile, User } from '../api/types';
+import { getGoogleIdToken, signOutFromGoogle } from '../auth/google';
 
 interface AuthState {
   user: User | null;
@@ -11,7 +18,9 @@ interface AuthState {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, displayName?: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -35,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(me);
       setProfile(prof);
     } catch {
-      await clearToken();
+      await clearTokens();
       setUser(null);
       setProfile(null);
     } finally {
@@ -47,20 +56,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadSession();
   }, [loadSession]);
 
+  useEffect(() => {
+    setSessionExpiredListener(() => {
+      setUser(null);
+      setProfile(null);
+    });
+    return () => setSessionExpiredListener(null);
+  }, []);
+
   const login = useCallback(async (email: string, password: string) => {
-    const { access_token } = await authApi.login(email, password);
-    await setToken(access_token);
+    const { access_token, refresh_token } = await authApi.login(email, password);
+    await setTokens(access_token, refresh_token);
     await loadSession();
   }, [loadSession]);
 
   const register = useCallback(async (email: string, password: string, displayName?: string) => {
-    const { access_token } = await authApi.register(email, password, displayName);
-    await setToken(access_token);
+    const { access_token, refresh_token } = await authApi.register(email, password, displayName);
+    await setTokens(access_token, refresh_token);
+    await loadSession();
+  }, [loadSession]);
+
+  const loginWithGoogle = useCallback(async () => {
+    const idToken = await getGoogleIdToken();
+    if (!idToken) return;
+    const { access_token, refresh_token } = await authApi.google(idToken);
+    await setTokens(access_token, refresh_token);
     await loadSession();
   }, [loadSession]);
 
   const logout = useCallback(async () => {
-    await clearToken();
+    const refreshToken = await getRefreshToken();
+    if (refreshToken) {
+      try {
+        await authApi.logout(refreshToken);
+      } catch {
+        // Local logout must remain available while offline.
+      }
+    }
+    await Promise.all([clearTokens(), signOutFromGoogle()]);
+    setUser(null);
+    setProfile(null);
+  }, []);
+
+  const deleteAccount = useCallback(async () => {
+    await authApi.deleteAccount();
+    await Promise.all([clearTokens(), signOutFromGoogle()]);
     setUser(null);
     setProfile(null);
   }, []);
@@ -78,10 +118,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated: !!user,
       login,
       register,
+      loginWithGoogle,
       logout,
+      deleteAccount,
       refreshProfile,
     }),
-    [user, profile, isLoading, login, register, logout, refreshProfile],
+    [
+      user,
+      profile,
+      isLoading,
+      login,
+      register,
+      loginWithGoogle,
+      logout,
+      deleteAccount,
+      refreshProfile,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

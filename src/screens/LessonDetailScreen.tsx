@@ -1,17 +1,21 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
-import { contentApi, learningApi } from '../api/endpoints';
+import {
+  contentApi,
+  learningApi,
+  progressApi,
+  vocabularyApi,
+} from '../api/endpoints';
 import type {
   ChineseEntry,
   DialogueContent,
@@ -34,11 +38,6 @@ import {
   getListeningTask,
   getListeningTranslation,
   getPatternMeaning,
-  getPracticeExplanation,
-  getPracticeHint,
-  getPracticeOptionLabel,
-  getPracticePrompt,
-  getPracticeTitle,
   getReadingTitle,
   getReadingTranslation,
   getLocalizedTask,
@@ -49,10 +48,9 @@ import {
 } from '../i18n/content';
 import { getLessonTypeLabel, getWordTypeLabel } from '../i18n/lessonTypes';
 import type { RootStackParamList } from '../navigation/types';
+import { useRootNavigation } from '../navigation/useRootNavigation';
 import { colors, radius, spacing, typography } from '../theme';
 import {
-  isAnswerCorrect,
-  resolveExpectedAnswer,
 } from '../utils/answerValidation';
 
 type Route = RouteProp<RootStackParamList, 'LessonDetail'>;
@@ -108,12 +106,26 @@ function VocabularySection({
   onSave: (word: NonNullable<LessonContent['vocabulary']>[number]) => void;
 }) {
   const { language, t } = useI18n();
+  const navigation = useRootNavigation();
 
   return (
     <>
       <Text style={styles.section}>{t('lessonType.vocabulary')}</Text>
       {items.map((word, index) => (
-        <Card key={`${word.hanzi}-${index}`} style={styles.block}>
+        <Pressable
+          key={`${word.hanzi}-${index}`}
+          disabled={!word.id}
+          accessibilityRole={word.id ? 'button' : undefined}
+          onPress={() =>
+            word.id
+              ? navigation.navigate('VocabularyDetail', {
+                  vocabularyId: word.id,
+                  title: word.hanzi,
+                })
+              : undefined
+          }
+        >
+        <Card style={styles.block}>
           {(() => {
             const metadata = [
               getWordTypeLabel(word.word_type, t),
@@ -157,6 +169,7 @@ function VocabularySection({
             style={styles.saveButton}
           />
         </Card>
+        </Pressable>
       ))}
     </>
   );
@@ -168,12 +181,26 @@ function GrammarSection({
   points: NonNullable<LessonContent['grammar_points']>;
 }) {
   const { language, t } = useI18n();
+  const navigation = useRootNavigation();
 
   return (
     <>
       <Text style={styles.section}>{t('lessonType.grammar')}</Text>
       {points.map(point => (
-        <Card key={point.title} style={styles.block}>
+        <Pressable
+          key={point.title}
+          disabled={!point.id}
+          accessibilityRole={point.id ? 'button' : undefined}
+          onPress={() =>
+            point.id
+              ? navigation.navigate('GrammarDetail', {
+                  grammarId: point.id,
+                  title: getGrammarTitle(point, language),
+                })
+              : undefined
+          }
+        >
+        <Card style={styles.block}>
           <Text style={styles.pointTitle}>{getGrammarTitle(point, language)}</Text>
           {point.structure ? (
             <Text style={styles.structure}>{point.structure}</Text>
@@ -200,6 +227,7 @@ function GrammarSection({
             </View>
           ) : null}
         </Card>
+        </Pressable>
       ))}
     </>
   );
@@ -473,12 +501,6 @@ function PracticeSections({ content }: { content: LessonContent }) {
   );
 }
 
-type ExerciseResponse = {
-  answer: string;
-  submitted: boolean;
-  showHint: boolean;
-};
-
 function PracticeExerciseSection({
   title,
   exercises,
@@ -486,172 +508,22 @@ function PracticeExerciseSection({
   title: string;
   exercises?: PracticeExercise[];
 }) {
-  const [responses, setResponses] = useState<Record<string, ExerciseResponse>>(
-    {},
-  );
-  const { language, t } = useI18n();
+  const { t } = useI18n();
 
   if (!hasItems(exercises)) {
     return null;
   }
 
-  const updateResponse = (
-    exerciseId: string,
-    response: Partial<ExerciseResponse>,
-  ) => {
-    setResponses(prev => ({
-      ...prev,
-      [exerciseId]: {
-        answer: prev[exerciseId]?.answer ?? '',
-        submitted: prev[exerciseId]?.submitted ?? false,
-        showHint: prev[exerciseId]?.showHint ?? false,
-        ...response,
-      },
-    }));
-  };
-
   return (
     <>
       <Text style={styles.section}>{title}</Text>
-      {exercises.map((exercise, index) => {
-        const exerciseId = exercise.id || `${exercise.prompt}-${index}`;
-        const response = responses[exerciseId] ?? {
-          answer: '',
-          submitted: false,
-          showHint: false,
-        };
-        const expectedAnswer = resolveExpectedAnswer(exercise);
-        const isMultipleChoice = hasItems(exercise.options);
-        const correct =
-          response.submitted &&
-          isAnswerCorrect(response.answer, expectedAnswer);
-
-        return (
-          <Card key={exerciseId} style={styles.block}>
-            <View style={styles.exerciseHeader}>
-              <Text style={styles.examplesLabel}>
-                {getPracticeTitle(exercise, language) ||
-                  t('lessonDetail.exercise', { number: index + 1 })}
-              </Text>
-              {exercise.skill ? (
-                <Text style={styles.skillText}>{getLessonTypeLabel(exercise.skill, t)}</Text>
-              ) : null}
-            </View>
-            <Text style={styles.exercisePrompt}>{getPracticePrompt(exercise, language)}</Text>
-            {hasItems(exercise.word_bank) ? (
-              <View style={styles.wordBank}>
-                {exercise.word_bank.map(word => (
-                  <View key={word} style={styles.wordChip}>
-                    <Text style={styles.wordChipText}>{word}</Text>
-                  </View>
-                ))}
-              </View>
-            ) : null}
-            {isMultipleChoice ? (
-              exercise.options?.map((option, optionIndex) => {
-                const optionLabel = getPracticeOptionLabel(
-                  exercise,
-                  option,
-                  optionIndex,
-                  language,
-                );
-                return (
-                  <Pressable
-                    key={option}
-                    style={[
-                      styles.practiceOption,
-                      response.answer === option && styles.practiceOptionSelected,
-                    ]}
-                    onPress={() =>
-                      updateResponse(exerciseId, {
-                        answer: option,
-                        submitted: false,
-                      })
-                    }
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: response.answer === option }}
-                    accessibilityLabel={optionLabel}
-                  >
-                    <Text
-                      style={[
-                        styles.practiceOptionText,
-                        response.answer === option &&
-                          styles.practiceOptionTextSelected,
-                      ]}
-                    >
-                      {optionLabel}
-                    </Text>
-                  </Pressable>
-                );
-              })
-            ) : (
-              <TextInput
-                value={response.answer}
-                onChangeText={answer =>
-                  updateResponse(exerciseId, { answer, submitted: false })
-                }
-                placeholder={t('lessonDetail.answerPlaceholder')}
-                placeholderTextColor={colors.outline}
-                autoCapitalize="none"
-                autoCorrect={false}
-                style={styles.answerInput}
-              />
-            )}
-            {response.showHint && getPracticeHint(exercise, language) ? (
-              <Text style={styles.hintText}>
-                {t('common.hint')}: {getPracticeHint(exercise, language)}
-              </Text>
-            ) : null}
-            {response.submitted ? (
-              <View
-                style={[
-                  styles.feedbackBox,
-                  correct ? styles.feedbackCorrect : styles.feedbackIncorrect,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.feedbackTitle,
-                    correct ? styles.correctText : styles.incorrectText,
-                  ]}
-                >
-                  {correct ? t('common.correct') : t('common.needsReview')}
-                </Text>
-                {!correct ? (
-                  <Text style={styles.answerText}>
-                    {t('common.answer')}: {expectedAnswer}
-                  </Text>
-                ) : null}
-                {getPracticeExplanation(exercise, language) ? (
-                  <Text style={styles.feedbackText}>
-                    {getPracticeExplanation(exercise, language)}
-                  </Text>
-                ) : null}
-              </View>
-            ) : null}
-            <View style={styles.exerciseActions}>
-              {getPracticeHint(exercise, language) ? (
-                <Button
-                  title={response.showHint ? t('common.hideHint') : t('common.showHint')}
-                  variant="ghost"
-                  leftIcon="bulb-outline"
-                  onPress={() =>
-                    updateResponse(exerciseId, { showHint: !response.showHint })
-                  }
-                  style={styles.exerciseButton}
-                />
-              ) : null}
-              <Button
-                title={t('common.check')}
-                rightIcon="checkmark-circle-outline"
-                onPress={() => updateResponse(exerciseId, { submitted: true })}
-                disabled={!response.answer.trim()}
-                style={styles.exerciseButton}
-              />
-            </View>
-          </Card>
-        );
-      })}
+      <ScreenState
+        type="empty"
+        title={t('lessonDetail.serverPracticeTitle')}
+        message={t('lessonDetail.serverPracticeMessage')}
+        compact
+        style={styles.block}
+      />
     </>
   );
 }
@@ -1027,15 +899,29 @@ export function LessonDetailScreen() {
     queryKey: ['lesson', params.lessonId],
     queryFn: () => contentApi.lesson(params.lessonId),
   });
+  useEffect(() => {
+    if (lesson) {
+      progressApi.startLesson(params.lessonId).catch(() => undefined);
+    }
+  }, [lesson, params.lessonId]);
   const saveWordMutation = useMutation({
-    mutationFn: (word: NonNullable<LessonContent['vocabulary']>[number]) =>
-      learningApi.addSavedWord({
-        hanzi: word.hanzi,
-        pinyin: word.pinyin,
-        meaning: getEntryMeaning(word, language),
-        hsk_level:
-          word.hsk_level ?? lesson?.content?.hsk_level ?? lesson?.hsk_level_id,
-      }),
+    mutationFn: async (
+      word: NonNullable<LessonContent['vocabulary']>[number],
+    ) => {
+      if (word.id) {
+        await vocabularyApi.favorite(word.id);
+      } else {
+        await learningApi.addSavedWord({
+          hanzi: word.hanzi,
+          pinyin: word.pinyin,
+          meaning: getEntryMeaning(word, language),
+          hsk_level:
+            word.hsk_level ??
+            lesson?.content?.hsk_level ??
+            lesson?.hsk_level_id,
+        });
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['savedWords'] });
       setSaveError(null);
@@ -1113,7 +999,21 @@ export function LessonDetailScreen() {
       />
 
       <Button
+        title={t('lessonDetail.startPractice')}
+        onPress={() =>
+          navigation.navigate('PracticeSession', {
+            lessonId: params.lessonId,
+            lessonTitle: title || params.lessonTitle,
+            lessonTitleTranslations:
+              lesson?.title_translations ?? params.lessonTitleTranslations,
+          })
+        }
+        rightIcon="arrow-forward"
+        style={styles.quizButton}
+      />
+      <Button
         title={t('lessonDetail.startQuiz')}
+        variant="secondary"
         onPress={() =>
           navigation.navigate('Quiz', {
             lessonId: params.lessonId,

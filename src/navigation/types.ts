@@ -4,11 +4,22 @@ export type RootStackParamList = {
   Splash: undefined;
   Onboarding: undefined;
   Auth: undefined;
+  ForgotPassword: undefined;
+  ResetPassword: { token?: string } | undefined;
+  ChangePassword: undefined;
   Main: undefined;
-  LessonList: {
+  CourseList: {
     levelId: number;
     levelTitle: string;
     levelTitleTranslations?: LocalizedText;
+  };
+  LessonList: {
+    levelId?: number;
+    levelTitle?: string;
+    levelTitleTranslations?: LocalizedText;
+    courseId?: number;
+    courseTitle?: string;
+    courseTitleTranslations?: LocalizedText;
     lessonType?: string;
     focusLabel?: string;
   };
@@ -18,6 +29,17 @@ export type RootStackParamList = {
     lessonTitleTranslations?: LocalizedText;
   };
   Quiz: {
+    lessonId: number;
+    lessonTitle: string;
+    lessonTitleTranslations?: LocalizedText;
+  };
+  PracticeSession: {
+    lessonId: number;
+    lessonTitle: string;
+    lessonTitleTranslations?: LocalizedText;
+  };
+  PracticeResult: {
+    sessionId: number;
     lessonId: number;
     lessonTitle: string;
     lessonTitleTranslations?: LocalizedText;
@@ -36,6 +58,8 @@ export type RootStackParamList = {
     durationMinutes?: number;
   };
   SavedWords: undefined;
+  VocabularyDetail: { vocabularyId: number; title: string };
+  GrammarDetail: { grammarId: number; title: string };
   Achievements: undefined;
   MockTests: undefined;
   MockTestSession: {

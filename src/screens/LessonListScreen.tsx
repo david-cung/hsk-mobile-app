@@ -49,22 +49,27 @@ export function LessonListScreen() {
   const levelTitle = localizeText(
     params.levelTitleTranslations,
     language,
-    params.levelTitle,
+    params.levelTitle ?? '',
+  );
+  const courseTitle = localizeText(
+    params.courseTitleTranslations,
+    language,
+    params.courseTitle ?? '',
   );
 
   useFocusEffect(
     useCallback(() => {
       queryClient.invalidateQueries({
-        queryKey: ['lessons', params.levelId, params.lessonType],
+        queryKey: ['lessons', params.courseId ?? params.levelId, params.lessonType],
       });
-    }, [queryClient, params.levelId, params.lessonType]),
+    }, [queryClient, params.courseId, params.levelId, params.lessonType]),
   );
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: localizedFocusLabel ?? levelTitle,
+      title: courseTitle || localizedFocusLabel || levelTitle,
     });
-  }, [navigation, localizedFocusLabel, levelTitle]);
+  }, [navigation, courseTitle, localizedFocusLabel, levelTitle]);
 
   const {
     data: lessons,
@@ -72,8 +77,11 @@ export function LessonListScreen() {
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['lessons', params.levelId, params.lessonType],
-    queryFn: () => contentApi.lessons(params.levelId, params.lessonType),
+    queryKey: ['lessons', params.courseId ?? params.levelId, params.lessonType],
+    queryFn: () =>
+      params.courseId
+        ? contentApi.courseLessons(params.courseId)
+        : contentApi.lessons(params.levelId!, params.lessonType),
     refetchOnMount: 'always',
     refetchOnWindowFocus: true,
   });
@@ -92,7 +100,9 @@ export function LessonListScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.subtitle}>
-        {localizedFocusLabel
+        {courseTitle
+          ? `${courseTitle} · ${levelTitle}`
+          : localizedFocusLabel
           ? `${localizedFocusLabel} · ${levelTitle}`
           : t('lessonList.selectLesson')}
       </Text>

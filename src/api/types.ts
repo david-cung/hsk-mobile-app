@@ -2,10 +2,12 @@ export interface User {
   id: number;
   email: string;
   display_name: string | null;
+  is_admin: boolean;
 }
 
 export interface TokenResponse {
   access_token: string;
+  refresh_token: string;
   token_type: string;
 }
 
@@ -18,6 +20,17 @@ export interface Profile {
   onboarding_completed: boolean;
 }
 
+export type ProfileUpdate = Partial<
+  Pick<
+    Profile,
+    | 'learning_goal'
+    | 'target_hsk_level'
+    | 'current_hsk_level'
+    | 'daily_goal_minutes'
+    | 'onboarding_completed'
+  >
+>;
+
 export type LocalizedText = Partial<{
   en: string;
   vi: string;
@@ -28,15 +41,36 @@ export type LocalizedText = Partial<{
 export interface HskLevel {
   id: number;
   level_number: number;
+  name?: string;
   title: string;
   title_translations?: LocalizedText;
   description: string | null;
   description_translations?: LocalizedText;
   total_characters: number;
+  display_order?: number;
+  status?: string;
+  course_count?: number;
+}
+
+export interface Course {
+  id: number;
+  hsk_level_id: number;
+  hsk_level: number;
+  title: string;
+  title_translations?: LocalizedText;
+  description: string | null;
+  description_translations?: LocalizedText;
+  thumbnail_url: string | null;
+  course_type: string;
+  order: number;
+  status: string;
+  lesson_count: number;
 }
 
 export interface LessonListItem {
   id: number;
+  hsk_level_id?: number;
+  course_id?: number;
   title: string;
   title_translations?: LocalizedText;
   description: string | null;
@@ -46,9 +80,13 @@ export interface LessonListItem {
   duration_minutes: number;
   status: string | null;
   score_percent: number | null;
+  lesson_number?: number;
+  difficulty?: number | null;
+  content_status?: string;
 }
 
 export interface ChineseEntry {
+  id?: number;
   hanzi: string;
   pinyin?: string;
   meaning?: string;
@@ -70,6 +108,7 @@ export interface ChineseEntry {
 }
 
 export interface GrammarPoint {
+  id?: number;
   title: string;
   title_translations?: LocalizedText;
   structure?: string;
@@ -152,7 +191,7 @@ export interface PracticeExercise {
   prompt_translations?: LocalizedText;
   options?: string[];
   options_translations?: Partial<Record<'en' | 'vi', string[]>>;
-  correct_answer: string;
+  correct_answer?: string;
   expected_answer?: string;
   hint?: string;
   hint_translations?: LocalizedText;
@@ -211,13 +250,90 @@ export interface LessonContent {
 export interface LessonDetail {
   id: number;
   hsk_level_id: number;
+  course_id?: number;
   title: string;
   title_translations?: LocalizedText;
   description: string | null;
   description_translations?: LocalizedText;
   lesson_type: string;
+  lesson_number?: number;
   duration_minutes: number;
+  difficulty?: number | null;
+  content_status?: string;
+  listening_audio?: AudioAsset | null;
   content: LessonContent | null;
+}
+
+export interface AudioAsset {
+  id: number;
+  url: string | null;
+  storage_provider: string;
+  storage_key: string;
+  duration_ms: number | null;
+  format: string | null;
+  locale: string | null;
+}
+
+export interface ExampleSentence {
+  id: number;
+  chinese: string;
+  pinyin: string | null;
+  translations: LocalizedText;
+  audio: AudioAsset | null;
+}
+
+export interface VocabularyItem {
+  id: number;
+  simplified: string;
+  traditional: string | null;
+  pinyin: string | null;
+  meaning_translations: LocalizedText;
+  part_of_speech: string;
+  hsk_level: number;
+  difficulty: number | null;
+  display_order: number;
+  audio: AudioAsset | null;
+  learning_status: 'new' | 'learning' | 'learned' | 'mastered';
+  is_favorite: boolean;
+}
+
+export interface ContentLessonReference {
+  id: number;
+  course_id: number;
+  title: string;
+  lesson_number: number;
+}
+
+export interface VocabularyDetail extends VocabularyItem {
+  hsk_level_id: number;
+  category: string | null;
+  examples: ExampleSentence[];
+  lessons: ContentLessonReference[];
+  status: string;
+}
+
+export interface VocabularyPage {
+  items: VocabularyItem[];
+  page: number;
+  page_size: number;
+  total: number;
+  pages: number;
+}
+
+export interface GrammarDetail {
+  id: number;
+  title: string;
+  title_translations?: LocalizedText;
+  explanation_translations: LocalizedText;
+  pattern: string | null;
+  hsk_level: number;
+  hsk_level_id: number;
+  difficulty: number | null;
+  display_order: number;
+  learning_status: 'viewed' | 'completed' | null;
+  examples: ExampleSentence[];
+  lessons: ContentLessonReference[];
+  status: string;
 }
 
 export interface Question {
@@ -228,6 +344,104 @@ export interface Question {
   options: string[] | null;
   options_translations?: Partial<Record<'en' | 'vi', string[]>>;
   sort_order: number;
+}
+
+export type PracticeAnswer = string | string[] | Record<string, string>;
+
+export interface PracticeOption {
+  id: string;
+  text: string;
+  translations?: LocalizedText;
+}
+
+export interface PracticeConfiguration {
+  options?: PracticeOption[];
+  items?: PracticeOption[];
+  targets?: PracticeOption[];
+}
+
+export interface PracticeQuestion {
+  id: number;
+  exercise_id: number;
+  question_type:
+    | 'multiple_choice'
+    | 'multiple_select'
+    | 'fill_blank'
+    | 'matching'
+    | 'ordering'
+    | 'translation'
+    | 'grammar'
+    | 'reading'
+    | 'dictation'
+    | 'text_input'
+    | 'vocabulary_recall'
+    | string;
+  prompt: string;
+  prompt_translations?: LocalizedText;
+  instruction?: string | null;
+  explanation_available: boolean;
+  difficulty?: number | null;
+  points: number;
+  order: number;
+  configuration: PracticeConfiguration;
+}
+
+export interface PracticeSession {
+  id: number;
+  lesson_id: number;
+  exercise_set_id: number;
+  status: 'in_progress' | 'completed' | 'abandoned';
+  questions: PracticeQuestion[];
+  total_questions: number;
+  answered_questions: number;
+  answered_question_ids: number[];
+  correct_answers: number;
+  score: number;
+  time_spent_seconds: number;
+  started_at: string;
+  completed_at?: string | null;
+}
+
+export interface PracticeAnswerResult {
+  attempt_id: number;
+  question_id: number;
+  correct: boolean;
+  score: number;
+  max_score: number;
+  submitted_answer: PracticeAnswer;
+  normalized_answer: PracticeAnswer;
+  correct_answer: PracticeAnswer;
+  explanation?: string | null;
+  explanation_translations?: LocalizedText;
+  answered_questions: number;
+  correct_answers: number;
+  session_score: number;
+}
+
+export interface PracticeReviewItem {
+  question_id: number;
+  prompt: string;
+  prompt_translations?: LocalizedText;
+  submitted_answer: PracticeAnswer;
+  correct_answer: PracticeAnswer;
+  correct: boolean;
+  score: number;
+  max_score: number;
+  explanation?: string | null;
+  explanation_translations?: LocalizedText;
+}
+
+export interface PracticeResults {
+  session_id: number;
+  status: string;
+  total_questions: number;
+  answered_questions: number;
+  correct_answers: number;
+  incorrect_answers: number;
+  score: number;
+  accuracy: number;
+  time_spent_seconds: number;
+  review: PracticeReviewItem[];
 }
 
 export interface QuestionResult {
