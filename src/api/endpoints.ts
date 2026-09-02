@@ -1,9 +1,17 @@
 import { apiFetch } from './client';
 import type {
   Achievement,
+  AudioUrl,
   Course,
+  DailyActivity,
+  ExamAttempt,
+  ExamAttemptHistory,
+  ExamDetail,
+  ExamListItem,
+  ExamResult,
   GrammarDetail,
   HskLevel,
+  HskProgress,
   LessonDetail,
   LessonListItem,
   Mistake,
@@ -11,14 +19,24 @@ import type {
   MockTestQuestion,
   PracticeAnswer,
   PracticeAnswerResult,
+  PracticeLesson,
   PracticeResults,
   PracticeSession,
   Profile,
   ProfileUpdate,
   ProgressDashboard,
+  ProgressSummary,
   Question,
   QuizSubmitResult,
+  ReviewCard,
+  ReviewCardStatus,
+  ReviewDue,
+  ReviewRating,
+  ReviewSummary,
   SavedWord,
+  SkillPerformance,
+  SpeechRecording,
+  SpeechUpload,
   TokenResponse,
   User,
   VocabularyDetail,
@@ -111,9 +129,23 @@ export const quizApi = {
 };
 
 export const practiceApi = {
+  lesson: (lessonId: number) =>
+    apiFetch<PracticeLesson>(`/api/v1/practice/lessons/${lessonId}`),
   startSession: (data: {
     lesson_id: number;
     exercise_set_id?: number;
+    question_count?: number;
+    difficulty?: number;
+    skill?: string;
+    resume?: boolean;
+  }) =>
+    apiFetch<PracticeSession>('/api/v1/practice/sessions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  createSession: (data: {
+    lesson_id: number;
+    exercise_set_id?: number | null;
     question_count?: number;
     difficulty?: number;
     skill?: string;
@@ -132,6 +164,21 @@ export const practiceApi = {
       answer: PracticeAnswer;
       idempotency_key: string;
       time_spent_seconds: number;
+      playback?: object;
+    },
+  ) =>
+    apiFetch<PracticeAnswerResult>(`/api/v1/practice/sessions/${sessionId}/answers`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  submitAnswer: (
+    sessionId: number,
+    data: {
+      question_id: number;
+      answer: unknown;
+      time_spent_seconds?: number;
+      idempotency_key?: string;
+      playback?: object;
     },
   ) =>
     apiFetch<PracticeAnswerResult>(`/api/v1/practice/sessions/${sessionId}/answers`, {
@@ -146,12 +193,105 @@ export const practiceApi = {
     apiFetch<PracticeResults>(`/api/v1/practice/sessions/${sessionId}/results`),
 };
 
+export const audioApi = {
+  url: (audioAssetId: number) => apiFetch<AudioUrl>(`/api/v1/audio/${audioAssetId}/url`),
+};
+
+export const speakingApi = {
+  requestUpload: (data: {
+    filename?: string | null;
+    mime_type: string;
+    size_bytes?: number | null;
+    duration_seconds?: number | null;
+    language?: string;
+    metadata?: Record<string, unknown>;
+  }) =>
+    apiFetch<SpeechUpload>('/api/v1/speaking/upload', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  completeUpload: (
+    recordingId: number,
+    data: {
+      size_bytes?: number | null;
+      duration_seconds?: number | null;
+      metadata?: Record<string, unknown>;
+    },
+  ) =>
+    apiFetch<SpeechRecording>(`/api/v1/speaking/upload/${recordingId}/complete`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  recording: (recordingId: number) =>
+    apiFetch<SpeechRecording>(`/api/v1/speaking/recordings/${recordingId}`),
+};
+
 export const progressApi = {
   dashboard: () => apiFetch<ProgressDashboard>('/api/v1/progress/dashboard'),
+  summary: () => apiFetch<ProgressSummary>('/api/v1/progress/summary'),
+  hsk: (level: number) => apiFetch<HskProgress>(`/api/v1/progress/hsk/${level}`),
+  skills: () => apiFetch<SkillPerformance[]>('/api/v1/progress/skills'),
+  activity: (days = 30) =>
+    apiFetch<DailyActivity[]>(`/api/v1/progress/activity?days=${days}`),
   startLesson: (lessonId: number) =>
     apiFetch(`/api/v1/lessons/${lessonId}/start`, { method: 'POST' }),
   completeLesson: (lessonId: number) =>
     apiFetch(`/api/v1/lessons/${lessonId}/complete`, { method: 'POST' }),
+};
+
+export const reviewApi = {
+  due: (limit?: number) =>
+    apiFetch<ReviewDue>(`/api/v1/review/due${limit ? `?limit=${limit}` : ''}`),
+  summary: () => apiFetch<ReviewSummary>('/api/v1/review/summary'),
+  cards: (cardType?: 'VOCABULARY' | 'GRAMMAR') =>
+    apiFetch<ReviewCardStatus[]>(
+      `/api/v1/review/cards${cardType ? `?card_type=${cardType}` : ''}`,
+    ),
+  enroll: (data: {
+    card_type: 'VOCABULARY' | 'GRAMMAR';
+    vocabulary_id?: number | null;
+    grammar_id?: string | null;
+    content_key?: string | null;
+    content?: Record<string, unknown>;
+  }) =>
+    apiFetch<ReviewCard>('/api/v1/review/cards', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  submit: (cardId: number, data: { rating: ReviewRating; idempotency_key: string }) =>
+    apiFetch<{ card: ReviewCard; reviewed_today: number; next_review_at?: string | null }>(
+      `/api/v1/review/cards/${cardId}/review`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    ),
+};
+
+export const examApi = {
+  list: (hskLevel?: number) =>
+    apiFetch<ExamListItem[]>(`/api/v1/exams${hskLevel ? `?hsk_level=${hskLevel}` : ''}`),
+  detail: (examId: number) => apiFetch<ExamDetail>(`/api/v1/exams/${examId}`),
+  start: (examId: number) =>
+    apiFetch<ExamAttempt>(`/api/v1/exams/${examId}/start`, { method: 'POST' }),
+  attempt: (attemptId: number) =>
+    apiFetch<ExamAttempt>(`/api/v1/exam-attempts/${attemptId}`),
+  history: (limit = 50, offset = 0) =>
+    apiFetch<ExamAttemptHistory[]>(`/api/v1/exam-attempts?limit=${limit}&offset=${offset}`),
+  saveAnswer: (
+    attemptId: number,
+    questionId: number,
+    answer: unknown,
+    idempotencyKey?: string,
+  ) =>
+    apiFetch<ExamAttempt>(`/api/v1/exam-attempts/${attemptId}/answers/${questionId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ answer, idempotency_key: idempotencyKey }),
+    }),
+  submit: (attemptId: number) =>
+    apiFetch<ExamResult>(`/api/v1/exam-attempts/${attemptId}/submit`, { method: 'POST' }),
+  result: (attemptId: number) =>
+    apiFetch<ExamResult>(`/api/v1/exam-attempts/${attemptId}/result`),
 };
 
 export const vocabularyApi = {

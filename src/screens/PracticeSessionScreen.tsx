@@ -21,12 +21,15 @@ import { localizeText } from '../i18n/content';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
 
-type Route = RouteProp<RootStackParamList, 'PracticeSession'>;
+type Route = RouteProp<RootStackParamList, 'PracticeSession' | 'WritingPractice'>;
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 function hasAnswer(answer: PracticeAnswer | undefined): boolean {
   if (typeof answer === 'string') return Boolean(answer.trim());
   if (Array.isArray(answer)) return answer.length > 0;
+  if (answer && typeof answer === 'object' && 'recording_id' in answer) {
+    return typeof answer.recording_id === 'number';
+  }
   return Boolean(answer && Object.keys(answer).length);
 }
 
@@ -36,7 +39,11 @@ function idempotencyKey(sessionId: number, questionId: number): string {
     .slice(2, 10)}`;
 }
 
-export function PracticeSessionScreen() {
+export function PracticeSessionScreen({
+  forcedSkill,
+}: {
+  forcedSkill?: string;
+} = {}) {
   const { params } = useRoute<Route>();
   const navigation = useNavigation<Nav>();
   const queryClient = useQueryClient();
@@ -60,6 +67,7 @@ export function PracticeSessionScreen() {
     queryFn: () =>
       practiceApi.startSession({
         lesson_id: params.lessonId,
+        skill: forcedSkill ?? ('skill' in params ? params.skill : undefined),
         resume: true,
       }),
     retry: false,
@@ -67,8 +75,9 @@ export function PracticeSessionScreen() {
 
   useEffect(() => {
     if (!session || initializedSessionId.current === session.id) return;
+    const answered = session.answered_question_ids ?? [];
     const firstUnanswered = session.questions.findIndex(
-      question => !session.answered_question_ids.includes(question.id),
+      question => !answered.includes(question.id),
     );
     setCurrentIndex(firstUnanswered >= 0 ? firstUnanswered : session.questions.length);
     initializedSessionId.current = session.id;
@@ -104,7 +113,7 @@ export function PracticeSessionScreen() {
                 correct_answers: result.correct_answers,
                 score: result.session_score,
                 answered_question_ids: Array.from(
-                  new Set([...previous.answered_question_ids, result.question_id]),
+                  new Set([...(previous.answered_question_ids ?? []), result.question_id]),
                 ),
               }
             : previous,

@@ -37,6 +37,7 @@ export type RootStackParamList = {
     lessonId: number;
     lessonTitle: string;
     lessonTitleTranslations?: LocalizedText;
+    skill?: string;
   };
   PracticeResult: {
     sessionId: number;
@@ -44,6 +45,12 @@ export type RootStackParamList = {
     lessonTitle: string;
     lessonTitleTranslations?: LocalizedText;
   };
+  WritingPractice: {
+    lessonId: number;
+    lessonTitle: string;
+    lessonTitleTranslations?: LocalizedText;
+  };
+  WritingResult: { sessionId: number };
   QuizResult: {
     lessonId: number;
     lessonTitle: string;
@@ -62,13 +69,21 @@ export type RootStackParamList = {
   GrammarDetail: { grammarId: number; title: string };
   Achievements: undefined;
   MockTests: undefined;
-  MockTestSession: {
-    mockTestId: number;
+  MockExamDetail: {
+    examId: number;
     title: string;
     titleTranslations?: LocalizedText;
-    hskLevel: number;
-    durationMinutes: number;
   };
+  MockTestSession: {
+    mockTestId?: number;
+    examId?: number;
+    attemptId?: number;
+    title?: string;
+    titleTranslations?: LocalizedText;
+    hskLevel?: number;
+    durationMinutes?: number;
+  };
+  MockExamResult: { attemptId: number };
   DailyReview: undefined;
   Settings: undefined;
 };
