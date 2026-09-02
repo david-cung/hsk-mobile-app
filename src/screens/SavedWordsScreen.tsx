@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 
-import { learningApi } from '../api/endpoints';
+import { learningApi, reviewApi } from '../api/endpoints';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { ScreenState } from '../components/ScreenState';
@@ -30,6 +30,14 @@ export function SavedWordsScreen() {
     queryKey: ['savedWords'],
     queryFn: learningApi.savedWords,
   });
+  const { data: reviewCards } = useQuery({
+    queryKey: ['review-cards', 'VOCABULARY'],
+    queryFn: () => reviewApi.cards('VOCABULARY'),
+  });
+  const reviewedWordIds = useMemo(
+    () => new Set((reviewCards ?? []).map(card => card.vocabulary_id).filter((id): id is number => typeof id === 'number')),
+    [reviewCards],
+  );
 
   const addMutation = useMutation({
     mutationFn: () =>
@@ -44,6 +52,8 @@ export function SavedWordsScreen() {
       setMeaning('');
       setNotice(t('savedWords.wordSaved'));
       queryClient.invalidateQueries({ queryKey: ['savedWords'] });
+      queryClient.invalidateQueries({ queryKey: ['review-cards', 'VOCABULARY'] });
+      queryClient.invalidateQueries({ queryKey: ['progress-summary'] });
     },
     onError: (e) => {
       setNotice(null);
@@ -55,6 +65,27 @@ export function SavedWordsScreen() {
     mutationFn: (id: number) => learningApi.deleteSavedWord(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savedWords'] }),
     onError: (e) => Alert.alert(t('common.error'), e instanceof Error ? e.message : t('savedWords.failedRemove')),
+  });
+  const enrollMutation = useMutation({
+    mutationFn: (word: NonNullable<typeof words>[number]) =>
+      reviewApi.enroll({
+        card_type: 'VOCABULARY',
+        vocabulary_id: word.id,
+        content_key: `saved-word:${word.id}`,
+        content: {
+          hanzi: word.hanzi,
+          pinyin: word.pinyin,
+          meaning: word.meaning,
+          hsk_level: word.hsk_level,
+        },
+      }),
+    onSuccess: () => {
+      setNotice(t('savedWords.reviewAdded'));
+      queryClient.invalidateQueries({ queryKey: ['review-cards', 'VOCABULARY'] });
+      queryClient.invalidateQueries({ queryKey: ['review-due'] });
+      queryClient.invalidateQueries({ queryKey: ['progress-summary'] });
+    },
+    onError: (e) => Alert.alert(t('common.error'), e instanceof Error ? e.message : t('savedWords.failedSave')),
   });
 
   const saveWord = () => {
@@ -183,6 +214,18 @@ export function SavedWordsScreen() {
                   style={styles.removeButton}
                 />
               </View>
+              {reviewedWordIds.has(item.id) ? (
+                <Text style={styles.reviewStatus}>{t('savedWords.inReview')}</Text>
+              ) : (
+                <Button
+                  title={t('savedWords.addToReview')}
+                  leftIcon="refresh-outline"
+                  variant="secondary"
+                  disabled={enrollMutation.isPending}
+                  onPress={() => enrollMutation.mutate(item)}
+                  style={styles.addReviewButton}
+                />
+              )}
             </Card>
           )}
         />
@@ -216,4 +259,6 @@ const styles = StyleSheet.create({
   pinyin: { ...typography.bodyMd, color: colors.onSurfaceVariant },
   meaning: { ...typography.bodyMd, color: colors.onSurface, marginTop: 4 },
   removeButton: { minWidth: 112 },
+  reviewStatus: { ...typography.labelSm, color: colors.primary, marginTop: spacing.stackSm },
+  addReviewButton: { alignSelf: 'flex-start', marginTop: spacing.stackSm },
 });

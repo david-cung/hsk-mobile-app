@@ -4,6 +4,7 @@ import type { PracticeAnswer, PracticeResults } from '../../api/types';
 import { useI18n } from '../../i18n/I18nContext';
 import { localizeText } from '../../i18n/content';
 import { colors, spacing, typography } from '../../theme';
+import { Button } from '../Button';
 import { Card } from '../Card';
 import { ProgressBar } from '../ProgressBar';
 
@@ -17,7 +18,13 @@ function formatAnswer(value: PracticeAnswer): string {
   return String(value ?? '');
 }
 
-export function PracticeResult({ results }: { results: PracticeResults }) {
+export function PracticeResult({
+  results,
+  onDone,
+}: {
+  results: PracticeResults;
+  onDone?: () => void;
+}) {
   const { language, t, formatNumber } = useI18n();
   return (
     <View>
@@ -32,32 +39,34 @@ export function PracticeResult({ results }: { results: PracticeResults }) {
         <ProgressBar progress={results.score} />
       </Card>
       <Text style={styles.reviewTitle}>{t('practiceResult.review')}</Text>
-      {results.review.map(item => {
+      {results.review.map((item, index) => {
+        const promptText = item.prompt ?? item.question?.prompt ?? '';
         const prompt = localizeText(
           item.prompt_translations,
           language,
-          item.prompt,
+          promptText,
         );
         const explanation = localizeText(
           item.explanation_translations,
           language,
           item.explanation ?? '',
         );
+        const submitted = item.submitted_answer ?? (item.user_answer as PracticeAnswer);
         return (
-          <Card key={item.question_id} style={styles.reviewCard}>
+          <Card key={item.question_id ?? item.question?.id ?? index} style={styles.reviewCard}>
             <Text style={styles.prompt}>{prompt}</Text>
             <Text style={item.correct ? styles.correct : styles.incorrect}>
               {item.correct ? t('common.correct') : t('common.needsReview')}
             </Text>
             <Text style={styles.answer}>
               {t('practiceResult.yourAnswer', {
-                answer: formatAnswer(item.submitted_answer),
+                answer: formatAnswer(submitted),
               })}
             </Text>
             {!item.correct ? (
               <Text style={styles.answer}>
                 {t('practiceSession.correctAnswer', {
-                  answer: formatAnswer(item.correct_answer),
+                  answer: formatAnswer(item.correct_answer as PracticeAnswer),
                 })}
               </Text>
             ) : null}
@@ -67,6 +76,9 @@ export function PracticeResult({ results }: { results: PracticeResults }) {
           </Card>
         );
       })}
+      {onDone ? (
+        <Button title={t('common.done')} onPress={onDone} style={styles.doneButton} />
+      ) : null}
     </View>
   );
 }
@@ -105,4 +117,5 @@ const styles = StyleSheet.create({
     color: colors.onSurface,
     marginTop: spacing.stackSm,
   },
+  doneButton: { marginTop: spacing.stackLg },
 });

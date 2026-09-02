@@ -14,6 +14,7 @@ import {
   contentApi,
   learningApi,
   progressApi,
+  reviewApi,
   vocabularyApi,
 } from '../api/endpoints';
 import type {
@@ -50,8 +51,6 @@ import { getLessonTypeLabel, getWordTypeLabel } from '../i18n/lessonTypes';
 import type { RootStackParamList } from '../navigation/types';
 import { useRootNavigation } from '../navigation/useRootNavigation';
 import { colors, radius, spacing, typography } from '../theme';
-import {
-} from '../utils/answerValidation';
 
 type Route = RouteProp<RootStackParamList, 'LessonDetail'>;
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -182,6 +181,29 @@ function GrammarSection({
 }) {
   const { language, t } = useI18n();
   const navigation = useRootNavigation();
+  const queryClient = useQueryClient();
+  const enrollMutation = useMutation({
+    mutationFn: (point: NonNullable<LessonContent['grammar_points']>[number]) => {
+      const title = getGrammarTitle(point, language);
+      const key = point.structure || title;
+      return reviewApi.enroll({
+        card_type: 'GRAMMAR',
+        grammar_id: key,
+        content_key: `grammar:${key}`,
+        content: {
+          grammar_id: key,
+          pattern: point.structure || title,
+          meaning: title,
+          explanation: getGrammarExplanation(point, language),
+          example: point.examples?.[0]?.hanzi,
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['review-due'] });
+      queryClient.invalidateQueries({ queryKey: ['progress-summary'] });
+    },
+  });
 
   return (
     <>
@@ -226,6 +248,15 @@ function GrammarSection({
               ))}
             </View>
           ) : null}
+          <Button
+            title={t('savedWords.addToReview')}
+            leftIcon="refresh-outline"
+            variant="ghost"
+            disabled={enrollMutation.isPending}
+            loading={enrollMutation.isPending}
+            onPress={() => enrollMutation.mutate(point)}
+            style={styles.saveButton}
+          />
         </Card>
         </Pressable>
       ))}
@@ -1011,6 +1042,22 @@ export function LessonDetailScreen() {
         rightIcon="arrow-forward"
         style={styles.quizButton}
       />
+      {['writing', 'mixed', 'practice'].includes(lesson.lesson_type) ? (
+        <Button
+          title={t('lessonDetail.startWritingPractice')}
+          variant="secondary"
+          onPress={() =>
+            navigation.navigate('WritingPractice', {
+              lessonId: params.lessonId,
+              lessonTitle: title || params.lessonTitle,
+              lessonTitleTranslations:
+                lesson?.title_translations ?? params.lessonTitleTranslations,
+            })
+          }
+          rightIcon="create-outline"
+          style={styles.quizButton}
+        />
+      ) : null}
       <Button
         title={t('lessonDetail.startQuiz')}
         variant="secondary"
