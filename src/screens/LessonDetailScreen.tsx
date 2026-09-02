@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 
-import { contentApi, learningApi } from '../api/endpoints';
+import { contentApi, learningApi, reviewApi } from '../api/endpoints';
 import type {
   ChineseEntry,
   DialogueContent,
@@ -167,7 +167,30 @@ function GrammarSection({
 }: {
   points: NonNullable<LessonContent['grammar_points']>;
 }) {
+  const queryClient = useQueryClient();
   const { language, t } = useI18n();
+  const enrollMutation = useMutation({
+    mutationFn: (point: NonNullable<LessonContent['grammar_points']>[number]) => {
+      const title = getGrammarTitle(point, language);
+      const key = point.structure || title;
+      return reviewApi.enroll({
+        card_type: 'GRAMMAR',
+        grammar_id: key,
+        content_key: `grammar:${key}`,
+        content: {
+          grammar_id: key,
+          pattern: point.structure || title,
+          meaning: title,
+          explanation: getGrammarExplanation(point, language),
+          example: point.examples?.[0]?.hanzi,
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['review-due'] });
+      queryClient.invalidateQueries({ queryKey: ['progress-summary'] });
+    },
+  });
 
   return (
     <>
@@ -199,6 +222,15 @@ function GrammarSection({
               ))}
             </View>
           ) : null}
+          <Button
+            title={t('savedWords.addToReview')}
+            leftIcon="refresh-outline"
+            variant="ghost"
+            disabled={enrollMutation.isPending}
+            loading={enrollMutation.isPending}
+            onPress={() => enrollMutation.mutate(point)}
+            style={styles.saveButton}
+          />
         </Card>
       ))}
     </>
@@ -1080,6 +1112,11 @@ export function LessonDetailScreen() {
   const typeLabel = getLessonTypeLabel(lesson.lesson_type, t);
   const title = getLessonTitle(lesson, language);
   const description = getLessonDescription(lesson, language);
+  const hasWritingPractice = Boolean(
+    lesson.lesson_type.toLowerCase() === 'writing' ||
+    lesson.content?.writing_exercises?.length ||
+    lesson.content?.writing_tasks?.length,
+  );
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -1113,9 +1150,9 @@ export function LessonDetailScreen() {
       />
 
       <Button
-        title={t('lessonDetail.startQuiz')}
+        title={t('lessonDetail.startPractice')}
         onPress={() =>
-          navigation.navigate('Quiz', {
+          navigation.navigate('PracticeSession', {
             lessonId: params.lessonId,
             lessonTitle: title || params.lessonTitle,
             lessonTitleTranslations: lesson?.title_translations ?? params.lessonTitleTranslations,
@@ -1124,6 +1161,21 @@ export function LessonDetailScreen() {
         rightIcon="arrow-forward"
         style={styles.quizButton}
       />
+      {hasWritingPractice ? (
+        <Button
+          title={t('lessonDetail.startWritingPractice')}
+          onPress={() =>
+            navigation.navigate('WritingPractice', {
+              lessonId: params.lessonId,
+              lessonTitle: title || params.lessonTitle,
+              lessonTitleTranslations: lesson?.title_translations ?? params.lessonTitleTranslations,
+            })
+          }
+          rightIcon="create-outline"
+          variant="secondary"
+          style={styles.quizButton}
+        />
+      ) : null}
     </ScrollView>
   );
 }

@@ -37,12 +37,10 @@ export function QuizResultScreen() {
       if (mockTestId == null || hskLevel == null || durationMinutes == null) {
         return;
       }
-      navigation.navigate('MockTestSession', {
-        mockTestId,
+      navigation.navigate('MockExamDetail', {
+        examId: mockTestId,
         title: params.lessonTitle,
         titleTranslations: params.lessonTitleTranslations,
-        hskLevel,
-        durationMinutes,
       });
       return;
     }

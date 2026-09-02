@@ -22,6 +22,20 @@ export type RootStackParamList = {
     lessonTitle: string;
     lessonTitleTranslations?: LocalizedText;
   };
+  PracticeSession: {
+    lessonId: number;
+    lessonTitle: string;
+    lessonTitleTranslations?: LocalizedText;
+    skill?: string;
+  };
+  WritingPractice: {
+    lessonId: number;
+    lessonTitle: string;
+    lessonTitleTranslations?: LocalizedText;
+  };
+  WritingResult: {
+    sessionId: number;
+  };
   QuizResult: {
     lessonId: number;
     lessonTitle: string;
@@ -38,13 +52,16 @@ export type RootStackParamList = {
   SavedWords: undefined;
   Achievements: undefined;
   MockTests: undefined;
-  MockTestSession: {
-    mockTestId: number;
+  MockExamDetail: {
+    examId: number;
     title: string;
     titleTranslations?: LocalizedText;
-    hskLevel: number;
-    durationMinutes: number;
   };
+  MockTestSession: {
+    examId?: number;
+    attemptId?: number;
+  };
+  MockExamResult: { attemptId: number };
   DailyReview: undefined;
   Settings: undefined;
 };

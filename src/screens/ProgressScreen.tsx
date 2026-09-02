@@ -1,28 +1,43 @@
 import { useQuery } from '@tanstack/react-query';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { progressApi } from '../api/endpoints';
 import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
 import { ScreenState } from '../components/ScreenState';
+import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n/I18nContext';
-import { getLessonTitle } from '../i18n/content';
+import type { TranslationKey } from '../i18n/translations';
 import { getLessonTypeLabel } from '../i18n/lessonTypes';
-import { colors, spacing, typography } from '../theme';
+import { colors, radius, spacing, typography } from '../theme';
+
+const HSK_LEVELS = [1, 2, 3, 4, 5, 6];
+const TREND_KEYS: Record<string, TranslationKey> = {
+  improving: 'progress.trend.improving',
+  stable: 'progress.trend.stable',
+  declining: 'progress.trend.declining',
+};
+
+function metricText(value: number | null | undefined, formatNumber: (value: number) => string) {
+  return value == null ? '-' : `${formatNumber(Math.round(value))}%`;
+}
 
 export function ProgressScreen() {
-  const { language, t, formatNumber } = useI18n();
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['dashboard'],
-    queryFn: progressApi.dashboard,
-  });
+  const { profile } = useAuth();
+  const { t, formatNumber } = useI18n();
+  const [selectedLevel, setSelectedLevel] = useState(profile?.current_hsk_level ?? 1);
+  const summaryQuery = useQuery({ queryKey: ['progress-summary'], queryFn: progressApi.summary });
+  const hskQuery = useQuery({ queryKey: ['progress-hsk', selectedLevel], queryFn: () => progressApi.hsk(selectedLevel) });
+  const activityQuery = useQuery({ queryKey: ['progress-activity', 7], queryFn: () => progressApi.activity(7) });
+  const summary = summaryQuery.data;
+  const hsk = hskQuery.data;
+  const activity = activityQuery.data ?? [];
+  const isLoading = summaryQuery.isLoading || hskQuery.isLoading || activityQuery.isLoading;
+  const isError = summaryQuery.isError || hskQuery.isError || activityQuery.isError;
 
   if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ScreenState type="loading" title={t('progress.loading')} />
-      </View>
-    );
+    return <View style={styles.center}><ScreenState type="loading" title={t('progress.loading')} /></View>;
   }
 
   if (isError) {
@@ -34,115 +49,134 @@ export function ProgressScreen() {
           message={t('common.connectionRetry')}
           actionLabel={t('common.tryAgain')}
           onAction={() => {
-            refetch();
+            summaryQuery.refetch();
+            hskQuery.refetch();
+            activityQuery.refetch();
           }}
         />
       </View>
     );
   }
 
-  if (!data) {
-    return (
-      <View style={styles.center}>
-        <ScreenState
-          type="empty"
-          title={t('progress.noProgress')}
-          message={t('progress.noProgressMessage')}
-        />
-      </View>
-    );
+  if (!summary || !hsk) {
+    return <View style={styles.center}><ScreenState type="empty" title={t('progress.noProgress')} message={t('progress.noProgressMessage')} /></View>;
   }
 
-  const dailyPercent = data.daily_goal_minutes
-    ? Math.round((data.minutes_studied_today / data.daily_goal_minutes) * 100)
-    : 0;
+  const maxMinutes = Math.max(...activity.map(item => item.study_minutes), 1);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>{t('progress.title')}</Text>
 
-      <Card style={styles.cardSpacing}>
-        <Text style={styles.cardTitle}>{t('progress.hskLevel', { level: data.current_hsk_level })}</Text>
-        <Text style={styles.cardSub}>{t('common.target')}: HSK {data.target_hsk_level}</Text>
-        <View style={{ marginTop: spacing.stackMd }}>
-          <ProgressBar progress={data.exam_readiness_percent} />
-        </View>
+      <Card style={styles.card}>
+        <Text style={styles.cardTitle}>{t('progress.overall')}</Text>
+        <Text style={styles.bigValue}>{metricText(summary.overall_progress_percent, formatNumber)}</Text>
+        <ProgressBar progress={summary.overall_progress_percent} />
         <Text style={styles.meta}>
-          {t('progress.lessonsAtLevel', {
-            completed: formatNumber(data.current_level_completed_lessons),
-            total: formatNumber(data.current_level_total_lessons),
+          {t('progress.todayLine', {
+            minutes: formatNumber(summary.today_study_minutes),
+            questions: formatNumber(summary.today_questions),
+            accuracy: summary.today_accuracy == null ? '-' : formatNumber(Math.round(summary.today_accuracy)),
           })}
+        </Text>
+        <Text style={styles.meta}>
+          {t('dailyReview.dueCount', { count: formatNumber(summary.cards_due) })}
+          {' · '}
+          {t('progress.reviewedToday', { count: formatNumber(summary.cards_reviewed_today) })}
+          {summary.review_retention == null ? '' : ` · ${t('progress.retention', { percent: formatNumber(Math.round(summary.review_retention)) })}`}
         </Text>
       </Card>
 
-      <View style={styles.grid}>
-        <Card style={styles.half}>
-          <Text style={styles.statLabel}>{t('progress.completed')}</Text>
-          <Text style={styles.statValue}>{formatNumber(data.lessons_completed)}</Text>
-        </Card>
-        <Card style={styles.half}>
-          <Text style={styles.statLabel}>{t('progress.inProgress')}</Text>
-          <Text style={styles.statValue}>{formatNumber(data.lessons_in_progress)}</Text>
-        </Card>
+      <View style={styles.levelSelector}>
+        {HSK_LEVELS.map(level => (
+          <Pressable
+            key={level}
+            accessibilityRole="button"
+            accessibilityState={{ selected: selectedLevel === level }}
+            style={[styles.levelChip, selectedLevel === level && styles.levelChipSelected]}
+            onPress={() => setSelectedLevel(level)}
+          >
+            <Text style={[styles.levelChipText, selectedLevel === level && styles.levelChipTextSelected]}>HSK {level}</Text>
+          </Pressable>
+        ))}
       </View>
 
-      <Card style={styles.cardSpacing}>
-        <Text style={styles.cardTitle}>{t('home.dailyGoal')}</Text>
-        <Text style={styles.statValue}>
-          {formatNumber(data.minutes_studied_today)} / {formatNumber(data.daily_goal_minutes)} {t('common.minutesShort')}
-        </Text>
-        <ProgressBar progress={dailyPercent} color={colors.tertiaryContainer} />
+      <Card style={styles.card}>
+        <Text style={styles.cardTitle}>{hsk.title}</Text>
+        <MetricRow label={t('lessonType.vocabulary')} completed={hsk.vocabulary.completed} total={hsk.vocabulary.total} percent={hsk.vocabulary.percent} />
+        <MetricRow label={t('lessonType.grammar')} completed={hsk.grammar.completed} total={hsk.grammar.total} percent={hsk.grammar.percent} />
+        <MetricRow label={t('nav.lessons')} completed={hsk.lessons.completed} total={hsk.lessons.total} percent={hsk.lessons.percent} />
+        <Text style={styles.meta}>{t('progress.studyMinutes', { minutes: formatNumber(hsk.study_minutes) })}</Text>
       </Card>
 
-      <Card style={styles.cardSpacing}>
-        <Text style={styles.cardTitle}>{t('home.studyStreak')}</Text>
-        <Text style={styles.statValue}>{formatNumber(data.study_streak_days)} {t('common.dayLower')}</Text>
-      </Card>
-
-      {data.skill_breakdown.length ? (
-        <>
-          <Text style={styles.sectionTitle}>{t('progress.skillReadiness')}</Text>
-          {data.skill_breakdown.map((skill) => {
-            const percent = skill.total ? Math.round((skill.completed / skill.total) * 100) : 0;
-            return (
-              <Card key={skill.lesson_type} style={styles.attemptCard}>
-                <View style={styles.skillHeader}>
-                  <Text style={styles.attemptTitle}>{getLessonTypeLabel(skill.lesson_type, t)}</Text>
-                  <Text style={styles.attemptScore}>
-                    {skill.average_score != null
-                      ? t('progress.averageShort', { score: skill.average_score })
-                      : `${formatNumber(percent)}%`}
-                  </Text>
-                </View>
-                <ProgressBar progress={percent} />
-              </Card>
-            );
-          })}
-        </>
-      ) : (
-        <ScreenState
-          type="empty"
-          title={t('progress.noSkill')}
-          message={t('progress.noSkillMessage')}
-          compact
-          style={styles.cardSpacing}
-        />
+      <Text style={styles.sectionTitle}>{t('progress.skillOverview')}</Text>
+      {summary.skill_overview.length ? summary.skill_overview.map(skill => {
+        const score = skill.skill === 'SPEAKING' ? skill.average_score : skill.accuracy;
+        return (
+          <Card key={skill.skill} style={styles.skillCard}>
+            <View style={styles.skillHeader}>
+              <Text style={styles.skillTitle}>{getLessonTypeLabel(skill.skill.toLowerCase(), t)}</Text>
+              <Text style={styles.skillScore}>{metricText(score, formatNumber)}</Text>
+            </View>
+            {score == null ? <Text style={styles.meta}>{t('progress.notPracticed')}</Text> : <ProgressBar progress={score} />}
+            <Text style={styles.meta}>
+              {t('progress.attemptCount', { count: formatNumber(skill.attempts) })}
+              {skill.trend ? ` · ${t(TREND_KEYS[skill.trend] ?? 'progress.trend.stable')}` : ''}
+            </Text>
+          </Card>
+        );
+      }) : (
+        <ScreenState type="empty" title={t('progress.noSkill')} message={t('progress.noSkillMessage')} compact style={styles.card} />
       )}
 
-      {data.recent_attempts.length > 0 && (
+      <Text style={styles.sectionTitle}>{t('progress.studyActivity')}</Text>
+      <Card style={styles.card}>
+        <View style={styles.chart}>
+          {activity.map(day => (
+            <View key={day.date} style={styles.barWrap}>
+              <View style={[styles.bar, { height: Math.max(6, (day.study_minutes / maxMinutes) * 92) }]} />
+              <Text style={styles.barLabel}>{new Date(day.date).getDate()}</Text>
+            </View>
+          ))}
+        </View>
+      </Card>
+
+      {summary.weak_skills.length ? (
         <>
-          <Text style={styles.sectionTitle}>{t('progress.recentQuizzes')}</Text>
-          {data.recent_attempts.map((a) => (
-            <Card key={a.attempt_id} style={styles.attemptCard}>
-              <Text style={styles.attemptTitle}>
-                {getLessonTitle(a, language) || t('progress.lessonNumber', { id: a.lesson_id })}
-              </Text>
-              <Text style={styles.attemptScore}>{t('common.score')}: {formatNumber(a.score)}%</Text>
+          <Text style={styles.sectionTitle}>{t('progress.weakAreas')}</Text>
+          {summary.weak_skills.map(area => (
+            <Card key={`${area.type}-${area.skill}-${area.target_id ?? area.label}`} style={styles.skillCard}>
+              <Text style={styles.skillTitle}>{area.label}</Text>
+              <Text style={styles.meta}>{area.reason}</Text>
             </Card>
           ))}
         </>
-      )}
+      ) : null}
+
+      {summary.recommended_practice.length ? (
+        <>
+          <Text style={styles.sectionTitle}>{t('progress.recommendedPractice')}</Text>
+          {summary.recommended_practice.map(item => (
+            <Card key={`${item.type}-${item.target_id ?? item.target_label}`} style={styles.skillCard}>
+              <Text style={styles.skillTitle}>{item.target_label ?? item.type}</Text>
+              <Text style={styles.meta}>{item.reason}</Text>
+            </Card>
+          ))}
+        </>
+      ) : null}
     </ScrollView>
+  );
+}
+
+function MetricRow({ label, completed, total, percent }: { label: string; completed: number; total: number; percent: number | null }) {
+  return (
+    <View style={styles.metricRow}>
+      <View style={styles.metricHeader}>
+        <Text style={styles.metricLabel}>{label}</Text>
+        <Text style={styles.metricValue}>{completed} / {total}</Text>
+      </View>
+      <ProgressBar progress={percent ?? 0} />
+    </View>
   );
 }
 
@@ -151,17 +185,33 @@ const styles = StyleSheet.create({
   content: { padding: spacing.marginMobile, paddingBottom: 100 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.marginMobile },
   title: { ...typography.headlineLgMobile, color: colors.onSurface, marginBottom: spacing.stackLg },
-  cardSpacing: { marginBottom: spacing.stackMd },
-  cardTitle: { ...typography.headlineMd, color: colors.onSurface },
-  cardSub: { ...typography.labelMd, color: colors.onSurfaceVariant, marginTop: 4 },
+  card: { marginBottom: spacing.stackMd },
+  cardTitle: { ...typography.headlineMd, color: colors.onSurface, marginBottom: spacing.stackSm },
+  bigValue: { ...typography.headlineLgMobile, color: colors.primary, marginBottom: spacing.stackSm },
   meta: { ...typography.labelSm, color: colors.onSurfaceVariant, marginTop: spacing.stackSm },
-  grid: { flexDirection: 'row', gap: spacing.stackMd, marginVertical: spacing.stackMd },
-  half: { flex: 1 },
-  statLabel: { ...typography.labelMd, color: colors.onSurfaceVariant },
-  statValue: { ...typography.headlineLgMobile, color: colors.onSurface, marginTop: 4 },
+  levelSelector: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.stackSm, marginBottom: spacing.stackMd },
+  levelChip: {
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.surfaceContainerHigh,
+    paddingHorizontal: spacing.stackMd,
+    paddingVertical: spacing.stackSm,
+    backgroundColor: colors.surfaceContainerLowest,
+  },
+  levelChipSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  levelChipText: { ...typography.labelMd, color: colors.onSurface },
+  levelChipTextSelected: { color: colors.onPrimary },
+  metricRow: { marginTop: spacing.stackMd },
+  metricHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.stackSm },
+  metricLabel: { ...typography.bodyMd, color: colors.onSurface },
+  metricValue: { ...typography.labelMd, color: colors.onSurfaceVariant },
   sectionTitle: { ...typography.headlineMd, color: colors.onSurface, marginVertical: spacing.stackMd },
-  attemptCard: { marginBottom: spacing.stackSm },
-  attemptTitle: { ...typography.labelMd, color: colors.onSurface },
-  attemptScore: { ...typography.bodyMd, color: colors.primary, marginTop: 4 },
+  skillCard: { marginBottom: spacing.stackSm },
   skillHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.stackSm },
+  skillTitle: { ...typography.labelMd, color: colors.onSurface },
+  skillScore: { ...typography.bodyMd, color: colors.primary },
+  chart: { height: 132, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: spacing.stackSm },
+  barWrap: { flex: 1, alignItems: 'center', justifyContent: 'flex-end' },
+  bar: { width: '100%', maxWidth: 28, borderRadius: radius.sm, backgroundColor: colors.tertiaryContainer },
+  barLabel: { ...typography.labelSm, color: colors.onSurfaceVariant, marginTop: 4 },
 });

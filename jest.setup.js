@@ -11,7 +11,9 @@ jest.mock('react-native-keychain', () => ({
 }));
 
 jest.mock('react-native-tts', () => ({
+  getInitStatus: jest.fn(async () => undefined),
   setDefaultLanguage: jest.fn(),
+  setDefaultPitch: jest.fn(),
   setDefaultRate: jest.fn(),
   speak: jest.fn(),
   stop: jest.fn(),
