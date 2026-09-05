@@ -13,6 +13,9 @@ import { GrammarDetailScreen } from '../screens/GrammarDetailScreen';
 import { LessonDetailScreen } from '../screens/LessonDetailScreen';
 import { LessonListScreen } from '../screens/LessonListScreen';
 import { DailyReviewScreen } from '../screens/DailyReviewScreen';
+import { DailyGoalScreen } from '../screens/DailyGoalScreen';
+import { AITutorHistoryScreen } from '../screens/AITutorHistoryScreen';
+import { AITutorScreen } from '../screens/AITutorScreen';
 import { MockExamDetailScreen } from '../screens/MockExamDetailScreen';
 import { MockExamResultScreen } from '../screens/MockExamResultScreen';
 import { MockTestsScreen } from '../screens/MockTestsScreen';
@@ -93,11 +96,14 @@ export function RootNavigator() {
             <Stack.Screen name="VocabularyDetail" component={VocabularyDetailScreen} options={{ title: t('nav.vocabulary') }} />
             <Stack.Screen name="GrammarDetail" component={GrammarDetailScreen} options={{ title: t('nav.grammar') }} />
             <Stack.Screen name="Achievements" component={AchievementsScreen} options={{ title: t('nav.achievements') }} />
+            <Stack.Screen name="DailyGoal" component={DailyGoalScreen} options={{ title: t('dailyGoal.title') }} />
             <Stack.Screen name="MockTests" component={MockTestsScreen} options={{ title: t('nav.mockTests') }} />
             <Stack.Screen name="MockExamDetail" component={MockExamDetailScreen} options={{ title: t('nav.mockTest') }} />
             <Stack.Screen name="MockTestSession" component={MockTestSessionScreen} options={{ title: t('nav.mockTest') }} />
             <Stack.Screen name="MockExamResult" component={MockExamResultScreen} options={{ title: t('nav.results') }} />
             <Stack.Screen name="DailyReview" component={DailyReviewScreen} options={{ title: t('nav.dailyReview') }} />
+            <Stack.Screen name="AiTutor" component={AITutorScreen} options={{ title: t('nav.aiTutor') }} />
+            <Stack.Screen name="AiTutorHistory" component={AITutorHistoryScreen} options={{ title: t('nav.aiTutorHistory') }} />
             <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t('nav.settings') }} />
             <Stack.Screen
               name="ChangePassword"

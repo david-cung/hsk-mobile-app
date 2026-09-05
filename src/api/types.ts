@@ -16,8 +16,10 @@ export interface Profile {
   target_hsk_level: number;
   current_hsk_level: number;
   daily_goal_minutes: number;
+  daily_goal_type: DailyGoalType;
   study_streak_days: number;
   onboarding_completed: boolean;
+  timezone: string;
 }
 
 export type ProfileUpdate = Partial<
@@ -27,7 +29,9 @@ export type ProfileUpdate = Partial<
     | 'target_hsk_level'
     | 'current_hsk_level'
     | 'daily_goal_minutes'
+    | 'daily_goal_type'
     | 'onboarding_completed'
+    | 'timezone'
   >
 >;
 
@@ -604,6 +608,72 @@ export interface Achievement {
   icon: string | null;
   earned: boolean;
   earned_at: string | null;
+  progress?: {
+    current: number;
+    target: number;
+  } | null;
+}
+
+export type DailyGoalType = 'minutes' | 'exercises' | 'xp' | 'lessons';
+
+export interface GamificationProfile {
+  xp: number;
+  level: number;
+  xp_into_level: number;
+  xp_to_next_level: number;
+  level_xp_required: number;
+  progress_percent: number;
+  streak_days: number;
+  longest_streak_days: number;
+  timezone: string;
+  daily_goal_type: DailyGoalType;
+  daily_goal_target: number;
+  daily_goal_current: number;
+  daily_goal_completed: boolean;
+  today_xp: number;
+  today_minutes: number;
+  today_exercises: number;
+  today_lessons: number;
+  today_reviews: number;
+  today: string;
+}
+
+export interface XPHistoryItem {
+  id: number;
+  event_type: string;
+  source_id: string;
+  xp: number;
+  created_at: string;
+}
+
+export interface XPHistory {
+  items: XPHistoryItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface DailyGoal {
+  date: string;
+  timezone: string;
+  xp: number;
+  minutes: number;
+  exercises: number;
+  lessons: number;
+  reviews: number;
+  goal_type: DailyGoalType;
+  goal_target: number;
+  goal_current: number;
+  goal_completed: boolean;
+  streak_days: number;
+}
+
+export interface NotificationPreferences {
+  daily_reminder: boolean;
+  streak_reminder: boolean;
+  srs_reminder: boolean;
+  exam_reminder: boolean;
+  achievement_notification: boolean;
 }
 
 export interface MockTest {
@@ -719,6 +789,9 @@ export interface ProgressSummary {
   recommended_practice: Recommendation[];
   continue_learning?: ContinueLearning | null;
   skill_overview: SkillPerformance[];
+  ai_conversations?: number;
+  ai_messages?: number;
+  ai_corrections?: number;
 }
 
 export interface HskProgress {
@@ -987,4 +1060,90 @@ export interface SpeechRecording {
   expires_at?: string | null;
   created_at?: string;
   updated_at?: string;
+}
+
+export type AiTutorMode =
+  | 'FREE_CHAT'
+  | 'LESSON_PRACTICE'
+  | 'ROLE_PLAY'
+  | 'GRAMMAR_PRACTICE'
+  | 'VOCABULARY_PRACTICE';
+
+export type AiMessageAction = 'reply' | 'explain' | 'correct' | 'pinyin' | 'translate';
+
+export interface RolePlayScenario {
+  id: string;
+  title: string;
+  title_translations?: LocalizedText;
+  description?: string | null;
+  description_translations?: LocalizedText;
+}
+
+export interface AiTutorMessage {
+  id: number;
+  role: 'USER' | 'ASSISTANT';
+  content: string;
+  chinese_text?: string | null;
+  pinyin?: string | null;
+  translation?: string | null;
+  corrections: Array<Record<string, unknown>>;
+  vocabulary_notes: Array<Record<string, unknown>>;
+  grammar_notes: Array<Record<string, unknown>>;
+  prompt_version?: string | null;
+  created_at: string;
+}
+
+export interface AiConversation {
+  id: number;
+  mode: AiTutorMode;
+  hsk_level: number;
+  course_id?: number | null;
+  lesson_id?: number | null;
+  title: string;
+  scenario_id?: string | null;
+  explanation_language: string;
+  created_at: string;
+  updated_at: string;
+  messages: AiTutorMessage[];
+}
+
+export interface AiConversationList {
+  items: AiConversation[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AiMessageResult {
+  conversation: AiConversation;
+  user_message: AiTutorMessage;
+  assistant_message: AiTutorMessage;
+}
+
+export interface SentenceCheckResult {
+  corrected_sentence: string;
+  is_correct: boolean;
+  explanation: string;
+  alternatives: string[];
+  vocabulary_notes: Array<Record<string, unknown>>;
+  grammar_notes: Array<Record<string, unknown>>;
+}
+
+export interface GrammarExplainResult {
+  is_correct?: boolean | null;
+  corrected_sentence?: string | null;
+  explanation: string;
+  examples: string[];
+  difficulty?: string | null;
+}
+
+export interface WritingAiFeedback {
+  label: string;
+  score?: number | null;
+  corrected_answer?: string | null;
+  strengths: string[];
+  mistakes: string[];
+  grammar_feedback: string[];
+  vocabulary_feedback: string[];
+  suggestions: string[];
 }

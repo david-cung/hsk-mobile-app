@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import { contentApi, progressApi } from '../api/endpoints';
+import { contentApi, gamificationApi, progressApi } from '../api/endpoints';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
@@ -31,8 +31,13 @@ export function HomeScreen() {
   const { user, profile } = useAuth();
   const { language, t, formatNumber } = useI18n();
   const summaryQuery = useQuery({ queryKey: ['progress-summary'], queryFn: progressApi.summary });
+  const gamificationQuery = useQuery({
+    queryKey: ['gamification-profile'],
+    queryFn: gamificationApi.profile,
+  });
   const { data: levels, isLoading: isLevelsLoading } = useQuery({ queryKey: ['levels'], queryFn: contentApi.levels });
   const summary = summaryQuery.data;
+  const gamification = gamificationQuery.data;
   const currentLevel = levels?.find(level => level.level_number === (summary?.current_hsk_level ?? profile?.current_hsk_level ?? 1));
   const currentLevelTitle = currentLevel ? getLevelTitle(currentLevel, language) : '';
   const greeting =
@@ -71,6 +76,77 @@ export function HomeScreen() {
         </Card>
       )}
 
+      {gamificationQuery.isLoading ? (
+        <ScreenState type="loading" title={t('gamification.loading')} compact style={styles.state} />
+      ) : gamificationQuery.isError ? (
+        <ScreenState
+          type="error"
+          title={t('gamification.unavailable')}
+          message={t('common.connectionRetry')}
+          actionLabel={t('common.tryAgain')}
+          onAction={() => gamificationQuery.refetch()}
+          compact
+          style={styles.state}
+        />
+      ) : gamification ? (
+        <Card style={styles.gamificationCard}>
+          <View style={styles.levelHeader}>
+            <View style={styles.levelBadge}>
+              <Ionicons name="sparkles" size={18} color={colors.onPrimary} />
+              <Text style={styles.levelBadgeText}>
+                {t('gamification.level', { level: formatNumber(gamification.level) })}
+              </Text>
+            </View>
+            <Text style={styles.xpText}>
+              {t('gamification.totalXp', { xp: formatNumber(gamification.xp) })}
+            </Text>
+          </View>
+          <ProgressBar progress={gamification.progress_percent} color={colors.secondary} />
+          <Text style={styles.goalHint}>
+            {t('gamification.xpToNext', {
+              xp: formatNumber(gamification.xp_to_next_level),
+            })}
+          </Text>
+          <View style={styles.goalRow}>
+            <View style={styles.goalItem}>
+              <Text style={styles.goalLabel}>{t('home.studyStreak')}</Text>
+              <Text style={styles.goalValue}>
+                {t('gamification.daysValue', { count: formatNumber(gamification.streak_days) })}
+              </Text>
+            </View>
+            <View style={styles.goalItem}>
+              <Text style={styles.goalLabel}>{t('home.dailyGoal')}</Text>
+              <Text style={styles.goalValue}>
+                {t('gamification.goalProgress', {
+                  current: formatNumber(gamification.daily_goal_current),
+                  target: formatNumber(gamification.daily_goal_target),
+                })}
+              </Text>
+            </View>
+            <View style={styles.goalItem}>
+              <Text style={styles.goalLabel}>{t('gamification.todayXp')}</Text>
+              <Text style={styles.goalValue}>{formatNumber(gamification.today_xp)}</Text>
+            </View>
+          </View>
+          <View style={styles.actionRow}>
+            <Button
+              title={t('dailyGoal.title')}
+              leftIcon="flag-outline"
+              variant="secondary"
+              onPress={() => navigation.navigate('DailyGoal')}
+              style={styles.actionButton}
+            />
+            <Button
+              title={t('nav.achievements')}
+              leftIcon="trophy-outline"
+              variant="ghost"
+              onPress={() => navigation.navigate('Achievements')}
+              style={styles.actionButton}
+            />
+          </View>
+        </Card>
+      ) : null}
+
       <View style={styles.statsRow}>
         <Card style={styles.statCard}>
           <Ionicons name="time-outline" size={24} color={colors.tertiary} />
@@ -105,6 +181,17 @@ export function HomeScreen() {
           />
         </Card>
       ) : null}
+
+      <Card style={styles.analyticsCard}>
+        <Text style={styles.cardTitle}>{t('nav.aiTutor')}</Text>
+        <Text style={styles.recommendationReason}>{t('home.aiTutor')}</Text>
+        <Button
+          title={t('home.startTutor')}
+          leftIcon="chatbubbles-outline"
+          onPress={() => navigation.navigate('AiTutor')}
+          style={styles.reviewButton}
+        />
+      </Card>
 
       {summary?.skill_overview?.length ? (
         <Card style={styles.analyticsCard}>
@@ -229,11 +316,37 @@ const styles = StyleSheet.create({
   subGreeting: { ...typography.labelMd, color: colors.onSurfaceVariant, marginTop: 4 },
   state: { marginBottom: spacing.stackMd },
   progressCard: { marginBottom: spacing.stackMd },
+  gamificationCard: { marginBottom: spacing.stackMd },
   analyticsCard: { marginBottom: spacing.stackMd },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.stackSm, marginBottom: spacing.stackMd },
   badge: { backgroundColor: colors.primary, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999 },
   badgeText: { ...typography.labelSm, color: colors.onPrimary },
   progressLabel: { ...typography.labelMd, color: colors.onSurface, flex: 1, textAlign: 'right' },
+  levelHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: spacing.stackSm,
+    marginBottom: spacing.stackSm,
+  },
+  levelBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  levelBadgeText: { ...typography.labelMd, color: colors.onPrimary },
+  xpText: { ...typography.labelMd, color: colors.onSurface },
+  goalHint: { ...typography.labelSm, color: colors.onSurfaceVariant, marginTop: spacing.stackSm },
+  goalRow: { flexDirection: 'row', gap: spacing.stackSm, marginTop: spacing.stackMd },
+  goalItem: { flex: 1 },
+  goalLabel: { ...typography.labelSm, color: colors.onSurfaceVariant },
+  goalValue: { ...typography.labelMd, color: colors.onSurface, marginTop: 2 },
+  actionRow: { flexDirection: 'row', gap: spacing.stackSm, marginTop: spacing.stackMd },
+  actionButton: { flex: 1, paddingHorizontal: 10 },
   statsRow: { flexDirection: 'row', gap: spacing.stackMd, marginBottom: spacing.stackMd },
   statCard: { flex: 1 },
   statLabel: { ...typography.labelMd, color: colors.onSurfaceVariant, marginTop: spacing.stackSm },

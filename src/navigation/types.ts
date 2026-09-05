@@ -1,4 +1,4 @@
-import type { LocalizedText, QuestionResult } from '../api/types';
+import type { AiTutorMode, LocalizedText, QuestionResult } from '../api/types';
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -68,6 +68,7 @@ export type RootStackParamList = {
   VocabularyDetail: { vocabularyId: number; title: string };
   GrammarDetail: { grammarId: number; title: string };
   Achievements: undefined;
+  DailyGoal: undefined;
   MockTests: undefined;
   MockExamDetail: {
     examId: number;
@@ -85,6 +86,14 @@ export type RootStackParamList = {
   };
   MockExamResult: { attemptId: number };
   DailyReview: undefined;
+  AiTutor: {
+    conversationId?: number;
+    mode?: AiTutorMode;
+    scenarioId?: string;
+    lessonId?: number;
+    lessonTitle?: string;
+  } | undefined;
+  AiTutorHistory: undefined;
   Settings: undefined;
 };
 

@@ -1,14 +1,25 @@
 import { apiFetch } from './client';
 import type {
+  AiConversation,
+  AiConversationList,
+  AiMessageAction,
+  AiMessageResult,
+  AiTutorMode,
   Achievement,
+  GrammarExplainResult,
+  RolePlayScenario,
+  SentenceCheckResult,
   AudioUrl,
   Course,
   DailyActivity,
+  DailyGoal,
+  DailyGoalType,
   ExamAttempt,
   ExamAttemptHistory,
   ExamDetail,
   ExamListItem,
   ExamResult,
+  GamificationProfile,
   GrammarDetail,
   HskLevel,
   HskProgress,
@@ -17,6 +28,7 @@ import type {
   Mistake,
   MockTest,
   MockTestQuestion,
+  NotificationPreferences,
   PracticeAnswer,
   PracticeAnswerResult,
   PracticeLesson,
@@ -41,6 +53,8 @@ import type {
   User,
   VocabularyDetail,
   VocabularyPage,
+  WritingAiFeedback,
+  XPHistory,
 } from './types';
 
 export const authApi = {
@@ -331,7 +345,7 @@ export const learningApi = {
     }),
   deleteSavedWord: (id: number) =>
     apiFetch<void>(`/api/v1/learning/saved-words/${id}`, { method: 'DELETE' }),
-  achievements: () => apiFetch<Achievement[]>('/api/v1/learning/achievements'),
+  achievements: () => apiFetch<Achievement[]>('/api/v1/gamification/achievements'),
   mockTests: () => apiFetch<MockTest[]>('/api/v1/learning/mock-tests', { auth: false }),
   mockTestQuestions: (id: number) =>
     apiFetch<MockTestQuestion[]>(`/api/v1/learning/mock-tests/${id}/questions`),
@@ -339,5 +353,83 @@ export const learningApi = {
     apiFetch<QuizSubmitResult>(`/api/v1/learning/mock-tests/${id}/submit`, {
       method: 'POST',
       body: JSON.stringify({ answers }),
+    }),
+};
+
+export const gamificationApi = {
+  profile: () => apiFetch<GamificationProfile>('/api/v1/gamification/profile'),
+  achievements: () => apiFetch<Achievement[]>('/api/v1/gamification/achievements'),
+  history: (limit = 20, offset = 0) =>
+    apiFetch<XPHistory>(`/api/v1/gamification/history?limit=${limit}&offset=${offset}`),
+  daily: () => apiFetch<DailyGoal>('/api/v1/gamification/daily'),
+  updateDaily: (data: { goal_type?: DailyGoalType; target?: number }) =>
+    apiFetch<DailyGoal>('/api/v1/gamification/daily', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+};
+
+export const notificationApi = {
+  preferences: () => apiFetch<NotificationPreferences>('/api/v1/notifications/preferences'),
+  updatePreferences: (data: Partial<NotificationPreferences>) =>
+    apiFetch<NotificationPreferences>('/api/v1/notifications/preferences', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+  registerDevice: (data: { token: string; platform: 'ios' | 'android' | 'web' | 'local' }) =>
+    apiFetch<{ id: number; token: string; platform: string; active: boolean }>(
+      '/api/v1/notifications/devices',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    ),
+  unregisterDevice: (token: string) =>
+    apiFetch<void>(`/api/v1/notifications/devices/${encodeURIComponent(token)}`, {
+      method: 'DELETE',
+    }),
+};
+
+export const tutorApi = {
+  scenarios: () => apiFetch<RolePlayScenario[]>('/api/v1/ai/scenarios'),
+  list: (limit = 20, offset = 0) =>
+    apiFetch<AiConversationList>(`/api/v1/ai/conversations?limit=${limit}&offset=${offset}`),
+  create: (data: {
+    mode: AiTutorMode;
+    lesson_id?: number;
+    course_id?: number;
+    hsk_level?: number;
+    scenario_id?: string;
+    explanation_language?: string;
+    title?: string;
+  }) =>
+    apiFetch<AiConversation>('/api/v1/ai/conversations', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  detail: (id: number) => apiFetch<AiConversation>(`/api/v1/ai/conversations/${id}`),
+  remove: (id: number) => apiFetch<void>(`/api/v1/ai/conversations/${id}`, { method: 'DELETE' }),
+  sendMessage: (
+    id: number,
+    data: { content: string; action?: AiMessageAction; idempotency_key?: string },
+  ) =>
+    apiFetch<AiMessageResult>(`/api/v1/ai/conversations/${id}/messages`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  checkSentence: (sentence: string, lessonId?: number) =>
+    apiFetch<SentenceCheckResult>('/api/v1/ai/sentence-check', {
+      method: 'POST',
+      body: JSON.stringify({ sentence, lesson_id: lessonId }),
+    }),
+  explainGrammar: (grammarPoint: string, sentence?: string, lessonId?: number) =>
+    apiFetch<GrammarExplainResult>('/api/v1/ai/grammar-explain', {
+      method: 'POST',
+      body: JSON.stringify({ grammar_point: grammarPoint, sentence, lesson_id: lessonId }),
+    }),
+  writingFeedback: (answer: string, prompt?: string, lessonId?: number) =>
+    apiFetch<WritingAiFeedback>('/api/v1/ai/writing-feedback', {
+      method: 'POST',
+      body: JSON.stringify({ answer, prompt, lesson_id: lessonId }),
     }),
 };
