@@ -1059,6 +1059,19 @@ export function LessonDetailScreen() {
         />
       ) : null}
       <Button
+        title={t('aiTutor.askAboutLesson')}
+        variant="secondary"
+        onPress={() =>
+          navigation.navigate('AiTutor', {
+            mode: 'LESSON_PRACTICE',
+            lessonId: params.lessonId,
+            lessonTitle: title || params.lessonTitle,
+          })
+        }
+        rightIcon="chatbubbles-outline"
+        style={styles.quizButton}
+      />
+      <Button
         title={t('lessonDetail.startQuiz')}
         variant="secondary"
         onPress={() =>

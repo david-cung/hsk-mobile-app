@@ -7,6 +7,8 @@ import { useRootNavigation } from '../navigation/useRootNavigation';
 import { colors, radius, spacing, typography } from '../theme';
 
 const MENU = [
+  { labelKey: 'nav.aiTutor' as const, icon: 'chatbubbles-outline' as const, route: 'AiTutor' as const },
+  { labelKey: 'dailyGoal.title' as const, icon: 'flag-outline' as const, route: 'DailyGoal' as const },
   { labelKey: 'nav.dailyReview' as const, icon: 'refresh-outline' as const, route: 'DailyReview' as const },
   { labelKey: 'nav.savedWords' as const, icon: 'bookmark-outline' as const, route: 'SavedWords' as const },
   { labelKey: 'nav.achievements' as const, icon: 'trophy-outline' as const, route: 'Achievements' as const },
