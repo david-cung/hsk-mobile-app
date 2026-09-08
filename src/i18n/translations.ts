@@ -1,4 +1,5 @@
 export const en = {
+  'featureUnavailable.speaking': 'Speaking practice is unavailable in this release.',
   'app.name': 'HSK Chinese Master',
   'app.tagline': 'Master Mandarin with confidence',
   'common.loading': 'Loading',
@@ -568,6 +569,7 @@ export const en = {
 } as const;
 
 export const vi: Record<keyof typeof en, string> = {
+  'featureUnavailable.speaking': 'Tính năng luyện nói chưa khả dụng trong phiên bản này.',
   'app.name': 'HSK Chinese Master',
   'app.tagline': 'Tự tin chinh phục tiếng Trung',
   'common.loading': 'Đang tải',

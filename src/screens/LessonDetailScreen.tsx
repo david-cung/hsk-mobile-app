@@ -50,6 +50,7 @@ import {
 import { getLessonTypeLabel, getWordTypeLabel } from '../i18n/lessonTypes';
 import type { RootStackParamList } from '../navigation/types';
 import { useRootNavigation } from '../navigation/useRootNavigation';
+import { AI_TUTOR_ENABLED } from '../config';
 import { colors, radius, spacing, typography } from '../theme';
 
 type Route = RouteProp<RootStackParamList, 'LessonDetail'>;
@@ -1058,7 +1059,7 @@ export function LessonDetailScreen() {
           style={styles.quizButton}
         />
       ) : null}
-      <Button
+      {AI_TUTOR_ENABLED ? <Button
         title={t('aiTutor.askAboutLesson')}
         variant="secondary"
         onPress={() =>
@@ -1070,7 +1071,7 @@ export function LessonDetailScreen() {
         }
         rightIcon="chatbubbles-outline"
         style={styles.quizButton}
-      />
+      /> : null}
       <Button
         title={t('lessonDetail.startQuiz')}
         variant="secondary"

@@ -84,6 +84,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        manifestPlaceholders = [usesCleartextTraffic: "false"]
     }
     signingConfigs {
         debug {
@@ -92,15 +93,24 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {}
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            manifestPlaceholders = [usesCleartextTraffic: "true"]
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            def keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+            if (!keystorePath) {
+                throw new GradleException("ANDROID_KEYSTORE_PATH is required for release builds")
+            }
+            signingConfigs.release.storeFile = file(keystorePath)
+            signingConfigs.release.storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            signingConfigs.release.keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+            signingConfigs.release.keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            signingConfig signingConfigs.release
+            manifestPlaceholders = [usesCleartextTraffic: "false"]
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }

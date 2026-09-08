@@ -13,6 +13,7 @@ import { getLevelTitle } from '../i18n/content';
 import { getLessonTypeLabel } from '../i18n/lessonTypes';
 import { useRootNavigation } from '../navigation/useRootNavigation';
 import { colors, spacing, typography } from '../theme';
+import { AI_TUTOR_ENABLED } from '../config';
 
 const FOCUS_AREAS = [
   { labelKey: 'lessonType.mixed' as const, icon: 'layers' as const, type: 'mixed' },
@@ -182,7 +183,7 @@ export function HomeScreen() {
         </Card>
       ) : null}
 
-      <Card style={styles.analyticsCard}>
+      {AI_TUTOR_ENABLED ? <Card style={styles.analyticsCard}>
         <Text style={styles.cardTitle}>{t('nav.aiTutor')}</Text>
         <Text style={styles.recommendationReason}>{t('home.aiTutor')}</Text>
         <Button
@@ -191,7 +192,7 @@ export function HomeScreen() {
           onPress={() => navigation.navigate('AiTutor')}
           style={styles.reviewButton}
         />
-      </Card>
+      </Card> : null}
 
       {summary?.skill_overview?.length ? (
         <Card style={styles.analyticsCard}>

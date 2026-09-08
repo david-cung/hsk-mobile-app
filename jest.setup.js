@@ -29,3 +29,5 @@ jest.mock('react-native-tts', () => ({
 }));
 
 jest.mock('react-native-vector-icons/Ionicons', () => 'Ionicons');
+
+jest.mock('@sentry/react-native', () => ({ init: jest.fn() }));

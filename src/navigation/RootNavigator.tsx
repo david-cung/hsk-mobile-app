@@ -33,6 +33,7 @@ import { VocabularyDetailScreen } from '../screens/VocabularyDetailScreen';
 import { WritingPracticeScreen } from '../screens/WritingPracticeScreen';
 import { WritingResultScreen } from '../screens/WritingResultScreen';
 import { colors } from '../theme';
+import { AI_TUTOR_ENABLED } from '../config';
 import { MainTabs } from './MainTabs';
 import type { RootStackParamList } from './types';
 
@@ -102,8 +103,8 @@ export function RootNavigator() {
             <Stack.Screen name="MockTestSession" component={MockTestSessionScreen} options={{ title: t('nav.mockTest') }} />
             <Stack.Screen name="MockExamResult" component={MockExamResultScreen} options={{ title: t('nav.results') }} />
             <Stack.Screen name="DailyReview" component={DailyReviewScreen} options={{ title: t('nav.dailyReview') }} />
-            <Stack.Screen name="AiTutor" component={AITutorScreen} options={{ title: t('nav.aiTutor') }} />
-            <Stack.Screen name="AiTutorHistory" component={AITutorHistoryScreen} options={{ title: t('nav.aiTutorHistory') }} />
+            {AI_TUTOR_ENABLED ? <Stack.Screen name="AiTutor" component={AITutorScreen} options={{ title: t('nav.aiTutor') }} /> : null}
+            {AI_TUTOR_ENABLED ? <Stack.Screen name="AiTutorHistory" component={AITutorHistoryScreen} options={{ title: t('nav.aiTutorHistory') }} /> : null}
             <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t('nav.settings') }} />
             <Stack.Screen
               name="ChangePassword"

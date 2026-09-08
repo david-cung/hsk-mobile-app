@@ -1,11 +1,17 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar, StyleSheet } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider } from './src/context/AuthContext';
 import { I18nProvider } from './src/i18n/I18nContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { APP_ENV, APP_RELEASE, SENTRY_DSN } from './src/config';
+
+if (SENTRY_DSN && APP_ENV !== 'development') {
+  Sentry.init({ dsn: SENTRY_DSN, environment: APP_ENV, release: APP_RELEASE, sendDefaultPii: false });
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {

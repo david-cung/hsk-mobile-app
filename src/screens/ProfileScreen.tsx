@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n/I18nContext';
 import { useRootNavigation } from '../navigation/useRootNavigation';
 import { colors, radius, spacing, typography } from '../theme';
+import { AI_TUTOR_ENABLED } from '../config';
 
 const MENU = [
   { labelKey: 'nav.aiTutor' as const, icon: 'chatbubbles-outline' as const, route: 'AiTutor' as const },
@@ -56,7 +57,7 @@ export function ProfileScreen() {
         </View>
       </View>
 
-      {MENU.map((item) => (
+      {MENU.filter(item => AI_TUTOR_ENABLED || item.route !== 'AiTutor').map((item) => (
         <Pressable
           key={item.route}
           style={styles.menuItem}

@@ -8,6 +8,7 @@ import { canonicalQuestionType, questionConfig } from '../../api/types';
 import { useI18n } from '../../i18n/I18nContext';
 import { localizeText } from '../../i18n/content';
 import { colors, radius, spacing, typography } from '../../theme';
+import { SPEAKING_ENABLED } from '../../config';
 import { countChineseCharacters } from '../../utils/writing';
 import { AudioRecorder, AudioRecordingResult } from '../audio/AudioRecorder';
 import { AudioPlaybackState, AudioPlayer } from '../audio/AudioPlayer';
@@ -450,7 +451,7 @@ export function QuestionRenderer(props: QuestionProps) {
       return <ListeningQuestion {...props} />;
     case 'speaking':
     case 'pronunciation':
-      return <SpeakingQuestion {...props} />;
+      return SPEAKING_ENABLED ? <SpeakingQuestion {...props} /> : <UnavailableSpeakingQuestion />;
     case 'multiple_select':
       return <MultipleSelectQuestion {...props} />;
     case 'fill_blank':
@@ -475,6 +476,11 @@ export function QuestionRenderer(props: QuestionProps) {
     default:
       return <TextInputQuestion {...props} />;
   }
+}
+
+function UnavailableSpeakingQuestion() {
+  const { t } = useI18n();
+  return <ScreenState type="empty" title={t('featureUnavailable.speaking')} compact />;
 }
 
 const styles = StyleSheet.create({
