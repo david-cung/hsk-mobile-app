@@ -58,6 +58,7 @@ react {
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */
 def enableProguardInReleaseBuilds = false
+def releaseKeystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -93,7 +94,14 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        release {}
+        release {
+            if (releaseKeystorePath) {
+                storeFile file(releaseKeystorePath)
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
     }
     buildTypes {
         debug {
@@ -101,19 +109,19 @@ android {
             manifestPlaceholders = [usesCleartextTraffic: "true"]
         }
         release {
-            def keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
-            if (!keystorePath) {
-                throw new GradleException("ANDROID_KEYSTORE_PATH is required for release builds")
+            if (releaseKeystorePath) {
+                signingConfig signingConfigs.release
             }
-            signingConfigs.release.storeFile = file(keystorePath)
-            signingConfigs.release.storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
-            signingConfigs.release.keyAlias = System.getenv("ANDROID_KEY_ALIAS")
-            signingConfigs.release.keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
-            signingConfig signingConfigs.release
             manifestPlaceholders = [usesCleartextTraffic: "false"]
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
+    }
+}
+
+gradle.taskGraph.whenReady { graph ->
+    if (!releaseKeystorePath && graph.allTasks.any { task -> task.name in ["assembleRelease", "bundleRelease", "packageRelease"] }) {
+        throw new GradleException("ANDROID_KEYSTORE_PATH is required for release builds")
     }
 }
 
