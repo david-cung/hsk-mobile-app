@@ -5,6 +5,7 @@ import { profileApi } from '../api/endpoints';
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n/I18nContext';
+import { useExamMetadata } from '../hooks/useExamMetadata';
 import { colors, radius, spacing, typography } from '../theme';
 
 const GOALS = [
@@ -14,11 +15,10 @@ const GOALS = [
   { labelKey: 'onboarding.goal.culture' as const, marker: 'C', value: 'culture' },
 ];
 
-const LEVELS = [1, 2, 3, 4, 5, 6];
-
 export function OnboardingScreen() {
   const { refreshProfile } = useAuth();
   const { t } = useI18n();
+  const { levels, revision, isLoading: metadataLoading } = useExamMetadata();
   const [step, setStep] = useState(0);
   const [learningGoal, setLearningGoal] = useState('hsk_exam');
   const [currentLevel, setCurrentLevel] = useState(1);
@@ -37,6 +37,12 @@ export function OnboardingScreen() {
         current_hsk_level: currentLevel,
         daily_goal_minutes: dailyGoal,
         onboarding_completed: true,
+        ...(revision?.id && levels.find((level) => level.level_number === targetLevel)?.id
+          ? {
+              target_exam_revision_id: revision.id,
+              target_exam_level_id: levels.find((level) => level.level_number === targetLevel)?.id,
+            }
+          : {}),
       });
       await refreshProfile();
     } catch (e) {
@@ -87,32 +93,38 @@ export function OnboardingScreen() {
           <Text style={styles.title}>{t('onboarding.setPath')}</Text>
           <Text style={styles.subtitle}>{t('onboarding.currentLevel')}</Text>
           <View style={styles.levelRow}>
-            {LEVELS.map((level) => (
+            {levels.map((level) => {
+              const number = level.level_number ?? level.sort_order;
+              return (
               <Button
-                key={level}
-                title={`HSK ${level}`}
-                variant={currentLevel === level ? 'primary' : 'ghost'}
+                key={level.id}
+                title={level.display_name}
+                variant={currentLevel === number ? 'primary' : 'ghost'}
                 onPress={() => {
-                  setCurrentLevel(level);
-                  setTargetLevel((target) => Math.max(target, level));
+                  setCurrentLevel(number);
+                  setTargetLevel((target) => Math.max(target, number));
                 }}
                 style={styles.levelChip}
               />
-            ))}
+              );
+            })}
           </View>
 
           <Text style={styles.subtitle}>{t('onboarding.targetLevel')}</Text>
           <Text style={styles.hint}>{t('onboarding.targetHint')}</Text>
           <View style={styles.levelRow}>
-            {LEVELS.map((level) => (
+            {levels.map((level) => {
+              const number = level.level_number ?? level.sort_order;
+              return (
               <Button
-                key={level}
-                title={`HSK ${level}`}
-                variant={targetLevel === level ? 'primary' : 'ghost'}
-                onPress={() => setTargetLevel(Math.max(level, currentLevel))}
+                key={level.id}
+                title={level.display_name}
+                variant={targetLevel === number ? 'primary' : 'ghost'}
+                onPress={() => setTargetLevel(Math.max(number, currentLevel))}
                 style={styles.levelChip}
               />
-            ))}
+              );
+            })}
           </View>
 
           <Text style={styles.subtitle}>{t('onboarding.dailyGoal')}</Text>
@@ -137,7 +149,7 @@ export function OnboardingScreen() {
             leftIcon="sparkles-outline"
             onPress={finish}
             loading={loading}
-            disabled={loading}
+            disabled={loading || metadataLoading || !levels.length}
           />
         </>
       )}

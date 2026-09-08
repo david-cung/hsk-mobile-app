@@ -8,6 +8,7 @@ import { Button } from '../components/Button';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { ScreenState } from '../components/ScreenState';
 import { useAuth } from '../context/AuthContext';
+import { useExamMetadata } from '../hooks/useExamMetadata';
 import { useI18n } from '../i18n/I18nContext';
 import type { TranslationKey } from '../i18n/translations';
 import { useRootNavigation } from '../navigation/useRootNavigation';
@@ -55,7 +56,7 @@ export function SettingsScreen() {
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const hskLevels = [1, 2, 3, 4, 5, 6];
+  const { levels, revision, isLoading: metadataLoading } = useExamMetadata();
   const notificationQuery = useQuery({
     queryKey: ['notification-preferences'],
     queryFn: notificationApi.preferences,
@@ -183,44 +184,56 @@ export function SettingsScreen() {
         {t('settings.currentLevel', { level: profile?.current_hsk_level ?? 1 })}
       </Text>
       <View style={styles.row}>
-        {hskLevels.map((level) => (
+        {levels.map((level) => {
+          const number = level.level_number ?? level.sort_order;
+          return (
           <Button
-            key={level}
-            title={`HSK ${level}`}
-            variant={profile?.current_hsk_level === level ? 'primary' : 'ghost'}
+            key={level.id}
+            title={level.display_name}
+            variant={profile?.current_hsk_level === number ? 'primary' : 'ghost'}
             onPress={() =>
               updateProfile(
-                {
-                  current_hsk_level: level,
-                  target_hsk_level: Math.max(profile?.target_hsk_level ?? level, level),
+              {
+                  current_hsk_level: number,
+                  target_hsk_level: Math.max(profile?.target_hsk_level ?? number, number),
                 },
-                t('settings.currentSaved', { level }),
+                t('settings.currentSaved', { level: number }),
               )
             }
-            disabled={loading}
+            disabled={loading || metadataLoading}
             style={styles.chip}
           />
-        ))}
+          );
+        })}
       </View>
       <Text style={styles.label}>
         {t('settings.targetLevel', { level: profile?.target_hsk_level ?? 1 })}
       </Text>
       <View style={styles.row}>
-        {hskLevels.map((level) => (
+        {levels.map((level) => {
+          const number = level.level_number ?? level.sort_order;
+          const targetNumber = Math.max(number, profile?.current_hsk_level ?? number);
+          return (
           <Button
-            key={level}
-            title={`HSK ${level}`}
-            variant={profile?.target_hsk_level === level ? 'secondary' : 'ghost'}
+            key={level.id}
+            title={level.display_name}
+            variant={profile?.target_hsk_level === targetNumber ? 'secondary' : 'ghost'}
             onPress={() =>
               updateProfile(
-                { target_hsk_level: Math.max(level, profile?.current_hsk_level ?? 1) },
-                t('settings.targetSaved', { level: Math.max(level, profile?.current_hsk_level ?? 1) }),
+                {
+                  target_hsk_level: targetNumber,
+                  ...(revision?.id && level.revision_id === revision.id
+                    ? { target_exam_revision_id: revision.id, target_exam_level_id: level.id }
+                    : {}),
+                },
+                t('settings.targetSaved', { level: targetNumber }),
               )
             }
-            disabled={loading}
+            disabled={loading || metadataLoading}
             style={styles.chip}
           />
-        ))}
+          );
+        })}
       </View>
 
       <Text style={styles.section}>{t('auth.accountSecurity')}</Text>

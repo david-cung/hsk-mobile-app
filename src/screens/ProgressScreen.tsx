@@ -7,12 +7,12 @@ import { Card } from '../components/Card';
 import { ProgressBar } from '../components/ProgressBar';
 import { ScreenState } from '../components/ScreenState';
 import { useAuth } from '../context/AuthContext';
+import { useExamMetadata } from '../hooks/useExamMetadata';
 import { useI18n } from '../i18n/I18nContext';
 import type { TranslationKey } from '../i18n/translations';
 import { getLessonTypeLabel } from '../i18n/lessonTypes';
 import { colors, radius, spacing, typography } from '../theme';
 
-const HSK_LEVELS = [1, 2, 3, 4, 5, 6];
 const TREND_KEYS: Record<string, TranslationKey> = {
   improving: 'progress.trend.improving',
   stable: 'progress.trend.stable',
@@ -26,6 +26,7 @@ function metricText(value: number | null | undefined, formatNumber: (value: numb
 export function ProgressScreen() {
   const { profile } = useAuth();
   const { t, formatNumber } = useI18n();
+  const { levels } = useExamMetadata();
   const [selectedLevel, setSelectedLevel] = useState(profile?.current_hsk_level ?? 1);
   const summaryQuery = useQuery({ queryKey: ['progress-summary'], queryFn: progressApi.summary });
   const hskQuery = useQuery({ queryKey: ['progress-hsk', selectedLevel], queryFn: () => progressApi.hsk(selectedLevel) });
@@ -63,6 +64,9 @@ export function ProgressScreen() {
   }
 
   const maxMinutes = Math.max(...activity.map(item => item.study_minutes), 1);
+  const levelOptions = levels.length
+    ? levels.filter(level => level.level_number != null)
+    : [{ id: hsk.level_id, level_number: hsk.level, display_name: hsk.title, sort_order: hsk.level }];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -88,17 +92,20 @@ export function ProgressScreen() {
       </Card>
 
       <View style={styles.levelSelector}>
-        {HSK_LEVELS.map(level => (
+        {levelOptions.map(level => {
+          const number = level.level_number as number;
+          return (
           <Pressable
-            key={level}
+            key={level.id}
             accessibilityRole="button"
-            accessibilityState={{ selected: selectedLevel === level }}
-            style={[styles.levelChip, selectedLevel === level && styles.levelChipSelected]}
-            onPress={() => setSelectedLevel(level)}
+            accessibilityState={{ selected: selectedLevel === number }}
+            style={[styles.levelChip, selectedLevel === number && styles.levelChipSelected]}
+            onPress={() => setSelectedLevel(number)}
           >
-            <Text style={[styles.levelChipText, selectedLevel === level && styles.levelChipTextSelected]}>HSK {level}</Text>
+            <Text style={[styles.levelChipText, selectedLevel === number && styles.levelChipTextSelected]}>{level.display_name}</Text>
           </Pressable>
-        ))}
+          );
+        })}
       </View>
 
       <Card style={styles.card}>

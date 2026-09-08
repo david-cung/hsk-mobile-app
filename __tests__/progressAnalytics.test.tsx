@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 
-import { progressApi } from '../src/api/endpoints';
+import { examMetadataApi, progressApi } from '../src/api/endpoints';
 import { I18nProvider } from '../src/i18n/I18nContext';
 import { ProgressScreen } from '../src/screens/ProgressScreen';
 
@@ -56,6 +56,13 @@ test('progress screen renders HSK progress, skills, activity, weak areas, and re
   jest.spyOn(progressApi, 'activity').mockResolvedValue([
     { date: '2026-08-09', study_minutes: 5, practice_attempts: 2, questions: 2, correct: 1, accuracy: 50, lessons_studied: 1, vocabulary_practiced: 0, grammar_practiced: 0, listening_practiced: 2, speaking_practiced: 0 },
     { date: '2026-08-10', study_minutes: 10, practice_attempts: 4, questions: 4, correct: 3, accuracy: 75, lessons_studied: 1, vocabulary_practiced: 0, grammar_practiced: 0, listening_practiced: 2, speaking_practiced: 2 },
+  ]);
+  jest.spyOn(examMetadataApi, 'revisions').mockResolvedValue([
+    { id: 1, specification_id: 1, specification_code: 'TEST_SPEC', code: 'TEST_REVISION', version: '1', name: 'Test revision', status: 'published', is_default: true },
+  ]);
+  jest.spyOn(examMetadataApi, 'levels').mockResolvedValue([
+    { id: 1, revision_id: 1, revision_code: 'TEST_REVISION', code: 'TEST_1', level_number: 1, display_name: 'HSK 1', sort_order: 1, status: 'published' },
+    { id: 2, revision_id: 1, revision_code: 'TEST_REVISION', code: 'TEST_2', level_number: 2, display_name: 'HSK 2', sort_order: 2, status: 'published' },
   ]);
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   let tree: ReactTestRenderer.ReactTestRenderer;

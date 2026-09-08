@@ -20,6 +20,8 @@ export interface Profile {
   study_streak_days: number;
   onboarding_completed: boolean;
   timezone: string;
+  target_exam_revision_id?: number | null;
+  target_exam_level_id?: number | null;
 }
 
 export type ProfileUpdate = Partial<
@@ -32,6 +34,8 @@ export type ProfileUpdate = Partial<
     | 'daily_goal_type'
     | 'onboarding_completed'
     | 'timezone'
+    | 'target_exam_revision_id'
+    | 'target_exam_level_id'
   >
 >;
 
@@ -54,6 +58,48 @@ export interface HskLevel {
   display_order?: number;
   status?: string;
   course_count?: number;
+}
+
+export interface ExamStandard {
+  id: number;
+  code: string;
+  name: string;
+  description?: string | null;
+  status: string;
+}
+
+export interface ExamSpecification {
+  id: number;
+  standard_id: number;
+  standard_code: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  status: string;
+}
+
+export interface ExamRevision {
+  id: number;
+  specification_id: number;
+  specification_code: string;
+  code: string;
+  version: string;
+  name: string;
+  description?: string | null;
+  status: string;
+  is_default: boolean;
+}
+
+export interface ExamLevel {
+  id: number;
+  revision_id: number;
+  revision_code: string;
+  code: string;
+  level_number?: number | null;
+  display_name: string;
+  description?: string | null;
+  sort_order: number;
+  status: string;
 }
 
 export interface Course {
@@ -399,6 +445,7 @@ export interface PracticeConfiguration {
 
 export interface PracticeQuestion {
   id: number;
+  question_version_id?: number | null;
   exercise_id: number | null;
   question_type: string;
   prompt: string;
@@ -866,6 +913,11 @@ export interface ExamSection {
   duration_minutes: number;
   question_count: number;
   allow_previous?: boolean;
+  code?: string | null;
+  skill?: string | null;
+  duration_seconds?: number | null;
+  instructions?: string | null;
+  parts?: Array<{ id?: number | null; code?: string | null; title: string; sort_order?: number }>;
 }
 
 export interface ExamListItem {
@@ -881,6 +933,10 @@ export interface ExamListItem {
   attempt_count: number;
   best_percentage?: number | null;
   status: string;
+  exam_revision_id?: number | null;
+  exam_level_id?: number | null;
+  scoring_policy_id?: number | null;
+  blueprint_schema_version?: number;
 }
 
 export interface ExamDetail extends ExamListItem {
@@ -893,6 +949,9 @@ export interface ExamQuestion extends PracticeQuestion {
   section: string;
   section_index: number;
   question_index: number;
+  part_id?: number | null;
+  part_code?: string | null;
+  part_title?: string | null;
   lesson_title?: string | null;
   lesson_title_translations?: LocalizedText;
 }
@@ -901,6 +960,7 @@ export interface ExamAttempt {
   attempt_id: number;
   exam_id: number;
   exam_version: number;
+  exam_version_id?: number | null;
   status: string;
   title: string;
   title_translations?: LocalizedText;
@@ -916,6 +976,10 @@ export interface ExamAttempt {
   remaining_seconds: number;
   current_section?: string | null;
   allow_previous_section: boolean;
+  exam_revision_id?: number | null;
+  exam_level_id?: number | null;
+  scoring_policy_id?: number | null;
+  blueprint_schema_version?: number;
 }
 
 export interface ExamAttemptHistory {
@@ -945,6 +1009,7 @@ export interface ExamSectionResult {
 
 export interface ExamQuestionResult {
   question_id: number;
+  question_version_id?: number | null;
   section: string;
   prompt?: string | null;
   user_answer?: unknown;

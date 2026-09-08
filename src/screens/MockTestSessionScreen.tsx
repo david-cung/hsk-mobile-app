@@ -135,7 +135,7 @@ export function MockTestSessionScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.meta}>{question.section}</Text>
+        <Text style={styles.meta}>{question.section}{question.part_title ? ` · ${question.part_title}` : ''}</Text>
         <Text style={[styles.timer, secondsLeft < 60 && styles.timerUrgent]}>{formatTime(secondsLeft)}</Text>
       </View>
       <Text style={styles.progress}>{t('mockSession.progress', { current: currentIndex + 1, total: questions.length, answered: answeredCount })}</Text>

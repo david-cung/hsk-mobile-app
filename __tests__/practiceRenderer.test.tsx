@@ -7,6 +7,7 @@ import type { PracticeQuestion } from '../src/api/types';
 
 const multipleChoiceQuestion: PracticeQuestion = {
   id: 1,
+  question_version_id: 1,
   exercise_id: 1,
   question_type: 'MULTIPLE_CHOICE',
   prompt: '你好 means:',

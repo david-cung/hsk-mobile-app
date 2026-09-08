@@ -17,7 +17,11 @@ import type {
   ExamAttempt,
   ExamAttemptHistory,
   ExamDetail,
+  ExamLevel,
   ExamListItem,
+  ExamRevision,
+  ExamSpecification,
+  ExamStandard,
   ExamResult,
   GamificationProfile,
   GrammarDetail,
@@ -116,6 +120,15 @@ export const authApi = {
 export const profileApi = {
   update: (data: ProfileUpdate) =>
     apiFetch<Profile>('/api/v1/profile', { method: 'PATCH', body: JSON.stringify(data) }),
+};
+
+export const examMetadataApi = {
+  standards: () => apiFetch<ExamStandard[]>('/api/v1/exam-standards'),
+  specifications: (standardId?: number) =>
+    apiFetch<ExamSpecification[]>(`/api/v1/exam-specifications${standardId ? `?standard_id=${standardId}` : ''}`),
+  revisions: (specificationId?: number) =>
+    apiFetch<ExamRevision[]>(`/api/v1/exam-revisions${specificationId ? `?specification_id=${specificationId}` : ''}`),
+  levels: (revisionId: number) => apiFetch<ExamLevel[]>(`/api/v1/exam-revisions/${revisionId}/levels`),
 };
 
 export const contentApi = {

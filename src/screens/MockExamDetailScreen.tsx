@@ -52,6 +52,7 @@ export function MockExamDetailScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>{exam.title}</Text>
       <Text style={styles.meta}>HSK {exam.hsk_level} · {formatNumber(exam.duration_minutes)} {t('common.minutesShort')} · {formatNumber(exam.question_count)} {t('common.questions')}</Text>
+      {exam.exam_revision_id ? <Text style={styles.meta}>Revision {exam.exam_revision_id} · Level {exam.exam_level_id ?? '-'}</Text> : null}
       {exam.description ? <Text style={styles.description}>{exam.description}</Text> : null}
 
       <Card style={styles.card}>

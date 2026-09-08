@@ -41,6 +41,7 @@ const attempt = {
   sections: [{ type: 'VOCABULARY', title: 'Vocabulary', duration_minutes: 30, question_count: 1 }],
   questions: [{
     id: 101,
+    question_version_id: 1,
     exercise_id: null,
     question_type: 'MULTIPLE_CHOICE',
     prompt: 'Choose hello',
@@ -48,6 +49,7 @@ const attempt = {
     points: 1,
     order: 1,
     section: 'VOCABULARY',
+    part_title: 'Part 1',
     section_index: 0,
     question_index: 0,
     config: { options: [{ id: '1', text: '你好' }, { id: '2', text: '谢谢' }] },
@@ -155,6 +157,7 @@ test('mock exam session autosaves and submits', async () => {
   await ReactTestRenderer.act(async () => {
     tree = ReactTestRenderer.create(wrap(<MockTestSessionScreen />, queryClient));
   });
+  expect(JSON.stringify(tree!.toJSON())).toContain('Part 1');
   const option = tree!.root.findAllByProps({ accessibilityRole: 'radio' })[0];
   await ReactTestRenderer.act(async () => option.props.onPress());
 
